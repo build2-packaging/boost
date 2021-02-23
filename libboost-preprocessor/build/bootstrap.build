@@ -1,0 +1,7 @@
+project = libboost-preprocessor
+
+using version
+using config
+using test
+using install
+using dist

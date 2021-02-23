@@ -1,0 +1,16 @@
+: 1
+location: libboost-callable-traits/
+:
+location: libboost-config/
+:
+location: libboost-hof/
+:
+location: libboost-leaf/
+:
+location: libboost-mp11/
+:
+location: libboost-pfr/
+:
+location: libboost-predef/
+:
+location: libboost-preprocessor/

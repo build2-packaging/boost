@@ -1,0 +1,502 @@
+#!/usr/bin/env bash
+
+# file      : generate
+# license   : Boost Software License 1.0; see accompanying LICENSE file
+
+# Create build2 packages for the Boost C++ libraries.
+#
+# Use the official Boost superproject repository at
+# https://github.com/boostorg/boost as source. Generate bpkg git repository
+# containing Boost C++ library packages.
+#
+# --version-suffix <suffix>
+#
+#   A suffix to be added to the Boost version while deriving the library
+#   packages version, or empty to use the Boost version unmodified. If this
+#   option is omitted a suffix of "-a.0.z" will be used.
+#
+
+owd="$(pwd)"
+trap "{ cd '$owd'; exit 1; }" ERR
+set -o errtrace     # Trap in functions and subshells.
+set -o pipefail     # Fail if any pipeline command fails.
+shopt -s lastpipe   # Execute last pipeline command in the current shell.
+shopt -s nullglob   # Expand no-match globs to nothing rather than themselves.
+
+function info () { echo "$*" 1>&2; }
+function error () { info "$*"; exit 1; }
+
+# A suffix to be applied to the Boost version in the `version` package
+# manifest field. (See the `--version-suffix` option above.)
+#
+version_suffix="-a.0.z"
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --version-suffix)
+      shift
+      version_suffix="$1"
+      shift || true
+      ;;
+    -*)
+      error "unknown option: $1"
+      ;;
+    # End of options.
+    #
+    *)
+      error "unexpected '$1'"
+      break
+      ;;
+  esac
+done
+
+# Get the Boost version from upstream/. See the root README for more info.
+#
+r="$(sed -n -Ee "s%^#\s*define\s+BOOST_VERSION\s+([0-9]+)%\1%p" \
+         upstream/libs/config/include/boost/version.hpp)"
+
+# At this point `r` will have a value like `107501` for Boost release 1.75.1.
+# (The following arithmetic is specified in
+# upstream/libs/config/include/boost/version.hpp.)
+#
+boostver="$(($r / 100000)).$((($r / 100) % 1000)).$(($r % 100))"
+
+# Remove files/directories about to be generated, if they already exist.
+#
+rm -rf .gitignore .gitattributes \
+       .bdep buildfile repositories.manifest packages.manifest \
+       levels boostdep libboost-*
+
+# Compile boostdep.
+#
+# Note that here we rely on the boost_filesystem library of a suitable version
+# to be installed into the system. Building boostdep only using source files
+# in the upstream/ directory feels too complicated at the moment since
+# boost-filesystem has quite a lot of dependencies.
+#
+c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
+
+# Produce the library dependency levels file.
+#
+# Libraries at a given dependency level depend only on libraries at lower
+# levels. So those at level 0 have no dependencies while those at level 2
+# depend only on libraries at levels 0 and/or 1, and so on.
+#
+# Use `boostdep` to group the Boost libraries by dependency level and parse
+# that output into our own format which we write to a file named `levels`.
+#
+# The output produced by `boostdep` looks like this:
+#
+#   Module Levels:
+#
+#   Level 0:
+#       (unknown)
+#       callable_traits
+#       compatibility
+#       config
+#       ...
+#
+#   Level 1:
+#       assert -> config(0)
+#       io -> config(0)
+#       ...
+#
+#   Level 2:
+#       core -> assert(1) config(0)
+#       ...
+#   ...
+#
+# A tilde (~) in the library name means a directory separator, for example,
+# numeric~conversion.
+#
+# `boostdep` classifies the inclusion of a header as a dependency on the
+# "(unknown)" library (which will naturally always be at level 0) if it is not
+# under `<lib>/include` (presumably implementation headers). For example,
+# `boost/uuid/sha1.hpp`, `boost/geometry/index/rtree/kmeans/split.hpp`, etc.
+#
+# Our output file, `levels`, contains one dependency level's libraries per
+# line, starting at level 0, with each level's libraries separated by spaces,
+# like this:
+#
+#   callable_traits compatibility config hof
+#   assert io polygon static_assert
+#   core stl_interfaces system throw_exception type_traits
+#
+sep=
+./boostdep --boost-root upstream --module-levels | while read line; do
+
+  # If we're at a new, non-zero dependency level then begin a new line of
+  # output.
+  #
+  if [[ "$line" == "Level "[1-9]* ]]; then
+    echo
+    sep=
+
+  # 1. Match lines like "<libname> -> <dep0> <dep1>...\n" (which are libraries
+  #    at a non-zero level).
+  #
+  # 2. Skip the "(unknown)\n" line.
+  #
+  # 3. Match (non-empty) lines that do not contain any colons, thus matching
+  #    lines like "<libname>\n" (which are libraries at level 0), but skipping
+  #    the "Module Levels:\n" and "Level 0:\n" lines.
+  #
+  elif [[ ("$line" =~ (.+)" -> ") ||
+          (("$line" != "(unknown)") && ("$line" =~ (^[^:]+$))) ]]; then
+    echo -n "$sep${BASH_REMATCH[1]}"
+    sep=' '
+  fi
+done > levels
+
+echo >> levels # Terminate the last line.
+
+# Build2 package names: each package name is derived from the `boostdep` name
+# (see above) by prefixing it with "libboost-" and replacing all underscores
+# and tildes with hyphens. For example:
+#
+#   callable_traits  -> libboost-callable-traits
+#   compatibility    -> libboost-compatibility
+#   numeric~interval -> libboost-numeric-interval
+#
+# This script uses this format (which we will call "our") everywhere except
+# for the `levels` file where we keep the original and the library target
+# names where dashes are replaced with underscores (for compatibility with
+# system-installed library names).
+#
+
+# Read the library exclusions list from the file named `exclude` into the
+# `lib_excl` associative array.
+#
+# This file contains one library/package name per line, in our format. For
+# example:
+#
+#   libboost-callable-traits
+#   libboost-compatibility
+#   libboost-numeric-interval
+#
+declare -A lib_excl=()
+cat exclude | while read line; do
+  lib_excl["$line"]=true
+done
+
+# Create an empty build2 project in the root directory.
+#
+bdep new --type empty
+
+# Append, to the new .gitignore, generated files that are not to be checked
+# in. (`.gitignore` was just generated by `bdep new` above.)
+#
+cat << EOF >> .gitignore
+
+# The generated files.
+#
+boostdep
+
+# Intermediate files.
+#
+*.bak
+EOF
+
+# Edit a file in-place with `sed` in the extended regex mode.
+#
+# Additional `sed` options may be passed after <file-path>.
+#
+function ised () # <file-path> <sed-option>...
+{
+  local f="$1"                  # File path.
+  shift
+  local o=("$@")                # Options to pass to `sed`.
+
+  # `sed -i<backup-extension>` is not in POSIX but works on Linux, the BSDs,
+  #  and Mac OS. The extension is optional on Linux but not the BSDs so must
+  #  be provided.
+  #
+  sed -E -i.bak "${o[@]}" "$f"
+  rm -f "$f.bak"
+}
+
+# Load various overrides from the override file. See this file for the
+# overrides semantics.
+#
+declare -A manifest_url=()
+source override
+
+# The Boost version, but formatted for use in the `doc-url` package manifest
+# field. This is just `boostver` with everything but the major, minor, and
+# patch components removed and all '.' replaced with '_'. For example,
+# "1.75.1.beta1" -> "1_75_1". Note that Boost doesn't publish documentation
+# for pre-releases.
+#
+doc_url_ver="$(sed -E -e "s%^([0-9]+\.[0-9]+\.[0-9]+).*%\1%" \
+                      -e "s%\.%_%g" \
+                      <<<"$boostver")"
+
+# Detect the language of an upstream Boost library.
+#
+# Return, by writing to stdout, one of "c++", "c", or "mixed". Fail if unable
+# to detect the language.
+#
+# All of a Boost library's source files reside in `src/` (see
+# https://www.boost.org/development/requirements.html#Organization) so if
+# there is no such directory then a library has no source files.
+#
+function detect_lang () # <lib-dir-path>
+{
+  local d="$1" # Upstream library directory path.
+
+  local cxx
+  cxx="$(find "$d/include/boost" -type f -name "*.hpp")"
+
+  if [[ -z "$cxx" && -d "$d/src" ]]; then
+    cxx="$(find "$d/src" -type f -name "*.cpp")"
+  fi
+
+  local c
+  c="$(find "$d/include/boost" -type f -name "*.h")"
+
+  if [[ -z "$c" && -d "$d/src" ]]; then
+    c="$(find "$d/src" -type f -name "*.c")"
+  fi
+
+  if [[ -n "$cxx" && -n "$c" ]]; then
+    echo "mixed"
+  elif [[ -n "$cxx" ]]; then
+    echo "c++"
+  elif [[ -n "$c" ]]; then
+    echo "c"
+  else
+    error "unable not detect the language of $d"
+  fi
+}
+
+# Generate a build2 project/package for each Boost library and add them as
+# packages to the root project.
+#
+# Do one dependency level at a time, starting at level 0.
+#
+# @@ Currently for dependency level 0 only.
+#
+# @@ Package manifest values yet to be customized:
+#
+#    - email: currently using boost-users@boost.org but we'll probably be
+#      switching to the maintainer email addresses in
+#      upstream/libs/<lib>/meta/libraries.json.
+#
+level=0
+cat levels | while [[ "$level" -eq 0 ]] && read line; do
+  libs=($line) # The libraries at the current dependency level.
+
+  # Create a build2 project for each library at the current dependency level.
+  #
+  # Note that `lib` is the `boostdep` library name (see above).
+  #
+  for lib in "${libs[@]}"; do
+    udn="$(sed -Ee "s%~%/%g" <<<"$lib")" # Upstream directory name.
+    udp="upstream/libs/$udn"             # Upstream directory path.
+
+    # Upstream library name. Replace '/' with '_' for the few libraries that
+    # are in subdirectories of `upstream/libs`. For example:
+    #
+    #   numeric/ublas    -> numeric_ublas
+    #
+    # Note that the libraries under `upstream/libs/numeric/` will be given
+    # values such as `numeric_ublas` here, whereas the Boost project only
+    # applies the "numeric_" prefix to `numeric/conversion` (for example, they
+    # use just `ublas` and `interval`). But our way is more consistent and
+    # works out simpler for our purposes (they are header-only so there is no
+    # issues with binary library names). Given that the divergence is limited
+    # to those few libraries in `numeric/`, "upstream library name" is still
+    # considered to be an appropriate name for this variable.
+    #
+    un="$(sed -Ee "s%/%_%g" <<<"$udn")"
+
+    # Build2 package name (for example, `libboost-callable-traits`).
+    #
+    pn="libboost-$(sed -Ee s/_/-/g <<<"$un")"
+
+    # Skip this library if it's in the exclusion list.
+    #
+    if [[ -v "lib_excl[$pn]" ]]; then
+      info "skipping $pn (excluded)"
+      continue
+    fi
+
+    # Skip compiled libraries for the time being.
+    #
+    # @@ None of the ones at level 0 happen to be compiled.
+    #
+    if [[ -d "$udp/src" ]]; then
+      info "skipping $pn (compiled libraries not yet supported)"
+      continue
+    fi
+
+    # Configure language-specific settings.
+    #
+    lo= # Suboptions to `bdep-new` `--lang` option.
+    he= # Header file extension.
+    se= # Source file extension.
+
+    lang="$(detect_lang "$udp")"
+    case "$lang" in
+      c++)
+        lo="c++,hxx=hpp,cxx=cpp"
+        he="hpp"
+        se="cpp"
+        ;;
+      c)
+        lo="c"
+        he="h"
+        se="c"
+        ;;
+      mixed)
+        # Skip this library unless it's pure C++ or pure C.
+        #
+        # @@ TODO: waiting on bdep-new support.
+        #
+        info "skipping $pn (mixed-language projects not yet supported)"
+        continue
+        ;;
+    esac
+
+    # Suboptions to `bdep-new` `--type` option.
+    #
+    to="lib,split,subdir=boost,no-version"
+
+    # Detect binless libraries. (See `detect_lang()` for why we only check for
+    # the presence of the `src` directory).
+    #
+    if [[ ! -d "$udp/src" ]]; then
+      to+=",binless"
+    fi
+
+    # Create a build2 project for the current library, adding it as a package
+    # to the root project.
+    #
+    # Let's create the LICENSE file prior to creating the package, so that
+    # bdep-new can pick it up (detect the license manifest value, add it to
+    # the buildfile, etc).
+    #
+    mkdir "$pn"
+    ln -s "../LICENSE" "$pn"
+
+    # Add upstream's README.md, if present, to the project.
+    #
+    # Note that bdep-new doesn't recognize Boost's README.md format and issues
+    # the warning. Thus, we replace the generated file after it is created.
+    #
+    if [[ ! -f "$udp/README.md" ]]; then
+      to+=",no-readme"
+    fi
+
+    bdep new --package --lang "$lo" --type "$to" "$pn"
+
+    if [[ -f "$pn/README.md" ]]; then
+      ln -sf "../$udp/README.md" "$pn"
+    fi
+
+    # Remove the bdep-generated header.
+    #
+    rm "$pn/include/boost/${pn#lib}.$he"
+
+    # Create symlinks to the upstream headers inside the new project
+    # directory.
+    #
+    for f in "$udp/include/boost/"*; do
+      ln -s "../../../$f" "$pn/include/boost/"
+    done
+
+    # Derive the project url manifest value (see the override file for
+    # deviations).
+    #
+    if [[ -v "manifest_url[$pn]" ]]; then
+      url="${manifest_url[$pn]}"
+    else
+      url="https://github.com/boostorg/$un"
+    fi
+
+    # The `doc-url` package manifest field, which refers to the documentation
+    # for the packaged (not latest) version of the current library. Note that,
+    # unlike the GitHub URL, the project name component of the documentation
+    # URL is the upstream directory name instead of the upstream library
+    # name. For example:
+    #
+    #   https://www.boost.org/doc/libs/1_75_1/libs/numeric/ublas
+    #
+    doc_url="https://www.boost.org/doc/libs/$doc_url_ver/libs/$udn"
+
+    # Fix up the package manifest.
+    #
+    ised "$pn/manifest" \
+         -e "s%^(version:).+%\1 $boostver$version_suffix%" \
+         -e "s%^(url:).+%\1 $url%" \
+         -e "/^url:/adoc-url: $doc_url" \
+         -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%" \
+         -e "s%^#(build-error-email:).+%\1 builds@build2.org%" \
+         -e "/^#depends:/d" \
+         -e "/^license:/atopics: C++, Boost" \
+         -e "/^url:/apackage-url: https://github.com/build2-packaging/boost" \
+         -e "/^email:/apackage-email: packaging@build2.org ; Mailing list."
+
+    # Fix up package buildfile(s).
+    #
+    # Replace '-' with '_' in lib{} target names. Necessary because the
+    # convention seems to be to use underscores in the filenames of the Boost
+    # library binaries. For example:
+    #
+    #   lib{boost-callable-traits} -> lib{boost_callable_traits}
+    #
+    # Use the fact that we have most of the underscored version in `un` to
+    # simplify the `sed` script.
+    #
+    ss="s%lib\{${pn#lib}\}%lib\{boost_$un\}%g" # Sed script.
+    ised "$pn/include/boost/buildfile" -e "$ss"
+    ised "$pn/tests/basics/buildfile"  -e "$ss"
+
+    # Create smoke test (by modifying the test generated by `bdep-new`).
+    #
+    # For now we just include the super-header (a single header which includes
+    # all of its headers) from the driver's source file and, if it compiles,
+    # we could not have missed any headers. (But while developing, remember to
+    # ensure that your system Boost installation isn't masking breakages.)
+    #
+
+    # Look for this library's "super-header".
+    #
+    # Based on inspection, the informal convention seems to be for each
+    # library to put its super-header either at `include/boost/<lib>.hpp` or
+    # `include/boost/<lib>/<lib>.hpp`. A minority of libraries do not conform;
+    # we'll add exceptions/overrides for these when we get to them. (If there
+    # were a formal convention I would expect it to be referenced by
+    # https://www.boost.org/development/requirements.html.)
+    #
+    sh= # The super-header path, relative to `include/boost/`.
+    if [[ -f "$pn/include/boost/$udn.$he" ]]; then
+      sh="$udn.$he"
+    elif [[ -f "$pn/include/boost/$udn/$udn.$he" ]]; then
+      sh="$udn/$udn.$he"
+    else
+      error "no super-header found for $pn"
+    fi
+
+    # Generate the test driver source file.
+    #
+    cat <<EOF > "$pn/tests/basics/driver.$se"
+#include <boost/$sh>
+
+int main ()
+{
+  return 0;
+}
+EOF
+  done
+
+  ((++level))
+done
+
+# Modify the root buildfile to exclude the upstream directory from the build.
+#
+ised buildfile -e "s%import pkgs = \*/%import pkgs = \{*/ -upstream/\}%"
+
+# Remove commented-out and empty lines from `repositories.manifest`.
+#
+ised repositories.manifest -e "/(^#|^$)/d"

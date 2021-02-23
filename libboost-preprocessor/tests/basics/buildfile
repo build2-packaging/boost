@@ -1,0 +1,3 @@
+import libs = libboost-preprocessor%lib{boost_preprocessor}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

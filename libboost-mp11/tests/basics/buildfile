@@ -1,0 +1,3 @@
+import libs = libboost-mp11%lib{boost_mp11}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}
