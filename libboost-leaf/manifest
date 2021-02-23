@@ -1,0 +1,16 @@
+: 1
+name: libboost-leaf
+version: 1.75.0-a.0.z
+project: boost
+summary: boost-leaf C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/leaf
+doc-url: https://www.boost.org/doc/libs/1_75_0/libs/leaf
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0

@@ -1,0 +1,3 @@
+import libs = libboost-predef%lib{boost_predef}
+
+exe{driver}: {h c}{**} $libs testscript{**}

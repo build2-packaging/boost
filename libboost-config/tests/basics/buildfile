@@ -1,0 +1,3 @@
+import libs = libboost-config%lib{boost_config}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

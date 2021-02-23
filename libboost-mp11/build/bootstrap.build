@@ -1,0 +1,7 @@
+project = libboost-mp11
+
+using version
+using config
+using test
+using install
+using dist

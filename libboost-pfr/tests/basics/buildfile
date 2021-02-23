@@ -1,0 +1,3 @@
+import libs = libboost-pfr%lib{boost_pfr}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

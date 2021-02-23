@@ -1,0 +1,3 @@
+import libs = libboost-hof%lib{boost_hof}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

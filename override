@@ -1,0 +1,5 @@
+# The url package manifest value overrides.
+#
+manifest_url["libboost-numeric-interval"]="https://github.com/boostorg/interval"
+manifest_url["libboost-numeric-odeint"]="https://github.com/boostorg/odeint"
+manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"

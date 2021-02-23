@@ -1,0 +1,7 @@
+project = libboost-callable-traits
+
+using version
+using config
+using test
+using install
+using dist
