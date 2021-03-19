@@ -1,0 +1,55 @@
+: 1
+sha256sum: 82f4f7b6afd2d839de933b30bed46796c90bb0081f82ea93dd63d997817769bc
+:
+name: libboost-callable-traits
+version: 1.75.0-a.0.20210319135831.9440fff51347
+project: boost
+summary: boost-callable-traits C++ library
+license: BSL-1.0; Boost Software License 1.0.
+topics: C++, Boost
+description: \
+<!--
+Copyright Barrett Adair 2016-2017
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+-->
+
+# Boost.CallableTraits <a target="_blank" href="https://travis-ci.org/boostor\
+g/callable_traits">![Travis status][badge.Travis]</a> <a target="_blank"\
+ href="https://ci.appveyor.com/project/boostorg/callable-traits">![Appveyor\
+ status][badge.Appveyor]</a>
+
+CallableTraits is a C++11 header-only library for the inspection, synthesis,\
+ and decomposition of callable types.
+
+The latest documentation is available [here](http://www.boost.org/doc/libs/de\
+velop/libs/callable_traits/doc/html/index.html).
+
+CallableTraits was [formally reviewed](http://www.boost.org/community/reviews\
+.html) and [accepted](https://lists.boost.org/Archives/boost/2017/04/234513.p\
+hp) into the [Boost C++ Libraries](http://www.boost.org/). CallableTraits is\
+ available in Boost 1.66 (December 2017) and later. You can also download\
+ CallableTraits as a standalone library [here](https://github.com/boostorg/ca\
+llable_traits/releases/latest).
+
+Licensed under the [Boost Software License, Version 1.0](LICENSE.md).
+
+<!-- Links -->
+[badge.Appveyor]: https://ci.appveyor.com/api/projects/status/uf0l91v7l4wc4kw\
+6/branch/master?svg=true
+[badge.Travis]: https://travis-ci.org/boostorg/callable_traits.svg?branch=mas\
+ter
+
+\
+description-type: text/markdown;variant=GFM
+url: https://github.com/boostorg/callable_traits
+doc-url: https://www.boost.org/doc/libs/1_75_0/libs/callable_traits
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org; Mailing list.
+package-email: packaging@build2.org; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+location: libboost-callable-traits-1.75.0-a.0.20210319135831.9440fff51347.tar\
+.gz
+sha256sum: 811dbe8484bae783d14e39a3c139b6dcd5ba7d511ad13e6e97df0a109afa8d31
