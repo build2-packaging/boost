@@ -1,0 +1,1030 @@
+The following is an explanation of the "(unknown)" dependency in `boostdep`
+dependency reports.
+
+Generally, based on manual inspection (see below for details), the reason for
+(unknown) is the inclusion of headers that have been (re)moved or, in a
+handful of cases, ones from optional external libraries.
+
+boostdep searches all of the `upstream/libs/<lib>/include/` directories,
+indexing the headers it finds. Then, when building its dependency report, if
+the header being included is not indexed, it gets attributed to the (unknown)
+library, but only if the include directive begins with "#include <boost/",
+otherwise the header is silently ignored. That is, include directives that
+resolve to a header directly under `upstream/libs/<lib>/include/` that does
+not exist are silently ignored. This raises the question of whether boostdep
+may be missing some legitimate dependencies. (The real cases of (unknown)
+links caused by "#include <boost/*.hpp>" are explained later.)
+
+Here are the reasons why no Boost dependencies are being missed:
+
+1) It's a project-wide requirement that all libraries' headers reside under
+   `upstream/libs/<lib>/include/boost/<lib>/` (see
+   https://www.boost.org/development/requirements.html#Organization), so a
+   valid include directive has to begin with "#include <boost/", for example
+   "#include <boost/<lib>/bar.hpp>" or "#include <boost/bar.hpp>". For an
+   include directive to resolve to a header like
+   `upstream/libs/<lib>/include/foo.hpp` it would have to look like
+   "#include <foo.hpp>".
+
+2) I printed out the headers silently ignored by a `./boostdep --boost-root
+   upstream --module-overview` run (see below) and it does not look like any
+   of them are Boost headers (not in any Boost library's public interface,
+   anyway). The headers that actually are silently ignored are mostly system,
+   C++ stdlib headers, or external libraries (e.g. OpenGL), or relative
+   includes (e.g. a Boost library including its own headers, like `#include
+   "detail/polygon_set_view.hpp"`).
+
+3) I also ran `find upstream/libs/ -type f -name "*.hpp" -path "*include*"` to
+   look for Boost headers that do not have "include/boost" in the path and the
+   only ones are under the following directories:
+
+     upstream/libs/wave/samples/list_includes/
+     upstream/libs/mpl/preprocessed/include/
+     upstream/libs/math/include_private/boost/math/
+     upstream/libs/hana/test/_include/support/
+
+   Clearly these are not headers that were intended to be included by other
+   libraries.
+
+One has to wonder why boostdep doesn't just start its search at
+`upstream/libs/<lib>/include/boost/` if no legitimate headers can reside one
+level up.
+
+-----------------------------------
+Specific cases of (unknown)
+-----------------------------------
+
+To have boostdep produce a report showing the missing Boost headers (the ones
+attributed to (unknown), that resolve to something under
+`upstream/libs/<lib>/include/boost/`), run
+
+  ./boostdep --boost-root upstream --list-missing-headers
+
+-----------------------------------
+
+boost/compute/detail/sha1.hpp INCLUDES boost/uuid/sha1.hpp
+
+  This header has been moved.
+
+  From upstream/libs/compute/include/boost/compute/detail/sha1.hpp:
+
+  #if BOOST_VERSION >= 106600
+  #  include <boost/uuid/detail/sha1.hpp>
+  #else
+  #  include <boost/uuid/sha1.hpp>
+  #endif
+
+  The first include is the correct one.
+
+-----------------------------------
+
+boost/numeric/odeint/external/mtl4/mtl4_resize.hpp INCLUDES boost/numeric/mtl/vector/dense_vector.hpp
+boost/numeric/odeint/external/mtl4/mtl4_resize.hpp INCLUDES boost/numeric/mtl/matrix/dense2D.hpp
+boost/numeric/odeint/external/mtl4/mtl4_resize.hpp INCLUDES boost/numeric/mtl/matrix/compressed2D.hpp
+boost/numeric/odeint/external/mtl4/mtl4_algebra_dispatcher.hpp INCLUDES boost/numeric/mtl/mtl.hpp
+boost/numeric/odeint/external/mtl4/implicit_euler_mtl4.hpp INCLUDES boost/numeric/mtl/mtl.hpp
+boost/numeric/odeint/external/mtl4/implicit_euler_mtl4.hpp INCLUDES boost/numeric/itl/itl.hpp
+
+  numeric/odeint/external/mtl4 expects these MTL and ITL libs to be under
+  non-existent directories upstream/libs/numeric/mtl/ and
+  upstream/libs/numeric/itl/.
+
+  These includes are not conditional so presumably the user is responsible for
+  ensuring the MTL/ITL libs are in place if they include the including
+  headers.
+
+-----------------------------------
+
+boost/numeric/ublas/functional.hpp INCLUDES boost/numeric/bindings/traits/std_vector.hpp
+boost/numeric/ublas/functional.hpp INCLUDES boost/numeric/bindings/traits/ublas_vector.hpp
+boost/numeric/ublas/functional.hpp INCLUDES boost/numeric/bindings/traits/ublas_matrix.hpp
+boost/numeric/ublas/functional.hpp INCLUDES boost/numeric/bindings/atlas/cblas.hpp
+
+  From upstream/libs/numeric/ublas/include/boost/numeric/ublas/functional.hpp:
+
+  #ifdef BOOST_UBLAS_HAVE_BINDINGS
+  #include <boost/numeric/bindings/traits/std_vector.hpp>
+  #include <boost/numeric/bindings/traits/ublas_vector.hpp>
+  #include <boost/numeric/bindings/traits/ublas_matrix.hpp>
+  #include <boost/numeric/bindings/atlas/cblas.hpp>
+  #endif
+
+  upstream/libs/numeric/bindings/ does not exist.
+
+-----------------------------------
+
+boost/spirit/home/classic/utility/regex.hpp INCLUDES boost/regex/src.cpp
+
+  From
+  upstream/libs/spirit/include/boost/spirit/home/classic/utility/regex.hpp:
+
+  #if defined(BOOST_SPIRIT_NO_REGEX_LIB) && BOOST_VERSION < 103300
+  //
+  //  Include all the Boost.regex library. Please note that this will not work,
+  //  if you are using the boost/spirit/regex.hpp header from more than one
+  //  translation units.
+  //
+  #define BOOST_REGEX_NO_LIB
+  #define BOOST_REGEX_STATIC_LINK
+  #define BOOST_REGEX_NO_EXTERNAL_TEMPLATES
+  #include <boost/regex.hpp>
+  #include <boost/regex/src.cpp>
+
+  The is no file `src.cpp` under upstream/libs/regex/. Also needs a very old
+  Boost version.
+
+-----------------------------------
+
+boost/thread/csbl/queue.hpp INCLUDES boost/container/queue.hpp
+
+  From upstream/libs/thread/include/boost/thread/csbl/queue.hpp:
+
+  #if defined BOOST_THREAD_USES_BOOST_QUEUE || defined BOOST_NO_CXX11_RVALUE_REFERENCES || (defined _MSC_VER && _MSC_FULL_VER < 180020827)
+  #ifndef BOOST_THREAD_USES_BOOST_QUEUE
+  #define BOOST_THREAD_USES_BOOST_QUEUE
+  #endif
+  #include <boost/container/queue.hpp>
+  #else
+  #include <queue>
+  #endif
+
+  There's no queue.hpp under upstream/libs/container so this looks like very
+  stale code.
+
+-----------------------------------
+
+boost/xpressive/detail/core/linker.hpp INCLUDES boost/spirit/fusion/algorithm/for_each.hpp
+
+  From upstream/libs/xpressive/include/boost/xpressive/detail/core/linker.hpp:
+
+  #if BOOST_VERSION >= 103500
+  # include <boost/fusion/include/for_each.hpp>
+  #else
+  # include <boost/spirit/fusion/algorithm/for_each.hpp>
+  #endif
+
+  Header was moved to Boost.Fusion in Boost 1.35.0.
+
+  Same reason (introduction of Boost.Fusion) for all of the following cases:
+
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/algorithm/any.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/sequence/begin.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/sequence/end.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/iterator/equal_to.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/iterator/equal_to.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/iterator/next.hpp
+boost/xpressive/detail/utility/any.hpp INCLUDES boost/spirit/fusion/iterator/deref.hpp
+
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/sequence/cons.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/detail/config.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/detail/access.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/iterator/next.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/iterator/equal_to.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/iterator/as_fusion_iterator.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/iterator/detail/iterator_base.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/sequence/begin.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/sequence/end.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/sequence/as_fusion_sequence.hpp
+boost/xpressive/detail/utility/cons.hpp INCLUDES boost/spirit/fusion/sequence/detail/sequence_base.hpp
+
+-----------------------------------
+
+I didn't look into the following cases because they are self-referential so
+dependencies are not affected.
+
+boost/geometry/index/detail/rtree/kmeans/kmeans.hpp INCLUDES boost/geometry/index/rtree/kmeans/split.hpp
+boost/geometry/index/detail/rtree/kmeans/split.hpp INCLUDES boost/geometry/index/rtree/node/node.hpp
+boost/geometry/index/detail/rtree/kmeans/split.hpp INCLUDES boost/geometry/index/rtree/visitors/insert.hpp
+boost/geometry/io/wkt/detail/wkt_multi.hpp INCLUDES boost/geometry/domains/gis/io/wkt/write.hpp
+boost/gil/extension/io/targa/write.hpp INCLUDES boost/gil/extension/io/targa/detail//write.hpp
+boost/interprocess/detail/intersegment_ptr.hpp INCLUDES boost/interprocess/detail/multi_segment_services.hpp
+boost/interprocess/detail/managed_multi_shared_memory.hpp INCLUDES boost/interprocess/detail/multi_segment_services.hpp
+boost/sort/common/scheduler.hpp INCLUDES boost/sort/common/search.hpp
+boost/sort/common/scheduler.hpp INCLUDES boost/sort/common/compare_traits.hpp
+boost/spirit/home/classic/utility/scoped_lock.hpp INCLUDES boost/spirit/home/classic/core/composite.hpp
+
+-----------------------------------
+
+Headers that are silently ignored by boostdep:
+
+#include "abstract.h"
+#include <Activation.h>
+#include <afxcoll.h>
+#include <afx.h>
+#include <algorithm>
+#include "algorithms.hpp"
+#include "alignment_gap_between.hpp"
+#include "all_generator.hpp"
+#include <android/api-level.h>
+#include <any>
+#include "api.hpp"
+#include <arpa/inet.h>
+#include <array>
+#include <asm/unistd.h>
+#include <assert.h>
+#include <atlbase.h>
+#include <atldef.h>
+#include <atlsimpstr.h>
+#include <atomic>
+#include <atomic.h>
+#include "attribute_set_impl.hpp"
+#include "autodiff_cpp11.hpp"
+#include <Availability.h>
+#include <AvailabilityMacros.h>
+#include <backtrace.h>
+#include "../bad_access.hpp"
+#include "base.hpp"
+#include <basetsd.h>
+#include <basetyps.h>
+#include "basic_outcome_exception_observers.hpp"
+#include "../basic_outcome.hpp"
+#include "basic_outcome.hpp"
+#include "basic_result_error_observers.hpp"
+#include "../basic_result.hpp"
+#include "basic_result.hpp"
+#include "basic_result_storage.hpp"
+#include "basic_result_value_observers.hpp"
+#include "basic_xml_grammar.hpp"
+#include "basic_xml_grammar.ipp"
+#include <bcrypt.h>
+#include "bit_operation_tools.hpp"
+#include <bits/atomicity.h>
+#include <bits/char_traits.h>
+#include <bitset>
+#include <bits/fenv.h>
+#include <bits/move.h>
+#include <bits/stl_algobase.h>
+#include <bits/stl_function.h>
+#include <bits/stl_move.h>
+#include <bits/stl_pair.h>
+#include "bit_tools.hpp"
+#include <blaze/math/dense/DynamicVector.h>
+#include <blaze/math/dense/StaticVector.h>
+#include "boost_outcome.hpp"
+#include "boost_result.hpp"
+#include "bufferobject.h"
+#include <builtins.h>
+#include "bytesobject.h"
+#include <byteswap.h>
+#include "bzlib.h"
+#include <c_asm.h>
+#include <cassert>
+#include<cassert>
+#include "category_table.hpp"
+#include <cctype>
+#include "cdata.hpp"
+#include "cellobject.h"
+#include <cerrno>
+#include "ceval.h"
+#include <cfloat>
+#include "../../char_traits.hpp"
+#include "char_traits.hpp"
+#include "checked_default.hpp"
+#include "checked_integer.hpp"
+#include "checked_result.hpp"
+#include "checked_result_operations.hpp"
+#include <chrono>
+#include <ciso646>
+#include "clang.hpp"
+#include "classobject.h"
+#include <clBLAS.h>
+#include <CL/cl_ext.h>
+#include <CL/cl_gl_ext.h>
+#include <CL/cl_gl.h>
+#include <CL/cl.h>
+#include <climits>
+#include <cmath>
+#include "cobject.h"
+#include "codecs.h"
+#include <codecvt>
+#include "codecvt.hpp"
+#include <comdef.h>
+#include <compare>
+#include <complex>
+#include "complexobject.h"
+#include "concept/exception_policy.hpp"
+#include "concept/integer.hpp"
+#include "concept/promotion_policy.hpp"
+#include <condition_variable>
+#include <__config>
+#include "../config.hpp"
+#include "config.hpp"
+#include "../../consts.hpp"
+#include "../consts.hpp"
+#include "consts.hpp"
+#include "containers/ptr_list.hpp"
+#include "../../containers/ptr_vector.hpp"
+#include "containers/ptr_vector.hpp"
+#include "conversion/char_state_machine.hpp"
+#include "convert.hpp"
+#include "conv.hpp"
+#include <coroutine>
+#include "coroutine.hpp"
+#include "c_policy.hpp"
+#include "cpp_re.inc"
+#include <cpuid.h>
+#include "cpuid.hpp"
+#include <crtdbg.h>
+#include <crtdefs.h>
+#include <crtl.h>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <ctype.h>
+#include <cuda.h>
+#include <cwchar>
+#include <cwctype>
+#include <cxxabi.h>
+#include <_cygwin.h>
+#include <cygwin/version.h>
+#include "dbgeng.h"
+#include <dbghelp.h>
+#include "default_filter_factory.hpp"
+#include "default_formatter_factory.hpp"
+#include "default_sink.hpp"
+#include <deque>
+#include "descrobject.h"
+#include "detail/basic_outcome_exception_observers.hpp"
+#include "detail/basic_outcome_exception_observers_impl.hpp"
+#include "detail/basic_outcome_failure_observers.hpp"
+#include "detail/basic_result_final.hpp"
+#include "detail/basic_result_storage.hpp"
+#include "detail/boolean_op_45.hpp"
+#include "detail/boolean_op.hpp"
+#include "detail/cl_versions.hpp"
+#include "../detail/coroutine_support.ipp"
+#include "detail/coroutine_support.ipp"
+#include "detail/iterator_compact_to_points.hpp"
+#include "detail/iterator_geometry_to_set.hpp"
+#include "detail/iterator_points_to_compact.hpp"
+#include "detail/max_cover.hpp"
+#include "detail/minkowski.hpp"
+#include "detail/nt_code_to_generic_code.ipp"
+#include "detail/nt_code_to_win32_code.ipp"
+#include "detail/polygon_45_formation.hpp"
+#include "detail/polygon_45_set_view.hpp"
+#include "detail/polygon_45_touch.hpp"
+#include "detail/polygon_90_set_view.hpp"
+#include "detail/polygon_90_touch.hpp"
+#include "detail/polygon_arbitrary_formation.hpp"
+#include "detail/polygon_formation.hpp"
+#include "detail/polygon_set_view.hpp"
+#include "detail/polygon_simplify.hpp"
+#include "detail/property_merge_45.hpp"
+#include "detail/property_merge.hpp"
+#include "detail/rectangle_formation.hpp"
+#include "detail/scan_arbitrary.hpp"
+#include "detail/trait_std_error_code.hpp"
+#include "../detail/trait_std_exception.hpp"
+#include "detail/trait_std_exception.hpp"
+#include "../detail/value_storage.hpp"
+#include "detail/version.hpp"
+#include "detail/voronoi_ctypes.hpp"
+#include "detail/voronoi_predicates.hpp"
+#include "detail/voronoi_structures.hpp"
+#include "detail/win32_code_to_generic_code.ipp"
+#include "dictobject.h"
+#include <dirent.h>
+#include <dlfcn.h>
+#include "dlmalloc_2_8_6.c"
+#include "dlmalloc_ext_2_8_6.c"
+#include <e_float/e_float.h>
+#include <eh.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <emmintrin.h>
+#include "../encoding/conv.hpp"
+#include <endian.h>
+#include "eof_iterator.hpp"
+#include "errno.h"
+#include <errno.h>
+#include "errored_status_code.hpp"
+#include "error_handling.hpp"
+#include "error.hpp"
+#include <exception>
+#include "exception.hpp"
+#include "exception_policies.hpp"
+#include <excpt.h>
+#include <execinfo.h>
+#include <experimental/coroutine>
+#include <experimental/memory_resource>
+#include <experimental/source_location>
+#include <experimental/string_view>
+#include "expression_evaluation.hpp"
+#include "expression.hpp"
+#include <ext/atomicity.h>
+#include "extents.hpp"
+#include <fcntl.h>
+#include <features.h>
+#include <fenv.h>
+#include <fftw3.h>
+#include "fileobject.h"
+#include <filesystem>
+#include "find_address.hpp"
+#include <float.h>
+#include "floatobject.h"
+#include "formatter.hpp"
+#include <forward_list>
+#include <fstream>
+#include <fstream.h>
+#include "funcobject.h"
+#include <functional>
+#include<functional>
+#include <functions/functions.h>
+#include "functions.hpp"
+#include <future>
+#include <gb_basic.h>
+#include <gb_books.h>
+#include <gb_dijk.h>
+#include <gb_econ.h>
+#include <gb_flip.h>
+#include <gb_games.h>
+#include <gb_gates.h>
+#include <gb_graph.h>
+#include <gb_io.h>
+#include <gb_lisa.h>
+#include <gb_miles.h>
+#include <gb_plane.h>
+#include <gb_raman.h>
+#include <gb_rand.h>
+#include <gb_roget.h>
+#include <gb_save.h>
+#include <gb_words.h>
+#include "generic_code.hpp"
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <gmpfrxx.h>
+#include <gmp.h>
+#include <gmpxx.h>
+#include "greg_names.hpp"
+#include "gregorian.hpp"
+#include <gsl/gsl_vector.h>
+#include "has_class.hpp"
+#include "has_data.hpp"
+#include "has_enum.hpp"
+#include "has_function.hpp"
+#include "has_function_template.hpp"
+#include "has_member_data.hpp"
+#include "has_member_function.hpp"
+#include "has_member_function_template.hpp"
+#include "has_static_member_data.hpp"
+#include "has_static_member_function.hpp"
+#include "has_static_member_function_template.hpp"
+#include "has_template.hpp"
+#include "has_type.hpp"
+#include "has_union.hpp"
+#include <hip/hip_runtime.h>
+#include <ia64intrin.h>
+#include "iconv_codepage.ipp"
+#include <iconv.h>
+#include "icu_backend.hpp"
+#include "../icu/icu_backend.hpp"
+#include "../icu/icu_util.hpp"
+#include "../icu/uconv.hpp"
+#include "icu_util.hpp"
+#include "id_formatting.hpp"
+#include <ieeefp.h>
+#include <imagehlp.h>
+#include <immintrin.h>
+#include "import.h"
+#include <../include/fenv.h>
+#include "index.hpp"
+#include <initializer_list>
+#include<initializer_list>
+#include "internals.hpp"
+#include "interval_concept.hpp"
+#include "interval_data.hpp"
+#include "interval.hpp"
+#include "interval_traits.hpp"
+#include "intobject.h"
+#include "intrcheck.h"
+#include <intrin.h>
+#include <inttypes.h>
+#include <io.h>
+#include <ioLib.h>
+#include <iomanip>
+#include<iomanip>
+#include <ios>
+#include <iosfwd>
+#include "ios_prop.hpp"
+#include <iostream>
+#include<iostream>
+#include <iostream.h>
+#include "ipc_sync_wrappers.hpp"
+#include "isotropy.hpp"
+#include "./is_std_hash_map.hpp"
+#include "./is_std_hash_set.hpp"
+#include "./is_std_list.hpp"
+#include "./is_std_map.hpp"
+#include "./is_std_set.hpp"
+#include <istream>
+#include "./is_unordered_set_or_map.hpp"
+#include <iterator>
+#include "iterobject.h"
+#include <jerror.h>
+#include <jpeglib.h>
+#include "jump_i386_sysv_macho_gas.S"
+#include "jump_ppc32_sysv_macho_gas.S"
+#include "jump_ppc64_sysv_macho_gas.S"
+#include "jump_x86_64_sysv_macho_gas.S"
+#include <kfuncs.h>
+#include <langinfo.h>
+#include "lcid.hpp"
+#include <LEDA/graph/graph.h>
+#include <LEDA/graph/node_array.h>
+#include <LEDA/graph/node_map.h>
+#include <libkern/OSAtomic.h>
+#include <libraw/libraw.h>
+#include <libs/regex/test/config_info/regex_config_info.cpp>
+#include <limits>
+#include "limits.h"
+#include <limits.h>
+#include <link.h>
+#include <linux/futex.h>
+#include <linux/stat.h>
+#include <linux/version.h>
+#include <list>
+#include "listobject.h"
+#include <lmcons.h>
+#include <locale>
+#include "locale_data.hpp"
+#include <locale.h>
+#include "longobject.h"
+#include "lowercase_table.hpp"
+#include <lzma.h>
+#include <machine/builtins.h>
+#include <machine/endian.h>
+#include <machine/sys/inline.h>
+#include <mach/kern_return.h>
+#include <mach/mach_time.h>
+#include <mach-o/dyld.h>
+#include <mach-o/nlist.h>
+#include <mach/thread_act.h>
+#include "make_i386_sysv_macho_gas.S"
+#include "make_ppc32_sysv_macho_gas.S"
+#include "make_ppc64_sysv_macho_gas.S"
+#include "make_x86_64_sysv_macho_gas.S"
+#include <malloc.h>
+#include <map>
+#include <math.h>
+#include "member_type.hpp"
+#include  <memory>
+#include <memory>
+#include <memory_resource>
+#include "methodobject.h"
+#include <_mingw.h>
+#include <mkl_cblas.h>
+#include <mmintrin.h>
+#include "modsupport.h"
+#include "moduleobject.h"
+#include "mo_hash.hpp"
+#include "mo_lambda.hpp"
+#include <monetary.h>
+#include <mpc.h>
+#include <mpfi.h>
+#include <mpfr.h>
+#include <mpi.h>
+#include <mpreal.h>
+#include <msl_utility>
+#include <mswsock.h>
+#include "multi_index_utility.hpp"
+#include "multiplication.hpp"
+#include "murmur3.hpp"
+#include <mutex>
+#include "native.hpp"
+#include <netdb.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <new>
+#include "node.hpp"
+#include <nt2/core/container/table/table.hpp>
+#include <nt2/include/functions/abs.hpp>
+#include <nt2/include/functions/globalmax.hpp>
+#include "nt_code.hpp"
+#include <NTL/RR.h>
+#include <ntverp.h>
+#include <numeric>
+#include "numeric.hpp"
+#include <numpy/arrayobject.h>
+#include <numpy/ufuncobject.h>
+#include "num_token.hpp"
+#include "object.h"
+#include "objimpl.h"
+#include <omp.h>
+#include "./once_atomic.cpp"
+#include "ontop_i386_sysv_macho_gas.S"
+#include "ontop_ppc32_sysv_macho_gas.S"
+#include "ontop_ppc64_sysv_macho_gas.S"
+#include "ontop_x86_64_sysv_macho_gas.S"
+#include <OpenCL/cl_ext.h>
+#include <OpenCL/cl_gl_ext.h>
+#include <OpenCL/cl_gl.h>
+#include <OpenCL/cl.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/ocl/ocl.hpp>
+#include <OpenGL/gl.h>
+#include <OpenGL/OpenGL.h>
+#include <openssl/conf.h>
+#include <openssl/dh.h>
+#include <openssl/engine.h>
+#include <openssl/err.h>
+#include <openssl/rsa.h>
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
+#include "operators_v1.hpp"
+#include <optional>
+#include <osreldate.h>
+#include <ostream>
+#include <ostream.h>
+#include "outcome/coroutine_support.hpp"
+#include "outcome.hpp"
+#include "outcome/iostream_support.hpp"
+#include "outcome/try.hpp"
+#include "parser/parser.hpp"
+#include "../parser/tree/node.hpp"
+#include "parser/tree/node.hpp"
+#include "parser_utils.hpp"
+#include "partition/charset.hpp"
+#include "partition/equivset.hpp"
+#include "patchlevel.h"
+#include <patchlevel.h>
+#include <pch.hpp>
+#include "platform_config.hpp"
+#include <pmmintrin.h>
+#include <png.h>
+#include "point_concept.hpp"
+#include "point_data.hpp"
+#include "point_traits.hpp"
+#include "policy/all_narrow.hpp"
+#include "../policy/base.hpp"
+#include "../policy/fail_to_compile_observers.hpp"
+#include "policy/fail_to_compile_observers.hpp"
+#include "policy/outcome_error_code_throw_as_system_error.hpp"
+#include "policy/outcome_exception_ptr_rethrow.hpp"
+#include "policy/result_error_code_throw_as_system_error.hpp"
+#include "policy/result_exception_ptr_rethrow.hpp"
+#include "policy/terminate.hpp"
+#include "policy/throw_bad_result_access.hpp"
+#include <poll.h>
+#include "polygon_45_data.hpp"
+#include "polygon_45_set_concept.hpp"
+#include "polygon_45_set_data.hpp"
+#include "polygon_45_set_traits.hpp"
+#include "polygon_45_with_holes_data.hpp"
+#include "polygon_90_data.hpp"
+#include "polygon_90_set_concept.hpp"
+#include "polygon_90_set_data.hpp"
+#include "polygon_90_set_traits.hpp"
+#include "polygon_90_with_holes_data.hpp"
+#include "polygon_data.hpp"
+#include "polygon.hpp"
+#include "polygon_set_concept.hpp"
+#include "polygon_set_data.hpp"
+#include "polygon_set_traits.hpp"
+#include "polygon_sort_adaptor.hpp"
+#include "polygon_traits.hpp"
+#include "polygon_with_holes_data.hpp"
+#include "posix_backend.hpp"
+#include "posix_code.hpp"
+#include "../posix/posix_backend.hpp"
+#include "predefined_formatters.hpp"
+#include <process.h>
+#include <procfs.h>
+#include <psapi.h>
+#include <pth.h>
+#include <pthread.h>
+#include <pthread_np.h>
+#include <pwd.h>
+#include "pyconfig.h"
+#include <pyconfig.h>
+#include "pydebug.h"
+#include "pyerrors.h"
+#include "pyfpe.h"
+#include "pymem.h"
+#include "pyport.h"
+#include "pystate.h"
+#include <Python.h>
+#include "pythonrun.h"
+#include <QImage>
+#include <QPoint>
+#include <QPointF>
+#include "quadmath.h"
+#include <quadmath.h>
+#include <queue>
+#include "quick_status_code_from_enum.hpp"
+#include <QVector>
+#include <random>
+#include "rangeobject.h"
+#include <ranges>
+#include <ratio>
+#include "rectangle_concept.hpp"
+#include "rectangle_data.hpp"
+#include "rectangle_traits.hpp"
+#include <regex>
+#include "request_with_value.hpp"
+#include "result_error_code_throw_as_system_error.hpp"
+#include "result_exception_ptr_rethrow.hpp"
+#include "result.hpp"
+#include "re_tokeniser_helper.hpp"
+#include "re_tokeniser_state.hpp"
+#include <robuffer.h>
+#include <rope>
+#include "rules.hpp"
+#include "../../runtime_error.hpp"
+#include "../runtime_error.hpp"
+#include "runtime_error.hpp"
+#include "safe_base.hpp"
+#include "safe_base_operations.hpp"
+#include "safe_common.hpp"
+#include "safe_compare.hpp"
+#include "safe_integer.hpp"
+#include <sched.h>
+#include <scoped_allocator>
+#include "script_table.hpp"
+#include "search_colors.hpp"
+#include <security.h>
+#include "segment_concept.hpp"
+#include "segment_data.hpp"
+#include "segment_traits.hpp"
+#include "segment_utils.hpp"
+#include <semaphore.h>
+#include <set>
+#include <setjmp.h>
+#include "../shared/mo_hash.hpp"
+#include <shared_mutex>
+#include <shellapi.h>
+#include <signal.h>
+#include "../../size_t.hpp"
+#include "../size_t.hpp"
+#include "size_t.hpp"
+#include "sliceobject.h"
+#include <slist>
+#include <smmintrin.h>
+#include <sort/tools/spinlock.hpp>
+#include <source_location>
+#include <span>
+#include "spirit_encoding.hpp"
+#include <sstream>
+#include <stack>
+#include "stateless_allocator.hpp"
+#include "state_machine.hpp"
+#include "status_code_domain.hpp"
+#include "status_code.hpp"
+#include "status_code_ptr.hpp"
+#include "status-code/system_code_from_exception.hpp"
+#include "status-code/system_error2.hpp"
+#include "status_error.hpp"
+#include "status_result.hpp"
+#include <stdarg.h>
+#include "std_backend.hpp"
+#include <stddef.h>
+#include <stdexcept>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "std_outcome.hpp"
+#include "std_result.hpp"
+#include "../std/std_backend.hpp"
+#include "storage_traits.hpp"
+#include <streambuf>
+#include <streambuf.h>
+#include "strict_cpp_re.inc"
+#include "strides.hpp"
+#include <string>
+#include <string.h>
+#include "stringobject.h"
+#include <strings.h>
+#include "../../string_token.hpp"
+#include "../string_token.hpp"
+#include "string_token.hpp"
+#include <string_view>
+#include <strstream>
+#include <structmember.h>
+#include "../success_failure.hpp"
+#include "success_failure.hpp"
+#include <sys/atomic_op.h>
+#include <sys/cpuset.h>
+#include <sys/cygwin.h>
+#include <sys/devpoll.h>
+#include <sys/endian.h>
+#include <sys/epoll.h>
+#include <sys/errno.h>
+#include <sys/eventfd.h>
+#include <sys/event.h>
+#include <sys/file.h>
+#include <sys/filio.h>
+#include <sys/futex.h>
+#include <sys/ioctl.h>
+#include <sys/ipc.h>
+#include <sys/lgrp_user.h>
+#include <sysLib.h>
+#include <sys/link.h>
+#include <sys/locking.h>
+#include <syslog.h>
+#include <sys/mman.h>
+#include "sysmodule.h"
+#include <sys/mount.h>
+#include <sys/mpctl.h>
+#include <sys/param.h>
+#include <sys/poll.h>
+#include <sys/processor.h>
+#include <sys/procset.h>
+#include <sys/pthread.h>
+#include <sys/ptrace.h>
+#include <sys/random.h>
+#include <sys/resource.h>
+#include <sys/rset.h>
+#include <sys/select.h>
+#include <sys/sendfile.h>
+#include <sys/shm.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <sys/syscall.h>
+#include <sys/sysctl.h>
+#include <sys/sysinfo.h>
+#include "system_code.hpp"
+#include <system_error>
+#include <sys/thread.h>
+#include <sys/time.h>
+#include <sys/timerfd.h>
+#include <sys/times.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/umtx.h>
+#include <sys/un.h>
+#include <sys/utime.h>
+#include <sys/utsname.h>
+#include <sys/vfs.h>
+#include <sys/wait.h>
+#include <TargetConditionals.h>
+#include <tchar.h>
+#include "tensor/extents.hpp"
+#include "tensor/functions.hpp"
+#include "tensor/operators_arithmetic.hpp"
+#include "tensor/operators_comparison.hpp"
+#include "tensor/ostream.hpp"
+#include "tensor/strides.hpp"
+#include "tensor/tensor.hpp"
+#include <termios.h>
+#include <thread>
+#include <thread.h>
+#include <thrust/device_vector.h>
+#include <thrust/distance.h>
+#include <thrust/for_each.h>
+#include <thrust/host_vector.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/system/cpp/vector.h>
+#include <thrust/system/cuda/vector.h>
+#include <thrust/system/omp/vector.h>
+#include <thrust/system/tbb/vector.h>
+#include <thrust/tuple.h>
+#include <thrust/version.h>
+#include <tickLib.h>
+#include "tiff.h"
+#include <tiff.h>
+#include "tiffio.h"
+#include <tiffio.h>
+#include <tiffio.hxx>
+#include <time.h>
+#include "time_zone.hpp"
+#include "timezone.hpp"
+#include <tmmintrin.h>
+#include "tokeniser/re_tokeniser.hpp"
+#include <tommath.h>
+#include "traceback.h"
+#include "../trait.hpp"
+#include "transform.hpp"
+#include "tree/end_node.hpp"
+#include "tree/iteration_node.hpp"
+#include "tree/leaf_node.hpp"
+#include "tree/selection_node.hpp"
+#include "tree/sequence_node.hpp"
+#include <tuple>
+#include "tupleobject.h"
+#include <typeindex>
+#include <typeinfo>
+#include <types.h>
+#include <type_traits>
+#include <typetraits>
+#include <type_traits.h>
+#include <ucontext.h>
+#include "uconv_codepage.ipp"
+#include "uconv.hpp"
+#include <unicode/brkiter.h>
+#include <unicode/calendar.h>
+#include <unicode/coll.h>
+#include <unicode/datefmt.h>
+#include <unicode/decimfmt.h>
+#include <unicode/gregocal.h>
+#include <unicode/locid.h>
+#include <unicode/normlzr.h>
+#include <unicode/numfmt.h>
+#include "unicodeobject.h"
+#include <unicode/rbbi.h>
+#include <unicode/rbnf.h>
+#include <unicode/smpdtfmt.h>
+#include <unicode/stringpiece.h>
+#include <unicode/ucasemap.h>
+#include <unicode/uchar.h>
+#include <unicode/ucnv_err.h>
+#include <unicode/ucnv.h>
+#include <unicode/unistr.h>
+#include <unicode/ustring.h>
+#include <unicode/utext.h>
+#include <unicode/utf16.h>
+#include <unicode/utf.h>
+#include <unicode/utypes.h>
+#include <unicode/uversion.h>
+#include "unique_ptr.hpp"
+#include <unistd.h>
+#include <unordered_map>
+#include <unordered_set>
+#include <unwind.h>
+#include "uppercase_table.hpp"
+#include "/usr/include/malloc.h"
+#include "../util/gregorian.hpp"
+#include "../util/iconv.hpp"
+#include <utility>
+#include "utility.hpp"
+#include "../util/locale_data.hpp"
+#include "../util/numeric.hpp"
+#include "utils.hpp"
+#include <utime.h>
+#include <valarray>
+#include <valgrind/memcheck.h>
+#include <valgrind/valgrind.h>
+#include "value_storage.hpp"
+#include <variant>
+#include <vector>
+#include <version>
+#include <version.h>
+#include <vexcl/multivector.hpp>
+#include <vexcl/operations.hpp>
+#include <vexcl/reductor.hpp>
+#include <vexcl/vector.hpp>
+#include <viennacl/generator/custom_operation.hpp>
+#include <viennacl/vector.hpp>
+#include "voronoi_builder.hpp"
+#include "voronoi_diagram.hpp"
+#include "voronoi_geometry_type.hpp"
+#include "voronoi_robust_fpt.hpp"
+#include <vsbConfig.h>
+#include <vtkDataArray.h>
+#include <vtkDataArrayTemplate.h>
+#include <vtkMatrix4x4.h>
+#include <vtkPoints.h>
+#include <vxAtomicLib.h>
+#include <vxCpuLib.h>
+#include <wchar.h>
+#include "wconv_codepage.ipp"
+#include <wctype.h>
+#include "weakrefobject.h"
+#include "win32_code.hpp"
+#include "../win32/lcid.hpp"
+#include "../win32/win_backend.hpp"
+#include <winapifamily.h>
+#include "win_backend.hpp"
+#include <wincrypt.h>
+#include "windows/auto_handle.hpp"
+#include "windows/event_log_registry.hpp"
+#include "windows_file_codecvt.hpp"
+#include <windows.h>
+#include <Windows.h>
+#include "windows/ipc_sync_wrappers.hpp"
+#include "windows/mapped_shared_memory.hpp"
+#include "windows/simple_event_log.h"
+#include <windows.storage.streams.h>
+#include <windows.system.threading.h>
+#include "windows_tools.hpp"
+#include "windows/utf_code_conversion.hpp"
+#include <winerror.h>
+#include <winnt.h>
+#include <winreg.h>
+#include <winsock2.h>
+#include <Winternl.h>
+#include <wolfssl/options.h>
+#include <wrl\client.h>
+#include <wrl\event.h>
+#include <wrl\ftm.h>
+#include <wrl/implements.h>
+#include <wrl\wrappers\corewrappers.h>
+#include <ws2tcpip.h>
+#include "x86_vector_tools.hpp"
+#include <xlocale.h>
+#include "xmmintrin.h"
+#include <xmmintrin.h>
+#include <xutility>
+#include "zlib.h"
+#include <zlib.h>
+#include <zstd.h>

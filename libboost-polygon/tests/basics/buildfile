@@ -1,0 +1,3 @@
+import libs = libboost-polygon%lib{boost_polygon}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

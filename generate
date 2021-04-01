@@ -65,7 +65,7 @@ boostver="$(($r / 100000)).$((($r / 100) % 1000)).$(($r % 100))"
 #
 rm -rf .gitignore .gitattributes \
        .bdep buildfile repositories.manifest packages.manifest \
-       levels boostdep libboost-*
+       levels dependencies boostdep libboost-*
 
 # Compile boostdep.
 #
@@ -110,9 +110,21 @@ c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
 # numeric~conversion.
 #
 # `boostdep` classifies the inclusion of a header as a dependency on the
-# "(unknown)" library (which will naturally always be at level 0) if it is not
-# under `<lib>/include` (presumably implementation headers). For example,
-# `boost/uuid/sha1.hpp`, `boost/geometry/index/rtree/kmeans/split.hpp`, etc.
+# "(unknown)" library (which will naturally always be at level 0) if it did
+# not find the included header under any of the
+# `upstream/libs/<lib>/include/boost/` directories during its header-indexing
+# search. This is usually the result of headers having been (re)moved or, in a
+# handful of cases, belonging to optional external libraries. The (re)moved
+# headers are normally included conditionally for some outdated configurations
+# and their inclusions are picked up by `boostdep` since it doesn't handle the
+# `#if` preprocessor directive. In general, the include paths triggering
+# "(unknown)" cannot refer to any header that is part of a current and
+# complete Boost distribution because it is a project-wide requirement that
+# headers reside under `upstream/libs/<lib>/include/boost/` and this is below
+# the starting point of `boostdep`'s header-indexing search. To get a list of
+# these headers run:
+#
+#   ./boostdep --boost-root upstream --list-missing-headers
 #
 # Our output file, `levels`, contains one dependency level's libraries per
 # line, starting at level 0, with each level's libraries separated by spaces,
@@ -150,19 +162,52 @@ done > levels
 
 echo >> levels # Terminate the last line.
 
-# Build2 package names: each package name is derived from the `boostdep` name
-# (see above) by prefixing it with "libboost-" and replacing all underscores
-# and tildes with hyphens. For example:
+# Convert a library name in `boostdep` format (see above) to a build2 package
+# name and write it to stdout.
 #
-#   callable_traits  -> libboost-callable-traits
+# The build2 package name is derived from the `boostdep` name by prefixing it
+# with "libboost-" and replacing all underscores and tildes with hyphens. For
+# example:
+#
 #   compatibility    -> libboost-compatibility
+#   callable_traits  -> libboost-callable-traits
 #   numeric~interval -> libboost-numeric-interval
 #
-# This script uses this format (which we will call "our") everywhere except
-# for the `levels` file where we keep the original and the library target
-# names where dashes are replaced with underscores (for compatibility with
-# system-installed library names).
+# This script uses this format (which we will call "our") everywhere with a
+# few exceptions: the `levels` and `dependencies` files and the values (not
+# keys) in the `intf_deps` and `impl_deps` associative arrays, in both of
+# which cases we keep the original; and library build target names where, for
+# compatibility with system-installed library names, we use what is
+# essentially the upstream name (see `upstream_name()`).
 #
+function pkg_name () # <library-name>
+{
+  echo "libboost-$(sed -Ee "s%[~_]%-%g" <<<"$1")"
+}
+
+# Convert a library name in `boostdep` format (see above) to an upstream
+# library name and write it to stdout.
+#
+# In the majority of cases the upstream library name is identical to the
+# `boostdep` name, except for those few libraries whose directories are not
+# directly under `upstream/libs/`, in which cases `boostdep`'s tildes are
+# replaced with underscores. For example:
+#
+#   numeric~foo_bar -> numeric_foo_bar
+#
+# Note that all of the libraries under `upstream/libs/numeric/` will be given
+# this "numeric_" prefix whereas the Boost project only applies it to
+# `numeric/conversion` (for example, they use just `ublas` and
+# `interval`). But our way is more consistent and works out simpler for our
+# purposes (they are header-only so there is no issues with binary library
+# names). Because this divergence is limited to a tiny minority of libraries,
+# "upstream_name" is still considered to be an appropriate name for this
+# function.
+#
+function upstream_name () # <library-name>
+{
+  echo "$(sed -Ee "s%~%_%g" <<<"$1")"
+}
 
 # Read the library exclusions list from the file named `exclude` into the
 # `lib_excl` associative array.
@@ -219,6 +264,7 @@ function ised () # <file-path> <sed-option>...
 # overrides semantics.
 #
 declare -A manifest_url=()
+declare -A manifest_builds=()
 source override
 
 # The Boost version, but formatted for use in the `doc-url` package manifest
@@ -269,12 +315,196 @@ function detect_lang () # <lib-dir-path>
   fi
 }
 
+# Determine the dependencies between Boost libraries. Create a mapping from
+# each Boost library to the other Boost libraries it depends on.
+#
+# `boostdep --module-overview` outputs the dependencies (other Boost libraries
+#  only) of each Boost library in the following format (dependent to the left
+#  and dependencies to the right of the arrow):
+#
+#    ...
+#    align -> assert config core static_assert
+#    any -> config core static_assert throw_exception type_index type_traits
+#    array -> assert config core static_assert throw_exception
+#    ...
+#
+# Note that `boostdep` sorts the dependent and dependency library names
+# alphabetically (a fact that we take advantage of later).
+#
+# By default `boostdep` searches only header files for include statements
+# (that is, it outputs only interface dependencies) but it will also search
+# source files if the `--track-sources` flag is passed and thus we can get it
+# to additionally include implementation dependencies in the output.
+#
+# Classify dependencies as interface or implementation by first outputting the
+# interface dependencies only and storing those in `intf_deps`, an associative
+# array indexed by the build2 package name and with values taken directly from
+# the right-hand side of the arrow in the `boostdep` output above. For
+# example:
+#
+#   ...
+#   [libboost-align]="assert config core static_assert"
+#   [libboost-any]="config core static_assert throw_exception..."
+#   [libboost-array]="assert config core static_assert throw_exception"
+#   ...
+#
+# Then run `boostdep` again, this time including implementation dependencies
+# in the output. For each dependency, if it is already in `intf_deps` then its
+# interface dependency status takes precedence; otherwise it is an
+# implementation(-only) dependency and is added to the `impl_deps` associative
+# array (which has the same structure as `intf_deps`).
+#
+# Also write each library's interface and implementation dependencies to a
+# file called `dependencies` to be put under version control in order to alert
+# us to dependency changes.
+#
+# The file has two lines for each library: the first for its interface
+# dependencies and the second for its implementation dependencies. Each line
+# begins with the library name followed by a colon and, if there are
+# dependencies of that type, a space followed by the space-separated list of
+# dependencies. The lines are sorted alphabetically by library name. All
+# library names are in the `boostdep` format. For example:
+#
+#   ...
+#   assert: config
+#   assert:
+#   assign: array config core move mpl preprocessor...
+#   assign:
+#   atomic: assert config static_assert type_traits winapi
+#   atomic: align predef preprocessor
+#   ...
+#
+# This format was designed for line-based diffs.
+#
+declare -A intf_deps=() # Interface dependencies for all libraries.
+declare -A impl_deps=() # Implementation dependencies for all libraries.
+
+# Gather interface dependencies for all libraries.
+#
+./boostdep --boost-root upstream \
+           --module-overview | while read line; do
+  if [[ "$line" =~ (.+)" -> "(.+) && -n "${BASH_REMATCH[2]}" ]]; then
+    pn="$(pkg_name ${BASH_REMATCH[1]})" # build2 package name.
+
+    # Remove the "(unknown)" dependency using the Bash pattern substitution
+    # parameter expansion form.
+    #
+    # Note that we add the leading space to ease serialization into the
+    # dependencies file (see below).
+    #
+    intf_deps["$pn"]=" ${BASH_REMATCH[2]/(unknown) /}"
+  fi
+done
+
+# Gather implementation dependencies for all libraries.
+#
+# Also write the `dependencies` file in this loop in order to take advantage
+# of the fact that the dependent library names are already sorted
+# alphabetically in `boostdep`'s output.
+#
+# Note that --track-sources must be specified before --module-overview.
+#
+./boostdep --boost-root upstream \
+           --track-sources \
+           --module-overview | while read line; do
+  if [[ "$line" =~ (.+)" -> "(.+) ]]; then
+    lib="${BASH_REMATCH[1]}"              # Library name in `boostdep` format.
+    pn="$(pkg_name $lib)"                 # build2 package name.
+    deps=(${BASH_REMATCH[2]/(unknown) /}) # Dependencies minus "(unknown)".
+
+    # Exclude implementation dependencies that are also interface dependencies
+    # because the latter takes precedence.
+    #
+    ifdeps=(${intf_deps["$pn"]}) # Interface dependencies for this package.
+    for i in "${!deps[@]}"; do
+      for d in "${ifdeps[@]}"; do
+        if [[ "$d" == "${deps[$i]}" ]]; then
+          unset "deps[$i]"
+          break
+        fi
+      done
+    done
+
+    # Save the dependencies in `impl_deps`, if any.
+    #
+    if [[ "${#deps[@]}" -ne 0 ]]; then
+      impl_deps["$pn"]=" ${deps[@]}"
+    fi
+
+    # Now that we have all interface and all implementation dependencies for
+    # this library, append them to the `dependencies` file.
+    #
+    echo "$lib:${intf_deps[$pn]}" >> dependencies
+    echo "$lib:${impl_deps[$pn]}" >> dependencies
+  fi
+done
+
+# Add dependencies to a library's package manifest and buildfiles.
+#
+# The <manifest> and <buildfile> arguments are the paths to the files to
+# edit. The <deps> argument is a space-separated list of the package's
+# dependencies in the `boostdep` name format. The <bf-var> argument is the
+# name of the buildfile variable to modify: either "intf_libs" or "impl_libs".
+#
+function add_deps () # <manifest> <buildfile> <deps> <bf-var>
+{
+  local mf="$1"   # Path to the manifest.
+  local bf="$2"   # Path to the buildfile.
+  local deps=($3) # Dependencies (`boostdep` format).
+  local vn="$4"   # Buildfile variable name.
+
+  # Build a list of editing scripts for each file, then pass them all at once
+  # to `sed`, thus invoking it only once per file.
+  #
+  local mscr=() # Sed scripts for the package manifest.
+  local bscr=() # Sed scripts for the library buildfile.
+
+  local i
+  for i in "${!deps[@]}"; do
+    local d="${deps[$i]}"             # Dependency in `boostdep` format.
+    local dpn="$(pkg_name "$d")"      # Dependency's build2 package name.
+    local dun="$(upstream_name "$d")" # Dependency upstream name.
+
+    # Append the current dependency to the package manifest in a new line.
+    #
+    mscr+=(-e "/^depends: \* bpkg/adepends: $dpn == $")
+
+    # Update the "(intf|impl)_libs = ..." Buildfile variable with the current
+    # dependency.
+    #
+    # @@ TODO: make this conditional if the dependency is only required under
+    #    some circumstances. For example, libboost-winapi is only built on
+    #    Windows so don't depend on it unless building on Windows. Maybe we
+    #    can reuse the manifest_builds overrides for that somehow? We also
+    #    still lack the corresponding mechanism in manifest (conditional
+    #    dependencies).
+    #
+    local dt="$dpn%lib\{boost_$dun\}" # Dependency text.
+    if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
+      local a=" = " # The formatted assignment operator.
+      if [[ "${#deps[@]}" -gt 1 ]]; then
+        a="  = " # More deps coming, so adjust to align with " += "
+      fi
+      bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
+    else # Subsequent dependencies: update/append to variable.
+      bscr+=(-e "/^import $vn.*/aimport $vn += $dt")
+    fi
+  done
+
+  # Edit the files if there are dependencies.
+  #
+  if [[ "${#deps[@]}" -ne 0 ]]; then
+    ised "$mf" "${mscr[@]}"
+    ised "$bf" "${bscr[@]}"
+  fi
+}
+
 # Generate a build2 project/package for each Boost library and add them as
 # packages to the root project.
 #
 # Do one dependency level at a time, starting at level 0.
 #
-# @@ Currently for dependency level 0 only.
+# @@ Currently for dependency levels 0-1 only.
 #
 # @@ Package manifest values yet to be customized:
 #
@@ -283,7 +513,7 @@ function detect_lang () # <lib-dir-path>
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -eq 0 ]] && read line; do
+cat levels | while [[ "$level" -le 1 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -293,26 +523,8 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
   for lib in "${libs[@]}"; do
     udn="$(sed -Ee "s%~%/%g" <<<"$lib")" # Upstream directory name.
     udp="upstream/libs/$udn"             # Upstream directory path.
-
-    # Upstream library name. Replace '/' with '_' for the few libraries that
-    # are in subdirectories of `upstream/libs`. For example:
-    #
-    #   numeric/ublas    -> numeric_ublas
-    #
-    # Note that the libraries under `upstream/libs/numeric/` will be given
-    # values such as `numeric_ublas` here, whereas the Boost project only
-    # applies the "numeric_" prefix to `numeric/conversion` (for example, they
-    # use just `ublas` and `interval`). But our way is more consistent and
-    # works out simpler for our purposes (they are header-only so there is no
-    # issues with binary library names). Given that the divergence is limited
-    # to those few libraries in `numeric/`, "upstream library name" is still
-    # considered to be an appropriate name for this variable.
-    #
-    un="$(sed -Ee "s%/%_%g" <<<"$udn")"
-
-    # Build2 package name (for example, `libboost-callable-traits`).
-    #
-    pn="libboost-$(sed -Ee s/_/-/g <<<"$un")"
+    un="$(upstream_name "$lib")"         # Upstream library name.
+    pn="$(pkg_name "$lib")"              # build2 package name.
 
     # Skip this library if it's in the exclusion list.
     #
@@ -323,7 +535,7 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
 
     # Skip compiled libraries for the time being.
     #
-    # @@ None of the ones at level 0 happen to be compiled.
+    # @@ None of the ones at levels 0-1 happen to be compiled.
     #
     if [[ -d "$udp/src" ]]; then
       info "skipping $pn (compiled libraries not yet supported)"
@@ -365,7 +577,12 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
     # Detect binless libraries. (See `detect_lang()` for why we only check for
     # the presence of the `src` directory).
     #
-    if [[ ! -d "$udp/src" ]]; then
+    lib_bfile= # Buildfile which declares the library target.
+
+    if [[ -d "$pn/src" ]]; then # Binful library.
+      lib_bfile="$pn/src/buildfile"
+    else                        # Binless library.
+      lib_bfile="$pn/include/boost/buildfile"
       to+=",binless"
     fi
 
@@ -405,7 +622,7 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
       ln -s "../../../$f" "$pn/include/boost/"
     done
 
-    # Derive the project url manifest value (see the override file for
+    # Derive the project url package manifest value (see the override file for
     # deviations).
     #
     if [[ -v "manifest_url[$pn]" ]]; then
@@ -424,18 +641,27 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
     #
     doc_url="https://www.boost.org/doc/libs/$doc_url_ver/libs/$udn"
 
+    ised_ops=(\
+      -e "s%^(version:).+%\1 $boostver$version_suffix%" \
+      -e "s%^(url:).+%\1 $url%" \
+      -e "/^url:/adoc-url: $doc_url" \
+      -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%" \
+      -e "s%^#(build-error-email:).+%\1 builds@build2.org%" \
+      -e "/^#depends:/d" \
+      -e "/^license:/atopics: C++, Boost" \
+      -e "/^url:/apackage-url: https://github.com/build2-packaging/boost" \
+      -e "/^email:/apackage-email: packaging@build2.org ; Mailing list.")
+
+    # The `builds` package manifest value (see the override file for
+    # deviations).
+    #
+    if [[ -v "manifest_builds[$pn]" ]]; then
+      ised_ops+=(-e "/build-error-email/abuilds: ${manifest_builds[$pn]}")
+    fi
+
     # Fix up the package manifest.
     #
-    ised "$pn/manifest" \
-         -e "s%^(version:).+%\1 $boostver$version_suffix%" \
-         -e "s%^(url:).+%\1 $url%" \
-         -e "/^url:/adoc-url: $doc_url" \
-         -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%" \
-         -e "s%^#(build-error-email:).+%\1 builds@build2.org%" \
-         -e "/^#depends:/d" \
-         -e "/^license:/atopics: C++, Boost" \
-         -e "/^url:/apackage-url: https://github.com/build2-packaging/boost" \
-         -e "/^email:/apackage-email: packaging@build2.org ; Mailing list."
+    ised "$pn/manifest" "${ised_ops[@]}"
 
     # Fix up package buildfile(s).
     #
@@ -449,41 +675,69 @@ cat levels | while [[ "$level" -eq 0 ]] && read line; do
     # simplify the `sed` script.
     #
     ss="s%lib\{${pn#lib}\}%lib\{boost_$un\}%g" # Sed script.
-    ised "$pn/include/boost/buildfile" -e "$ss"
-    ised "$pn/tests/basics/buildfile"  -e "$ss"
+    ised "$lib_bfile"                 -e "$ss"
+    ised "$pn/tests/basics/buildfile" -e "$ss"
+
+    # Add dependencies to the package manifest and the library buildfile.
+    #
+    add_deps "$pn/manifest" "$lib_bfile" "${intf_deps[$pn]}" "intf_libs"
+    add_deps "$pn/manifest" "$lib_bfile" "${impl_deps[$pn]}" "impl_libs"
 
     # Create smoke test (by modifying the test generated by `bdep-new`).
     #
-    # For now we just include the super-header (a single header which includes
-    # all of its headers) from the driver's source file and, if it compiles,
-    # we could not have missed any headers. (But while developing, remember to
-    # ensure that your system Boost installation isn't masking breakages.)
+    # For now we just include the library's header(s) from the test driver's
+    # source file and, if it compiles, we could not have missed any
+    # headers. (But while developing, remember to ensure that your system
+    # Boost installation isn't masking breakages.)
     #
 
-    # Look for this library's "super-header".
+    # Build the include directive(s) appropriate for this library. If it
+    # exists, include only the super-header (a single header which includes
+    # all of its headers), otherwise include all headers in
+    # `boost/include/<lib>/` and `boost/include/`.
     #
-    # Based on inspection, the informal convention seems to be for each
-    # library to put its super-header either at `include/boost/<lib>.hpp` or
-    # `include/boost/<lib>/<lib>.hpp`. A minority of libraries do not conform;
-    # we'll add exceptions/overrides for these when we get to them. (If there
-    # were a formal convention I would expect it to be referenced by
-    # https://www.boost.org/development/requirements.html.)
+    # Based on inspection, the informal convention seems to be that Boost
+    # libraries should provide super-headers and that it should be located
+    # either at `include/boost/<lib>.hpp` or
+    # `include/boost/<lib>/<lib>.hpp`. Only a minority of libraries do not
+    # conform. (If there were a formal convention I would expect it to be
+    # referenced by https://www.boost.org/development/requirements.html.)
     #
-    sh= # The super-header path, relative to `include/boost/`.
+    # For reference, here are some of the non-conforming libraries and the
+    # ways in which they break the convention:
+    #
+    #   - Libraries with con-conforming super-header names: Exception
+    #     (`include/boost/exception/all.hpp`)
+    #
+    #   - Libraries that put non-super header(s) under `include/boost/`:
+    #     Conversion, Iterator, Unordered, Math, Core, Multi-Index, ...
+    #
+    #   - Libraries that have what looks like a super-header but which doesn't
+    #     actually include all of its headers: Utility
+    #
+    incl= # The include statement(s).
     if [[ -f "$pn/include/boost/$udn.$he" ]]; then
-      sh="$udn.$he"
+      incl="#include <boost/$udn.$he>"$'\n'
     elif [[ -f "$pn/include/boost/$udn/$udn.$he" ]]; then
-      sh="$udn/$udn.$he"
+      incl="#include <boost/$udn/$udn.$he>"$'\n'
     else
-      error "no super-header found for $pn"
+      # No super-header found, so include all headers directly under
+      # `include/boost/` and `include/boost/<lib>/`.
+      #
+      for h in "$udp/include/boost/"*."$he"; do
+        incl+="#include <boost/$(basename "$h")>"$'\n'
+      done
+      for h in "$udp/include/boost/$udn/"*."$he"; do
+        incl+="#include <boost/$udn/$(basename "$h")>"$'\n'
+      done
     fi
 
     # Generate the test driver source file.
     #
     cat <<EOF > "$pn/tests/basics/driver.$se"
-#include <boost/$sh>
-
-int main ()
+$incl
+int
+main ()
 {
   return 0;
 }
@@ -493,9 +747,20 @@ EOF
   ((++level))
 done
 
-# Modify the root buildfile to exclude the upstream directory from the build.
+# Modify the root buildfile to exclude the upstream directory and those
+# packages which build configuration set differs from the default class set
+# (see the override file for deviations).
 #
-ised buildfile -e "s%import pkgs = \*/%import pkgs = \{*/ -upstream/\}%"
+# Note that we could probably exclude only the packages that are not buildable
+# on Linux (our development OS). Let's, however, not complicate things for now
+# and reuse the manifest_builds override.
+#
+exclusions=
+for p in "${!manifest_builds[@]}"; do # p: build2 package name.
+  exclusions+='\\\n'"                  -$p/"
+done
+
+ised buildfile -e "s%(import pkgs =) \*/%\1 \{*/ -upstream/$exclusions\}%"
 
 # Remove commented-out and empty lines from `repositories.manifest`.
 #

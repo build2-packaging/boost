@@ -14,3 +14,17 @@ location: libboost-pfr/
 location: libboost-predef/
 :
 location: libboost-preprocessor/
+:
+location: libboost-assert/
+:
+location: libboost-io/
+:
+location: libboost-polygon/
+:
+location: libboost-static-assert/
+:
+location: libboost-variant2/
+:
+location: libboost-vmd/
+:
+location: libboost-winapi/

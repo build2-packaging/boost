@@ -1,0 +1,25 @@
+import intf_libs = libboost-config%lib{boost_config}
+impl_libs = # Implementation dependencies.
+#import impl_libs += libhello%lib{hello}
+
+lib{boost_static_assert}: {hxx}{**} $impl_libs $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_static_assert}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

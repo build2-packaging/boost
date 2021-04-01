@@ -1,0 +1,3 @@
+import libs = libboost-vmd%lib{boost_vmd}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

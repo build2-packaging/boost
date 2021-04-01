@@ -1,0 +1,3 @@
+import libs = libboost-variant2%lib{boost_variant2}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

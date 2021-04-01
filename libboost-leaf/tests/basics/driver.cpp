@@ -1,6 +1,7 @@
 #include <boost/leaf.hpp>
 
-int main ()
+int
+main ()
 {
   return 0;
 }
