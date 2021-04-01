@@ -3,3 +3,15 @@
 manifest_url["libboost-numeric-interval"]="https://github.com/boostorg/interval"
 manifest_url["libboost-numeric-odeint"]="https://github.com/boostorg/odeint"
 manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"
+
+# The builds package manifest value overrides.
+#
+# If unspecified for a library, then no builds value is specified in its
+# package manifest (and so the default build configuration class is assumed).
+#
+# Note: only one builds value can be specified for a library.
+#
+# @@ One value can potentially be too restrictive, but let's not complicate
+#    things before it is required.
+#
+manifest_builds["libboost-winapi"]="&windows ; Provides Windows API declarations."

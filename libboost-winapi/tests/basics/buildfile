@@ -1,0 +1,3 @@
+import libs = libboost-winapi%lib{boost_winapi}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

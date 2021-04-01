@@ -1,6 +1,7 @@
 #include <boost/pfr.hpp>
 
-int main ()
+int
+main ()
 {
   return 0;
 }

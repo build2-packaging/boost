@@ -1,6 +1,7 @@
 #include <boost/hof.hpp>
 
-int main ()
+int
+main ()
 {
   return 0;
 }

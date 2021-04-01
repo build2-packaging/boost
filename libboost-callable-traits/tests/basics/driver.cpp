@@ -1,6 +1,7 @@
 #include <boost/callable_traits.hpp>
 
-int main ()
+int
+main ()
 {
   return 0;
 }

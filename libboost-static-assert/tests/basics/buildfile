@@ -1,0 +1,3 @@
+import libs = libboost-static-assert%lib{boost_static_assert}
+
+exe{driver}: {hxx cxx}{**} $libs testscript{**}

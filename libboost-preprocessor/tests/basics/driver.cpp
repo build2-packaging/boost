@@ -1,6 +1,7 @@
 #include <boost/preprocessor.hpp>
 
-int main ()
+int
+main ()
 {
   return 0;
 }
