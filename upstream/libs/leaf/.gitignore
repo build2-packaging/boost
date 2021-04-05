@@ -1,0 +1,17 @@
+.DS_Store
+.Trashes
+*.suo
+*.user
+*.log
+*.sdf
+*.opensdf
+*.db
+*.opendb
+bld/*
+doc/html/*
+snippets/*
+subprojects/*/
+.vscode/ipch/*
+.vscode/settings.json
+.vscode/c_cpp_properties.json
+benchmark/tl/*

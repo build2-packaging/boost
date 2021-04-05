@@ -235,7 +235,7 @@ cat << EOF >> .gitignore
 
 # The generated files.
 #
-boostdep
+/boostdep
 
 # Intermediate files.
 #
