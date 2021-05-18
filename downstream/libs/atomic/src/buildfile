@@ -1,0 +1,181 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+lib{boost_atomic}: $pub/{$pub_hdrs}
+
+tclass  = $cxx.target.class
+tsys    = $cxx.target.system
+windows = ($tclass == 'windows')
+
+# Enable SSE4.1 if compiling for i686 or x86_64.
+#
+# The upstream build detects SSE2 and SSE4.1 support in the compiler (not the
+# CPU, though this is implied) by trying to compile a SSE2 program and a
+# SSE4.1 program. Depending on which of the compilations succeeded it defines
+# the private macros BOOST_ATOMIC_USE_SSE2 and/or BOOST_ATOMIC_USE_SSE41 and
+# adds `find_address_sse2.cpp` and/or `find_address_sse41.cpp` to the
+# library's sources. These source files provide SSE-based implementations of
+# the private find_address() function (note: not part of Boost.Atomic's public
+# interface). If both versions are supported Boost.Atomic will choose SSE4.1.
+# If SSE is not enabled, Boost.Atomic will fall back to a generic
+# implementation of find_address() (a sequential search for a specific `void*`
+# in an array of `void*`s).
+
+# Set `sse` to true if the CPU and compiler supports SSE4.1.
+#
+# Given that Intel's Penryn processor family, released in 2006, was the first
+# to support SSE4.1, assume SSE4.1 is available on all i686 and x86_64 CPUs
+# and all supported compilers. Disable SSE on all other targets.
+#
+sse = false
+
+# Determine the SSE4.1 compilation options appropriate for the compiler.
+#
+if ($cxx.target.cpu == 'x86_64' || $cxx.target.cpu == 'i686')
+{
+  switch $cxx.class
+  {
+    case 'gcc'
+    {
+      sse = true
+
+      if ($cxx.id == 'icc')
+        sse_opts = ($windows ? /QxSSE4.1 : -xSSE4.1)
+      else
+        sse_opts = -msse -msse2 -msse3 -mssse3 -msse4.1
+    }
+    case 'msvc'
+    {
+      # Do nothing in case of MSVC because, on x86_64, neither SSE2 nor SSE4.1
+      # can be turned on explicitly. There is an SSE2 option but it's not
+      # applicable in our case, and the only other options (see
+      # https://docs.microsoft.com/en-us/cpp/build/reference/arch-x64) are
+      # various versions of AVX which appears to have some overlap with
+      # SSE4.1, but the upstream build does not turn any of the AVX options
+      # on.
+      #
+    }
+  }
+}
+
+# Private headers and sources as well as dependencies.
+#
+
+# Initially exclude Windows-specific source files and source files dependent
+# on SSE support in the CPU (but they may be added back later; see below).
+#
+lib{boost_atomic}: {hxx ixx txx cxx}{** -wait_ops_windows -find_address_sse*} \
+                   $impl_libs $intf_libs
+
+# If SSE is enabled, add the SSE4.1 find_address() implementation to the
+# sources.
+#
+lib{boost_atomic}: cxx{find_address_sse41}: include = $sse
+
+# On Windows, Boost.Atomic's versions of
+# std::atomic<>::{wait,notify_one,notify_all}() (added in C++20) are
+# implemented with the WaitOnAddress(), WakeByAddressSingle(), and
+# WakeByAddressAll() system calls, respectively. These functions are defined
+# in `api-ms-win-core-synch-l1-2-0.dll` which Boost.Atomic expects to be
+# available on all versions of Windows.
+#
+# Windows 8 (2012) added an import library for
+# `api-ms-win-core-synch-l1-2-0.dll` called `synchronization.lib` which comes
+# with the Windows SDK (according to
+# https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitonaddress).
+#
+# If on Windows (all versions), the upstream build adds `wait_ops_windows.cpp`
+# to the library's sources and detects the presence of `synchronization.lib`
+# by trying to build a program which is linked to it and uses its API. If the
+# program builds successfully, Boost.Atomic is linked against
+# `synchronization.lib`. In `wait_ops_windows.cpp`, if it finds that Windows
+# is at least at version 8 (using Boost.WinAPI macros), it expects
+# `synchronization.lib` and `api-ms-win-core-synch-l1-2-0.dll` to have been
+# loaded by the system loader, otherwise it loads
+# `api-ms-win-core-synch-l1-2-0.dll` dynamically.
+#
+# As a sidenote, on Linux, NetBSD, and OpenBSD, a futex-based backend is
+# used. On FreeBSD and DragonFlyBSD the umtx system calls are used. On older
+# versions of these OSs a generic (lock-based) backend is used as fallback.
+#
+lib{boost_atomic}: cxx{wait_ops_windows}: include = $windows
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if $sse
+{
+  cxx.poptions += -DBOOST_ATOMIC_USE_SSE41
+
+  # Add the SSE compiler options to the `find_address_sse41` object files.
+  #
+  {hbmi obj}{find_address_sse41}: cxx.coptions += $sse_opts
+}
+
+# Link to synchronization.lib on Windows.
+#
+# This works only for Windows >= 8; on older versions no library should be
+# added (see above).
+#
+switch $tclass, $tsys
+{
+  case 'windows', 'mingw32'
+    cxx.libs += -lsynchronization
+  case 'windows'
+    cxx.libs += synchronization.lib
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+lib{boost_atomic}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_atomic}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost_atomic}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_atomic}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_atomic}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

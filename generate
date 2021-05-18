@@ -15,6 +15,22 @@
 #   packages version, or empty to use the Boost version unmodified. If this
 #   option is omitted a suffix of "-a.0.z" will be used.
 #
+# --clean-upstream
+#
+#   Clean up the upstream tree by removing files and directories we do not
+#   need, then exit.
+#
+
+# Issues:
+#
+# - Looking at
+#   https://ci.stage.build2.org/@51f8c2d3-f6a0-423f-bb8c-e42b65781a53 you can
+#   see a number of aborted Windows build tasks. At least some of them are due
+#   to build timeout (something hanged or executes to slowly). If this happen
+#   again during some future CI we need to investigate this. For that purpose
+#   you can try to use the recently implemented interactive CI mode. See
+#   bdep-ci man page for more details.
+#
 
 owd="$(pwd)"
 trap "{ cd '$owd'; exit 1; }" ERR
@@ -31,12 +47,20 @@ function error () { info "$*"; exit 1; }
 #
 version_suffix="-a.0.z"
 
+# If true, remove files and directories we do not need from `upstream/`.
+#
+clean_upstream=
+
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --version-suffix)
       shift
       version_suffix="$1"
       shift || true
+      ;;
+    --clean-upstream)
+      shift
+      clean_upstream=true
       ;;
     -*)
       error "unknown option: $1"
@@ -49,6 +73,21 @@ while [[ "$#" -gt 0 ]]; do
       ;;
   esac
 done
+
+# Clean the upstream tree if we were asked to.
+#
+# NOTE: if the list of library-specific removals becomes too long, we will
+# probably move them into a "removals file".
+#
+if [[ "$clean_upstream" ]]; then
+  # Currently the toolchain is unable to properly handle filesystem entries
+  # with UTF-8 in their names on Windows.
+  #
+  rm -rf upstream/libs/wave/test/testwave/testfiles/
+
+  info "cleaned upstream/"
+  exit 0
+fi
 
 # Get the Boost version from upstream/. See the root README for more info.
 #
@@ -107,24 +146,8 @@ c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
 #   ...
 #
 # A tilde (~) in the library name means a directory separator, for example,
-# numeric~conversion.
-#
-# `boostdep` classifies the inclusion of a header as a dependency on the
-# "(unknown)" library (which will naturally always be at level 0) if it did
-# not find the included header under any of the
-# `upstream/libs/<lib>/include/boost/` directories during its header-indexing
-# search. This is usually the result of headers having been (re)moved or, in a
-# handful of cases, belonging to optional external libraries. The (re)moved
-# headers are normally included conditionally for some outdated configurations
-# and their inclusions are picked up by `boostdep` since it doesn't handle the
-# `#if` preprocessor directive. In general, the include paths triggering
-# "(unknown)" cannot refer to any header that is part of a current and
-# complete Boost distribution because it is a project-wide requirement that
-# headers reside under `upstream/libs/<lib>/include/boost/` and this is below
-# the starting point of `boostdep`'s header-indexing search. To get a list of
-# these headers run:
-#
-#   ./boostdep --boost-root upstream --list-missing-headers
+# numeric~conversion. See README-DEV for an explanation of the "(unknown)"
+# dependency.
 #
 # Our output file, `levels`, contains one dependency level's libraries per
 # line, starting at level 0, with each level's libraries separated by spaces,
@@ -135,7 +158,9 @@ c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
 #   core stl_interfaces system throw_exception type_traits
 #
 sep=
-./boostdep --boost-root upstream --module-levels | while read line; do
+./boostdep --boost-root upstream \
+           --track-sources \
+           --module-levels | while read line; do
 
   # If we're at a new, non-zero dependency level then begin a new line of
   # output.
@@ -221,7 +246,11 @@ function upstream_name () # <library-name>
 #
 declare -A lib_excl=()
 cat exclude | while read line; do
-  lib_excl["$line"]=true
+  # Skip comments and empty lines.
+  #
+  if [[ -n "$line" && "$line" != "#"* ]]; then
+    lib_excl["$line"]=true
+  fi
 done
 
 # Create an empty build2 project in the root directory.
@@ -265,6 +294,9 @@ function ised () # <file-path> <sed-option>...
 #
 declare -A manifest_url=()
 declare -A manifest_builds=()
+declare -A binless_libs=()
+declare -A include_headers=()
+declare -A exclude_headers=()
 source override
 
 # The Boost version, but formatted for use in the `doc-url` package manifest
@@ -279,40 +311,58 @@ doc_url_ver="$(sed -E -e "s%^([0-9]+\.[0-9]+\.[0-9]+).*%\1%" \
 
 # Detect the language of an upstream Boost library.
 #
-# Return, by writing to stdout, one of "c++", "c", or "mixed". Fail if unable
-# to detect the language.
+# Return, by writing to stdout, the `bdep-new` options that specify the
+# primary and, potentially, secondary languages (to be passed to its `--lang`
+# option; for example, "c++,c").
+#
+# This function is based on the observation that Boost is a collection of C++
+# libraries and therefore C++ headers take priority in determining the primary
+# language. Thus a library is only a C library if all of its public headers
+# are C headers.
 #
 # All of a Boost library's source files reside in `src/` (see
 # https://www.boost.org/development/requirements.html#Organization) so if
 # there is no such directory then a library has no source files.
 #
-function detect_lang () # <lib-dir-path>
+function detect_lang () # <lib-dir-path> <binful>
 {
-  local d="$1" # Upstream library directory path.
+  local d="$1"  # Upstream library directory path.
+  local bf="$2" # True if this library is binful.
 
-  local cxx
-  cxx="$(find "$d/include/boost" -type f -name "*.hpp")"
+  local r
 
-  if [[ -z "$cxx" && -d "$d/src" ]]; then
-    cxx="$(find "$d/src" -type f -name "*.cpp")"
-  fi
+  # If there are any public C++ headers then the primary language is C++,
+  # otherwise it's C.
+  #
+  # Use `-maxdepth 2` to prevent the search for C++ headers from descending
+  # below `include/boost/<lib>/` otherwise it would return private headers, in
+  # which case a C library with a single private C++ header would be detected
+  # as a C++ library. (This `find` option is not in POSIX but is supported on
+  # Linux, the BSDs, and Mac OS.)
+  #
+  local hsp="$d/include/boost" # Header search path.
+  if [[ -n "$(find "$hsp" -maxdepth 2 -type f -name "*.hpp")" ]]; then
+    r="c++"
 
-  local c
-  c="$(find "$d/include/boost" -type f -name "*.h")"
-
-  if [[ -z "$c" && -d "$d/src" ]]; then
-    c="$(find "$d/src" -type f -name "*.c")"
-  fi
-
-  if [[ -n "$cxx" && -n "$c" ]]; then
-    echo "mixed"
-  elif [[ -n "$cxx" ]]; then
-    echo "c++"
-  elif [[ -n "$c" ]]; then
-    echo "c"
+    # If there are any C headers (public or private) or C source files then
+    # the secondary language is C.
+    #
+    if [[ -n "$(find "$hsp" -type f -name "*.h")" ||
+          ("$bf" && -n "$(find "$d/src" -type f -name "*.c")") ]]; then
+      r+=",c"
+    fi
   else
-    error "unable not detect the language of $d"
+    r="c"
+
+    # If there are any C++ source files then the secondary language is
+    # C++.
+    #
+    if [[ "$bf" && -n "$(find "$d/src" -type f -name "*.cpp")" ]]; then
+      r+=",c++"
+    fi
   fi
+
+  echo "$r"
 }
 
 # Determine the dependencies between Boost libraries. Create a mapping from
@@ -396,6 +446,23 @@ declare -A impl_deps=() # Implementation dependencies for all libraries.
   fi
 done
 
+# Print "true" to stdout if <target> equals any of the subsequent
+# arguments/words.
+#
+function contains () # <target> <word0> <word1> ...
+{
+  local t="$1"
+  shift
+
+  local w
+  for w in "$@"; do
+    if [[ "$w" == "$t" ]]; then
+      echo -n "true"
+      return
+    fi
+  done
+}
+
 # Gather implementation dependencies for all libraries.
 #
 # Also write the `dependencies` file in this loop in order to take advantage
@@ -417,12 +484,9 @@ done
     #
     ifdeps=(${intf_deps["$pn"]}) # Interface dependencies for this package.
     for i in "${!deps[@]}"; do
-      for d in "${ifdeps[@]}"; do
-        if [[ "$d" == "${deps[$i]}" ]]; then
-          unset "deps[$i]"
-          break
-        fi
-      done
+      if [[ "$(contains "${deps[$i]}" "${ifdeps[@]}")" ]]; then
+        unset "deps[$i]"
+      fi
     done
 
     # Save the dependencies in `impl_deps`, if any.
@@ -473,11 +537,19 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
     # dependency.
     #
     # @@ TODO: make this conditional if the dependency is only required under
-    #    some circumstances. For example, libboost-winapi is only built on
-    #    Windows so don't depend on it unless building on Windows. Maybe we
-    #    can reuse the manifest_builds overrides for that somehow? We also
-    #    still lack the corresponding mechanism in manifest (conditional
-    #    dependencies).
+    #    some circumstances. For example, if a library only builds on Windows
+    #    then do not depend on it if on Linux. Maybe we can reuse the
+    #    manifest_builds overrides for that somehow? We also still lack the
+    #    corresponding mechanism in manifest (conditional dependencies).
+    #
+    #    Currently the only problem case is Boost.WinApi, a header-only
+    #    library that can only be used on Windows. All of its dependents we've
+    #    examined thus far only include its headers if on Windows and thus
+    #    they can all be built on non-Windows platforms despite their
+    #    (redundant) dependence on Boost.WinApi. So this is no showstopper.
+    #
+    #    Therefore we're deferring dealing with conditional dependencies until
+    #    another, more pressing case arises.
     #
     local dt="$dpn%lib\{boost_$dun\}" # Dependency text.
     if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
@@ -504,7 +576,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 #
 # Do one dependency level at a time, starting at level 0.
 #
-# @@ Currently for dependency levels 0-1 only.
+# @@ We're not yet doing all dependency levels.
 #
 # @@ Package manifest values yet to be customized:
 #
@@ -513,7 +585,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -le 1 ]] && read line; do
+cat levels | while [[ "$level" -le 4 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -533,56 +605,63 @@ cat levels | while [[ "$level" -le 1 ]] && read line; do
       continue
     fi
 
-    # Skip compiled libraries for the time being.
+    # Detect binless libraries.
     #
-    # @@ None of the ones at levels 0-1 happen to be compiled.
-    #
-    if [[ -d "$udp/src" ]]; then
-      info "skipping $pn (compiled libraries not yet supported)"
-      continue
+    binful= # True if this is a binful libary.
+    if [[ -d "$udp/src" && ! -v "binless_libs[$pn]" ]]; then
+      binful=true
     fi
 
     # Configure language-specific settings.
     #
-    lo= # Suboptions to `bdep-new` `--lang` option.
     he= # Header file extension.
     se= # Source file extension.
 
-    lang="$(detect_lang "$udp")"
-    case "$lang" in
-      c++)
-        lo="c++,hxx=hpp,cxx=cpp"
+    # Suboptions to the `bdep-new` `--lang` option. Start off with the primary
+    # and, if applicable, secondary language suboptions. For example, "c++,c".
+    #
+    lo="$(detect_lang "$udp" "$binful")"
+
+    case "$lo" in
+      # Primary language is C++.
+      #
+      c++*)
         he="hpp"
         se="cpp"
         ;;
-      c)
-        lo="c"
+      # Primary language is C.
+      #
+      *)
         he="h"
         se="c"
         ;;
-      mixed)
-        # Skip this library unless it's pure C++ or pure C.
-        #
-        # @@ TODO: waiting on bdep-new support.
-        #
-        info "skipping $pn (mixed-language projects not yet supported)"
-        continue
-        ;;
     esac
+
+    # Specify the C++ header and source extensions if this library has C++ as
+    # primary or secondary language.
+    #
+    if [[ "$lo" == *"c++"* ]]; then
+      lo+=",hxx=hpp,cxx=cpp,ixx=ipp,txx=tpp"
+    fi
 
     # Suboptions to `bdep-new` `--type` option.
     #
-    to="lib,split,subdir=boost,no-version"
-
-    # Detect binless libraries. (See `detect_lang()` for why we only check for
-    # the presence of the `src` directory).
+    # With these prefix and subdir options the include directory is
+    # `include/boost/` and the source directory `src/` (mirroring upstream).
     #
-    lib_bfile= # Buildfile which declares the library target.
+    to="lib,split,subdir=boost,no-subdir-source,no-version"
 
-    if [[ -d "$pn/src" ]]; then # Binful library.
+    # Set the location of the library buildfile based on whether this library
+    # is binful or not.
+    #
+    lib_bfile= # Library buildfile (the one that declares the library target).
+    custom_lib_bfile= # Path to custom lib buildfile (note: may not exist).
+    if [[ "$binful" ]]; then
       lib_bfile="$pn/src/buildfile"
-    else                        # Binless library.
+      custom_lib_bfile="downstream/libs/$udn/src/buildfile"
+    else
       lib_bfile="$pn/include/boost/buildfile"
+      custom_lib_bfile="downstream/libs/$udn/include/boost/buildfile"
       to+=",binless"
     fi
 
@@ -621,6 +700,18 @@ cat levels | while [[ "$level" -le 1 ]] && read line; do
     for f in "$udp/include/boost/"*; do
       ln -s "../../../$f" "$pn/include/boost/"
     done
+
+    # If this is a binful library, remove the `bdep-new`-generated source file
+    # and export header and create symlinks to the upstream source files.
+    #
+    if [[ "$binful" ]]; then
+      rm "$pn/src/${pn#lib}.$se"
+      rm "$pn/include/boost/export.$he"
+
+      for f in "$udp/src/"*; do
+        ln -s "../../$f" "$pn/src/"
+      done
+    fi
 
     # Derive the project url package manifest value (see the override file for
     # deviations).
@@ -663,25 +754,137 @@ cat levels | while [[ "$level" -le 1 ]] && read line; do
     #
     ised "$pn/manifest" "${ised_ops[@]}"
 
+    # If this library has a custom buildfile, copy it over the bdep-generated
+    # one (before we modify it).
+    #
+    # Note that we don't symlink this file since we will edit the copy.
+    #
+    if [[ -f "$custom_lib_bfile" ]]; then
+      cp "$custom_lib_bfile" "$lib_bfile"
+    fi
+
     # Fix up package buildfile(s).
     #
-    # Replace '-' with '_' in lib{} target names. Necessary because the
-    # convention seems to be to use underscores in the filenames of the Boost
-    # library binaries. For example:
+    # Replace '-' with '_' in lib{}, liba{}, and libs{} target
+    # names. Necessary because the convention seems to be to use underscores
+    # in the filenames of the Boost library binaries. For example:
     #
     #   lib{boost-callable-traits} -> lib{boost_callable_traits}
     #
     # Use the fact that we have most of the underscored version in `un` to
     # simplify the `sed` script.
     #
-    ss="s%lib\{${pn#lib}\}%lib\{boost_$un\}%g" # Sed script.
+    ss="s%lib(a|s)?\{${pn#lib}\}%lib\1\{boost_$un\}%g" # Sed script.
     ised "$lib_bfile"                 -e "$ss"
     ised "$pn/tests/basics/buildfile" -e "$ss"
+
+    # Remove the reference to the `bdep-new`-generated export header from the
+    # include directory's buildfile if this is a binful library.
+    #
+    # @@ TODO: maybe add bdep-new no-export sub-option?
+    #
+    if [[ "$binful" ]]; then
+      ised "$pn/include/boost/buildfile" -e "/hxx\{export\}/,/^$/d"
+    fi
 
     # Add dependencies to the package manifest and the library buildfile.
     #
     add_deps "$pn/manifest" "$lib_bfile" "${intf_deps[$pn]}" "intf_libs"
     add_deps "$pn/manifest" "$lib_bfile" "${impl_deps[$pn]}" "impl_libs"
+
+    # Make a number of changes to the library buildfile in a batch.
+    #
+    # Remove the '#import xxxx_libs += libhello%lib{hello}' line from the
+    # library buildfile.
+    #
+    ised_ops=(-e "/\#import xxxx_libs.+/d")
+
+    # Define some linking-related macros in the library buildfile if this is a
+    # binful library.
+    #
+    # Note that, in the comments below, "export" refers to build2's library
+    # exportation features, and applies only to macros. References to the
+    # exportation of symbols from compiled libraries will be qualified with
+    # "symbol", for example "symbol exporting code".
+    #
+    if [[ "$binful" ]]; then
+      case "$lo" in
+        c++*) mod="cxx" ;;
+        c*)   mod="c"   ;;
+        *)    mod="cc"  ;;
+      esac
+
+      # BOOST_<lib>_NO_LIB:      Disable auto-linking of this library.
+      #                          Naturally this macro is for export only.
+      #
+      #                          See https://en.wikipedia.org/wiki/Auto-linking,
+      #                          https://www.boost.org/doc/libs/1_75_0/libs/config/doc/html/boost_config/boost_macro_reference.html,
+      #                          and
+      #                          `upstream/libs/config/include/boost/config/auto_link.hpp`
+      #                          for more information.
+      #
+      # BOOST_<lib>_DYN_LINK:    Needs to be defined when compiling the library
+      #                          as a shared library and undefined when
+      #                          compiling it as a static library. Its primary
+      #                          purpose seems to be to enable the symbol
+      #                          exporting/importing code. This macro must be
+      #                          exported for shared library targets.
+      #
+      # BOOST_<lib>_STATIC_LINK: Needs to be defined when compiling the
+      #                          library as a static library and undefined
+      #                          when compiling it as a shared library. This
+      #                          macro is not conventional and is actually
+      #                          redundant in light of the semantics of
+      #                          BOOST_<lib>_DYN_LINK, but it is used by some
+      #                          libraries so define it (as appropriate) just
+      #                          in case. Export this macro for static
+      #                          library targets.
+      #
+      # BOOST_<lib>_SOURCE:      If defined (along with BOOST_<lib>_DYN_LINK),
+      #                          symbols tagged with the BOOST_<lib>_DECL
+      #                          macro are exported, otherwise they are
+      #                          imported (if the toolchain supports these
+      #                          concepts). This macro is only used for
+      #                          building a library and must not be exported.
+      #
+      umn="${un^^}" # Upstream name for C macros (upstream name in uppercase).
+
+      # Define `BOOST_<lib>_SOURCE` on obj{} targets.
+      #
+      ised_ops+=(-e "/.+ -DBOOST_STATIC_BUILD$/\
+i{hbmi  obj }{*}: cxx.poptions += -DBOOST_${umn}_SOURCE")
+
+      # Define `BOOST_<lib>_STATIC_LINK` on obja{} targets. Note that this
+      # replaces the bdep-generated `-DBOOST_STATIC_BUILD`.
+      #
+      ised_ops+=(-e "s%(.+) -DBOOST_STATIC_BUILD$%\
+\1 -DBOOST_${umn}_STATIC_LINK%")
+
+      # Define `BOOST_<lib>_DYN_LINK` on objs{} targets. Note that this
+      # replaces the bdep-generated `-DBOOST_SHARED_BUILD`.
+      #
+      ised_ops+=(-e "s%(.+) -DBOOST_SHARED_BUILD$%\
+\1 -DBOOST_${umn}_DYN_LINK%")
+
+      # Export `BOOST_<lib>_STATIC_LINK` from the liba{} target. Note that
+      # this replaces the bdep-generated `-DBOOST_STATIC`.
+      #
+      ised_ops+=(-e "s%(.+) -DBOOST_STATIC$%\
+\1 -DBOOST_${umn}_STATIC_LINK%")
+
+      # Export `BOOST_<lib>_DYN_LINK` from the libs{} target. Note that this
+      # replaces the bdep-generated `-DBOOST_SHARED`.
+      #
+      ised_ops+=(-e "s%(.+) -DBOOST_SHARED$%\
+\1 -DBOOST_${umn}_DYN_LINK%")
+
+      # Export the `BOOST_<lib>_NO_LIB` macro from lib{} targets.
+      #
+      ised_ops+=(-e "s%(.+export\.poptions.+src_pfx_inc\")$%\
+\1 \\\\\n                         -DBOOST_${umn}_NO_LIB%")
+    fi
+
+    ised "$lib_bfile" "${ised_ops[@]}"
 
     # Create smoke test (by modifying the test generated by `bdep-new`).
     #
@@ -690,51 +893,94 @@ cat levels | while [[ "$level" -le 1 ]] && read line; do
     # headers. (But while developing, remember to ensure that your system
     # Boost installation isn't masking breakages.)
     #
+    # It's also possible to provide a custom smoke test for a library by
+    # putting the custom test driver source file at
+    # `downstream/libs/<lib>/test/basics/driver.cpp`. If it exists, this file
+    # will be symlinked over the `bdep-new`-generated one (otherwise one will
+    # be generated).
+    #
 
-    # Build the include directive(s) appropriate for this library. If it
-    # exists, include only the super-header (a single header which includes
-    # all of its headers), otherwise include all headers in
-    # `boost/include/<lib>/` and `boost/include/`.
+    # Generate the smoke test if this package does not have a custom one.
     #
-    # Based on inspection, the informal convention seems to be that Boost
-    # libraries should provide super-headers and that it should be located
-    # either at `include/boost/<lib>.hpp` or
-    # `include/boost/<lib>/<lib>.hpp`. Only a minority of libraries do not
-    # conform. (If there were a formal convention I would expect it to be
-    # referenced by https://www.boost.org/development/requirements.html.)
-    #
-    # For reference, here are some of the non-conforming libraries and the
-    # ways in which they break the convention:
-    #
-    #   - Libraries with con-conforming super-header names: Exception
-    #     (`include/boost/exception/all.hpp`)
-    #
-    #   - Libraries that put non-super header(s) under `include/boost/`:
-    #     Conversion, Iterator, Unordered, Math, Core, Multi-Index, ...
-    #
-    #   - Libraries that have what looks like a super-header but which doesn't
-    #     actually include all of its headers: Utility
-    #
-    incl= # The include statement(s).
-    if [[ -f "$pn/include/boost/$udn.$he" ]]; then
-      incl="#include <boost/$udn.$he>"$'\n'
-    elif [[ -f "$pn/include/boost/$udn/$udn.$he" ]]; then
-      incl="#include <boost/$udn/$udn.$he>"$'\n'
-    else
-      # No super-header found, so include all headers directly under
-      # `include/boost/` and `include/boost/<lib>/`.
+    ctp="downstream/libs/$udn/test/basics/driver.cpp" # Custom test path.
+    if [[ ! -f "$ctp" ]]; then
+      # Build the include directive(s) appropriate for this library. If it
+      # exists, include only the super-header (a single header which includes
+      # all of its headers), otherwise include all headers in
+      # `boost/include/<lib>/` and `boost/include/`.
       #
-      for h in "$udp/include/boost/"*."$he"; do
-        incl+="#include <boost/$(basename "$h")>"$'\n'
-      done
-      for h in "$udp/include/boost/$udn/"*."$he"; do
-        incl+="#include <boost/$udn/$(basename "$h")>"$'\n'
-      done
-    fi
+      # Based on inspection, the informal convention (if there were a formal
+      # convention I would expect it to be referenced by
+      # https://www.boost.org/development/requirements.html) seems to be that
+      # Boost libraries should provide super-headers and that they should be
+      # located either at `include/boost/<lib>/<lib>.hpp` or
+      # `include/boost/<lib>.hpp`; the former appears to be more
+      # conventional. Only a minority of libraries do not conform; the rest
+      # have super-headers at one of the above two paths.
+      #
+      # Resolve the ambiguity of the super-header location by first checking
+      # the `include_headers` associative array defined in the `override` file
+      # for an entry for the current library. If one exists, include all
+      # header paths in the entry (in most cases there will only be a single
+      # path: the super-header). Otherwise first look for the super-header at
+      # `include/boost/<lib>/<lib>.hpp` and then at
+      # `include/boost/<lib>.hpp`. If both paths exist, fail with a message
+      # suggesting that an override should be defined.
+      #
+      # For reference, here are some of the non-conforming libraries and the
+      # ways in which they break the convention:
+      #
+      #   - Libraries with non-conforming super-header names: Exception
+      #     (`include/boost/exception/all.hpp`)
+      #
+      #   - Libraries that put non-super-header(s) under `include/boost/`:
+      #     Conversion, Iterator, Unordered, Math, Core, Multi-Index, ...
+      #
+      #   - Libraries that have what looks like a super-header but which
+      #     doesn't actually include all of its headers: Utility
+      #
+      incl=                          # The include statement(s).
+      ih=(${include_headers["$pn"]}) # Headers to include for this library.
 
-    # Generate the test driver source file.
-    #
-    cat <<EOF > "$pn/tests/basics/driver.$se"
+      if [[ "${#ih[@]}" -ne 0 ]]; then
+        for h in "${ih[@]}"; do
+          incl+="#include <boost/$h>"$'\n'
+        done
+      elif [[ -f "$pn/include/boost/$udn/$udn.$he" ]]; then
+        if [[ -f "$pn/include/boost/$udn.$he" ]]; then
+          error "$pn appears to have two super-headers (add an override)"
+        fi
+        incl="#include <boost/$udn/$udn.$he>"$'\n'
+      elif [[ -f "$pn/include/boost/$udn.$he" ]]; then
+        incl="#include <boost/$udn.$he>"$'\n'
+      else
+        # No super-header found, so include all headers directly under
+        # `include/boost/` and `include/boost/<lib>/`.
+        #
+        # Find and include all public headers. All paths returned by `find`
+        # will be of the `$udp/include/boost/foo.hpp` or
+        # `$udp/include/boost/$udn/foo.hpp` forms.
+        #
+        eh=(${exclude_headers["$pn"]}) # Excluded headers for this library.
+        find "$udp/include/boost/" -maxdepth 2 -type f -name "*.$he" | sort | \
+          while read hp; do # hp: header path.
+            # Header filename, relative to `$udp/include/boost/`.
+            #
+            h="${hp#$udp/include/boost/}"
+
+            # Include this header unless it has been explicitly
+            # excluded. Remove the `$udp/include/` prefix from the path to
+            # make it relative to `include/`.
+            #
+            if [[ ! "$(contains "$h" "${eh[@]}")" ]]; then
+              incl+="#include <${hp#$udp/include/}>"$'\n'
+            fi
+          done
+      fi
+
+      # Write the test driver source file.
+      #
+      cat <<EOF > "$pn/tests/basics/driver.$se"
 $incl
 int
 main ()
@@ -742,14 +988,20 @@ main ()
   return 0;
 }
 EOF
+    else
+      # A custom smoke test exists, so install it.
+      #
+      info "using custom smoke test for $pn"
+      ln -fs ../../../"$ctp" "$pn/tests/basics/driver.$se"
+    fi
   done
 
   ((++level))
 done
 
-# Modify the root buildfile to exclude the upstream directory and those
-# packages which build configuration set differs from the default class set
-# (see the override file for deviations).
+# Modify the root buildfile to exclude the upstream and custom smoke tests
+# directories and those packages which build configuration set differs from
+# the default class set (see the override file for deviations).
 #
 # Note that we could probably exclude only the packages that are not buildable
 # on Linux (our development OS). Let's, however, not complicate things for now
@@ -760,7 +1012,8 @@ for p in "${!manifest_builds[@]}"; do # p: build2 package name.
   exclusions+='\\\n'"                  -$p/"
 done
 
-ised buildfile -e "s%(import pkgs =) \*/%\1 \{*/ -upstream/$exclusions\}%"
+ised buildfile -e "s%(import pkgs =) \*/%\
+\1 \{*/ -upstream/ -downstream/$exclusions\}%"
 
 # Remove commented-out and empty lines from `repositories.manifest`.
 #
