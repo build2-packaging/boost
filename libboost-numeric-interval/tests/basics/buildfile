@@ -1,0 +1,3 @@
+import libs = libboost-numeric-interval%lib{boost_numeric_interval}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

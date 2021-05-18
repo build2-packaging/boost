@@ -1,0 +1,7 @@
+project = libboost-tuple
+
+using version
+using config
+using test
+using install
+using dist

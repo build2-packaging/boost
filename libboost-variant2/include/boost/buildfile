@@ -1,9 +1,7 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-mp11%lib{boost_mp11}
-impl_libs = # Implementation dependencies.
-#import impl_libs += libhello%lib{hello}
 
-lib{boost_variant2}: {hxx}{**} $impl_libs $intf_libs
+lib{boost_variant2}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.
 #
@@ -19,7 +17,7 @@ lib{boost_variant2}:
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
-{hxx}{*}:
+{hxx ixx txx}{*}:
 {
   install         = include/boost/
   install.subdirs = true

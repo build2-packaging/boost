@@ -1,0 +1,7 @@
+project = libboost-bind
+
+using version
+using config
+using test
+using install
+using dist

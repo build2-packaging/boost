@@ -28,3 +28,47 @@ location: libboost-variant2/
 location: libboost-vmd/
 :
 location: libboost-winapi/
+:
+location: libboost-core/
+:
+location: libboost-stl-interfaces/
+:
+location: libboost-system/
+:
+location: libboost-throw-exception/
+:
+location: libboost-type-traits/
+:
+location: libboost-align/
+:
+location: libboost-array/
+:
+location: libboost-bind/
+:
+location: libboost-concept-check/
+:
+location: libboost-detail/
+:
+location: libboost-endian/
+:
+location: libboost-integer/
+:
+location: libboost-logic/
+:
+location: libboost-tuple/
+:
+location: libboost-typeof/
+:
+location: libboost-atomic/
+:
+location: libboost-container-hash/
+:
+location: libboost-crc/
+:
+location: libboost-move/
+:
+location: libboost-numeric-interval/
+:
+location: libboost-pool/
+:
+location: libboost-safe-numerics/

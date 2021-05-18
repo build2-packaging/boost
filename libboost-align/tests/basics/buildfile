@@ -1,0 +1,3 @@
+import libs = libboost-align%lib{boost_align}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,7 @@
+project = libboost-integer
+
+using version
+using config
+using test
+using install
+using dist

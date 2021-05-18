@@ -1,0 +1,3 @@
+import libs = libboost-endian%lib{boost_endian}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

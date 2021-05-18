@@ -1,0 +1,3 @@
+import libs = libboost-concept-check%lib{boost_concept_check}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

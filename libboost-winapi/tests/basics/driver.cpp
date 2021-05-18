@@ -1,3 +1,4 @@
+#include <boost/detail/interlocked.hpp>
 #include <boost/winapi/access_rights.hpp>
 #include <boost/winapi/apc.hpp>
 #include <boost/winapi/basic_types.hpp>
