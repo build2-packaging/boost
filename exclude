@@ -1,2 +1,8 @@
-libboost-compatibility
+# We won't be packaging the following libraries.
+#
 libboost-wave
+
+# We don't plan to support the kinds of compilers that would require the use
+# of Boost.Compatibility.
+#
+libboost-compatibility

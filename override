@@ -1,17 +1,109 @@
-# The url package manifest value overrides.
-#
+## manifest_url
+##
+## The url package manifest value overrides.
+
 manifest_url["libboost-numeric-interval"]="https://github.com/boostorg/interval"
 manifest_url["libboost-numeric-odeint"]="https://github.com/boostorg/odeint"
 manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"
 
-# The builds package manifest value overrides.
-#
-# If unspecified for a library, then no builds value is specified in its
-# package manifest (and so the default build configuration class is assumed).
-#
-# Note: only one builds value can be specified for a library.
-#
-# @@ One value can potentially be too restrictive, but let's not complicate
-#    things before it is required.
-#
+## manifest_builds
+##
+## The builds package manifest value overrides.
+##
+## If unspecified for a library, then no builds value is specified in its
+## package manifest (and so the default build configuration class is assumed).
+##
+## Note: only one builds value can be specified for a library.
+##
+## @@ One value can potentially be too restrictive, but let's not complicate
+##    things before it is required.
+
 manifest_builds["libboost-winapi"]="&windows ; Provides Windows API declarations."
+
+## binless_libs
+##
+## Libraries that are binless despite having one or more source files.
+
+binless_libs["libboost-system"]=true
+binless_libs["libboost-exception"]=true
+binless_libs["libboost-chrono"]=true
+
+## include_headers
+##
+## For each library, a space-separated list of the complete set of header
+## paths that must be included into the smoke test instead of those discovered
+## by the `generate` script.
+##
+## For example, some libraries have what looks like a super-header in both
+## `include/boost/<lib>/<lib>.hpp` and `include/boost/<lib>.hpp`, in which case
+## this override resolves the ambiguity.
+##
+## The paths are relative to `include/boost/`.
+
+include_headers["libboost-align"]="align.hpp"
+include_headers["libboost-atomic"]="atomic.hpp"
+include_headers["libboost-bind"]="bind/bind.hpp"
+include_headers["libboost-chrono"]="chrono.hpp"
+include_headers["libboost-dynamic-bitset"]="dynamic_bitset/dynamic_bitset.hpp"
+include_headers["libboost-endian"]="endian.hpp"
+include_headers["libboost-optional"]="optional/optional.hpp"
+
+# The comment at the top of this header says "Include the default amount of
+# outcome" so it must be the super-header.
+#
+include_headers["libboost-outcome"]="outcome.hpp"
+
+include_headers["libboost-ratio"]="ratio.hpp"
+include_headers["libboost-stacktrace"]="stacktrace.hpp"
+include_headers["libboost-static-string"]="static_string/static_string.hpp"
+include_headers["libboost-variant"]="variant.hpp"
+
+## exclude_headers
+##
+## For each library, a space-separated list of header paths that must not be
+## included directly. Like `include_headers`, the paths are relative to
+## `include/boost/`.
+
+# detail/*.hpp: deprecated headers.
+#
+# Note that this is the Boost.Core library, not Boost.Detail. These headers
+# are in `include/boost/detail` instead of the more conventional
+# `include/boost/core/detail/`.
+#
+exclude_headers["libboost-core"]="\
+detail/iterator.hpp \
+detail/lightweight_test.hpp \
+detail/no_exceptions_support.hpp \
+detail/scoped_enum_emulation.hpp \
+detail/sp_typeinfo.hpp \
+"
+
+# lightweight_main.hpp, lightweight_test_report.hpp: these files define main().
+#
+# utf8_codecvt_facet.hpp: is not to be included by the user and requires some
+#                         macro definitions, so it feels like testing it
+#                         indirectly via other libraries is good enough.
+#
+exclude_headers["libboost-detail"]="\
+detail/lightweight_main.hpp \
+detail/lightweight_test_report.hpp \
+detail/utf8_codecvt_facet.hpp \
+"
+
+# checked_float.hpp: does not compile and is not used in any of Boost's own
+#                    tests.
+#
+# range_value.hpp:   requires but does not include <ios>.
+#
+exclude_headers["libboost-safe-numerics"]="\
+safe_numerics/checked_float.hpp \
+safe_numerics/range_value.hpp \
+"
+
+# system/*_error.hpp: deprecated headers.
+#
+exclude_headers["libboost-system"]="\
+system/cygwin_error.hpp \
+system/linux_error.hpp \
+system/windows_error.hpp \
+"
