@@ -1,0 +1,7 @@
+project = libboost-endian
+
+using version
+using config
+using test
+using install
+using dist

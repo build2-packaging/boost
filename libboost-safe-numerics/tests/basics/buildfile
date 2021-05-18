@@ -1,0 +1,3 @@
+import libs = libboost-safe-numerics%lib{boost_safe_numerics}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

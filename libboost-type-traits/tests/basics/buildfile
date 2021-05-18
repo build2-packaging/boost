@@ -1,0 +1,3 @@
+import libs = libboost-type-traits%lib{boost_type_traits}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

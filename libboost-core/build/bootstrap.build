@@ -1,0 +1,7 @@
+project = libboost-core
+
+using version
+using config
+using test
+using install
+using dist

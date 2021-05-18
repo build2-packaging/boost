@@ -1,9 +1,7 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-predef%lib{boost_predef}
-impl_libs = # Implementation dependencies.
-#import impl_libs += libhello%lib{hello}
 
-lib{boost_winapi}: {hxx}{**} $impl_libs $intf_libs
+lib{boost_winapi}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.
 #
@@ -19,7 +17,7 @@ lib{boost_winapi}:
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
-{hxx}{*}:
+{hxx ixx txx}{*}:
 {
   install         = include/boost/
   install.subdirs = true

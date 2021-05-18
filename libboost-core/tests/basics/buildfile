@@ -1,0 +1,3 @@
+import libs = libboost-core%lib{boost_core}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

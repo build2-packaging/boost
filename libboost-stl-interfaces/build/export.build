@@ -1,0 +1,6 @@
+$out_root/
+{
+  include include/boost/
+}
+
+export $out_root/include/boost/$import.target

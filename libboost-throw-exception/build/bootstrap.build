@@ -1,0 +1,7 @@
+project = libboost-throw-exception
+
+using version
+using config
+using test
+using install
+using dist

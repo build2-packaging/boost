@@ -1,0 +1,3 @@
+import libs = libboost-typeof%lib{boost_typeof}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

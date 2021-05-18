@@ -1,0 +1,7 @@
+project = libboost-atomic
+
+using version
+using config
+using test
+using install
+using dist

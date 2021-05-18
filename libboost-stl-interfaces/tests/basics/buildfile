@@ -1,0 +1,3 @@
+import libs = libboost-stl-interfaces%lib{boost_stl_interfaces}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

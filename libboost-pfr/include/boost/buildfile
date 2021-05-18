@@ -1,8 +1,6 @@
 intf_libs = # Interface dependencies.
-impl_libs = # Implementation dependencies.
-#import impl_libs += libhello%lib{hello}
 
-lib{boost_pfr}: {hxx}{**} $impl_libs $intf_libs
+lib{boost_pfr}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.
 #
@@ -18,7 +16,7 @@ lib{boost_pfr}:
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
-{hxx}{*}:
+{hxx ixx txx}{*}:
 {
   install         = include/boost/
   install.subdirs = true
