@@ -1,0 +1,12 @@
+find . -type d -name 'doc' | xargs rm -r
+find libs/ -mindepth 2 -maxdepth 2 -type d -name 'test'    | xargs rm -r
+find libs/ -mindepth 2 -maxdepth 2 -type d -name 'example' | xargs rm -r
+find libs/ -mindepth 2 -maxdepth 2 -type d -name 'bench*'  | xargs rm -r
+
+find . -type d -name 'doc' | xargs rm -r
+
+rm -r libs/math/reporting/
+
+rm -r libs/phoenix/
+rm -r libs/fusion/
+rm -r libs/geometry/
