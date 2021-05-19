@@ -74,16 +74,117 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
+# Print "true" to stdout if <target> matches, case-insensitively, any of the
+# subsequent words (patterns).
+#
+function match_patterns () # <target> <patt0> <patt1> ...
+{
+  local t="$1" # Target.
+  shift
+
+  shopt -s nocasematch
+  local p # Pattern.
+  for p in "$@"; do
+    if [[ "$t" == $p ]]; then
+      echo "true"
+      break
+    fi
+  done
+  shopt -u nocasematch
+}
+
 # Clean the upstream tree if we were asked to.
 #
 # NOTE: if the list of library-specific removals becomes too long, we will
 # probably move them into a "removals file".
 #
 if [[ "$clean_upstream" ]]; then
-  # Currently the toolchain is unable to properly handle filesystem entries
-  # with UTF-8 in their names on Windows.
+
+  # Clean `upstream/`.
   #
-  rm -rf upstream/libs/wave/test/testwave/testfiles/
+  # The `keep` array contains patterns matching paths not to be removed
+  # (case-insensitively).
+  #
+  # Keep `upstream/Jamroot` because `boostdep` checks for its existence in
+  # order to decide whether `upstream` is a valid Boost root directory.
+  #
+  # Use a pattern for the license because the root license has the license
+  # version in the filename and there is no consistent naming format among
+  # libraries.
+  #
+  # Turn on `dotglob` so that files beginning with `.` will be included in
+  # pathname expansions (without explicitly matching them with `.*`), and `.`
+  # and `..` will be excluded.
+  #
+  shopt -s dotglob
+  keep=("Jamroot" "libs" "tools" "LICENSE*" ".gitattributes")
+  for p in upstream/*; do # p: path.
+    if [[ ! "$(match_patterns "${p#upstream/}" "${keep[@]}")" ]]; then
+      rm -rf "$p"
+    fi
+  done
+
+  # Clean `upstream/tools/`.
+  #
+  keep=("boostdep")
+  for p in upstream/tools/*; do # p: path.
+    if [[ ! "$(match_patterns ${p#upstream/tools/} "${keep[@]}")" ]]; then
+      rm -rf "$p"
+    fi
+  done
+
+  # Clean `upstream/libs/*/`.
+  #
+  # Keep `upstream/libs/*/sublibs` otherwise `boostdep` will skip libraries
+  # that are not directly under `upstream/libs/` which will affect its
+  # dependency graphs (see below for examples of sublibs).
+  #
+  # Keep `tool*` and `check*` because some of those contain files that might
+  # be useful in future (and they take up little space).
+  #
+  # Use a pattern for README because there is no consistent naming format
+  # among libraries.
+  #
+  # While most libraries have their Jamfiles in `build/`, some have them in
+  # their root directories.
+  #
+  keep=("include" "src" "meta" "build" "config" "sublibs"
+        "LICENSE*" "README*"
+        ".gitattributes"
+        "tool*" "check*"
+        "cmake*" "Jamfile*")
+
+  # Sublibs: libraries that are not directly under `upstream/libs/`.
+  #
+  sublibs=("algorithm/string" "algorithm/minmax"
+           "numeric/ublas" "numeric/odeint"
+           "numeric/interval" "numeric/conversion")
+
+  for l in upstream/libs/*; do  # l: library.
+    for p in "$l/"*; do # p: path.
+      # If `p` is not a sublib, then remove as usual if appropriate.
+      #
+      if [[ ! "$(match_patterns ${p#upstream/libs/} "${sublibs[@]}")" ]]; then
+        if [[ ! "$(match_patterns ${p#$l/} "${keep[@]}")" ]]; then
+          rm -rf "$p"
+        fi
+      # Otherwise (`p` is a sublib) clean its directory as well.
+      #
+      else
+        for p2 in "$p/"*; do # p2: path within sublib `p`.
+          if [[ ! "$(match_patterns ${p2#$p/} "${keep[@]}")" ]]; then
+            rm -rf "$p2"
+          fi
+        done
+      fi
+    done
+  done
+  shopt -u dotglob
+
+  # Remove library-specific files.
+  #
+  # None yet.
+  #
 
   info "cleaned upstream/"
   exit 0
@@ -672,6 +773,11 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     # bdep-new can pick it up (detect the license manifest value, add it to
     # the buildfile, etc).
     #
+    # @@ Shouldn't we be linking to each library's own license?. Some
+    #    libraries have different licenses. E.g. some have MIT, some have
+    #    combined licenses, and some add copyright lines to the top of the
+    #    standard BOOST license.
+    #
     mkdir "$pn"
     ln -s "../LICENSE" "$pn"
 
@@ -679,6 +785,9 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     #
     # Note that bdep-new doesn't recognize Boost's README.md format and issues
     # the warning. Thus, we replace the generated file after it is created.
+    #
+    # @@ Libraries use various cases and extensions for their READMEs so
+    #    perhaps we should use a pattern here?
     #
     if [[ ! -f "$udp/README.md" ]]; then
       to+=",no-readme"
