@@ -1,0 +1,34 @@
+tclass = $cxx.target.class
+tsys   = $cxx.target.system
+
+# Build a separate driver executable for each library variant. (See
+# `downstream/libs/stacktrace/src/buildfile` for an explanation.)
+#
+variants = driver-noop
+
+if ($tclass == 'windows')
+   variants += driver-windbg        \
+               driver-windbg_cached
+else
+  variants += driver-addr2line
+
+if ($tclass != 'windows' || $tsys == 'mingw32')
+  variants += driver-basic
+
+./: exe{$variants}
+
+# For each variant's driver executable, add the (same) source file and link to
+# the corresponding variant of libboost-stacktrace.
+#
+for d: $variants # d: driver.
+{
+  ln = $regex.replace($d, 'driver-', 'boost_stacktrace_') # Library name.
+  import lib = libboost-stacktrace%lib{$ln}
+
+  # @@ I don't know what to do with that 'multiple rules matching' error. I
+  #    believe there is no way to provide a hint to disambiguate. Can also be
+  #    a build2 bug. Anyway, need to ask Boris.
+  #
+  exe{$d}: obj{$d}: cxx{driver} $lib
+  exe{$d}: $lib
+}

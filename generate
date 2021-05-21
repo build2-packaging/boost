@@ -686,7 +686,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -le 4 ]] && read line; do
+cat levels | while [[ "$level" -le 5 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -917,10 +917,13 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     # "symbol", for example "symbol exporting code".
     #
     if [[ "$binful" ]]; then
+      # Determine the build2 language module. Note that `lo` is likely to
+      # contain more than just the primary and secondary language suboptions.
+      #
       case "$lo" in
-        c++*) mod="cxx" ;;
-        c*)   mod="c"   ;;
-        *)    mod="cc"  ;;
+        c++,c*|c,c++*) mod="cc"  ;;
+        c++*)          mod="cxx" ;;
+        *)             mod="c"   ;;
       esac
 
       # BOOST_<lib>_NO_LIB:      Disable auto-linking of this library.
@@ -961,7 +964,7 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
       # Define `BOOST_<lib>_SOURCE` on obj{} targets.
       #
       ised_ops+=(-e "/.+ -DBOOST_STATIC_BUILD$/\
-i{hbmi  obj }{*}: cxx.poptions += -DBOOST_${umn}_SOURCE")
+i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
 
       # Define `BOOST_<lib>_STATIC_LINK` on obja{} targets. Note that this
       # replaces the bdep-generated `-DBOOST_STATIC_BUILD`.
@@ -1003,16 +1006,38 @@ i{hbmi  obj }{*}: cxx.poptions += -DBOOST_${umn}_SOURCE")
     # Boost installation isn't masking breakages.)
     #
     # It's also possible to provide a custom smoke test for a library by
-    # putting the custom test driver source file at
-    # `downstream/libs/<lib>/test/basics/driver.cpp`. If it exists, this file
-    # will be symlinked over the `bdep-new`-generated one (otherwise one will
-    # be generated).
+    # putting custom driver.cpp, buildfile, and .gitignore test files in
+    # downstream/libs/<lib>/test/basics/. If these files exist they will be
+    # symlinked over the `bdep-new`-generated ones, otherwise they will be
+    # generated.
     #
+    # @@ These custom tests becomes hairy. Can we do something like that:
+    #
+    #    - symlink all files (not dirs) from downstream test dir recursively
+    #    - generate driver.cpp if it is not a symlink
+    #
+    #    Let's discuss this with Boris on the review.
+    #
+
+    # Put the custom test buildfile into place if it exists.
+    #
+    f="downstream/libs/$udn/test/basics/buildfile" # Custom test buildfile.
+    if [[ -f "$f" ]]; then
+      ln -fs ../../../"$f" "$pn/tests/basics/"
+    fi
+
+    # Put the custom test .gitignore into place if it exists. A custom test
+    # may have driver executable(s) that are not named `driver`, for example.
+    #
+    f="downstream/libs/$udn/test/.gitignore" # Custom test .gitignore.
+    if [[ -f "$f" ]]; then
+      ln -fs ../../"$f" "$pn/tests/"
+    fi
 
     # Generate the smoke test if this package does not have a custom one.
     #
-    ctp="downstream/libs/$udn/test/basics/driver.cpp" # Custom test path.
-    if [[ ! -f "$ctp" ]]; then
+    ctd="downstream/libs/$udn/test/basics/driver.$se" # Custom test driver.
+    if [[ ! -f "$ctd" ]]; then
       # Build the include directive(s) appropriate for this library. If it
       # exists, include only the super-header (a single header which includes
       # all of its headers), otherwise include all headers in
@@ -1101,7 +1126,7 @@ EOF
       # A custom smoke test exists, so install it.
       #
       info "using custom smoke test for $pn"
-      ln -fs ../../../"$ctp" "$pn/tests/basics/driver.$se"
+      ln -fs ../../../"$ctd" "$pn/tests/basics/"
     fi
   done
 
