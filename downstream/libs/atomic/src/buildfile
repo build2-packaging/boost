@@ -45,28 +45,28 @@ sse = false
 #
 if ($cxx.target.cpu == 'x86_64' || $cxx.target.cpu == 'i686')
 {
+  sse = true
+
+  # Note that ICC on POSIX is in the `gcc` class while on Windows it is in the
+  # `msvc` class.
+  #
   switch $cxx.class
   {
     case 'gcc'
-    {
-      sse = true
+      sse_opts = ($cxx.id == 'icc'                        \
+                  ? -xSSE4.1                              \
+                  : -msse -msse2 -msse3 -mssse3 -msse4.1)
 
-      if ($cxx.id == 'icc')
-        sse_opts = ($windows ? /QxSSE4.1 : -xSSE4.1)
-      else
-        sse_opts = -msse -msse2 -msse3 -mssse3 -msse4.1
-    }
     case 'msvc'
-    {
-      # Do nothing in case of MSVC because, on x86_64, neither SSE2 nor SSE4.1
-      # can be turned on explicitly. There is an SSE2 option but it's not
-      # applicable in our case, and the only other options (see
+      # Add no compiler options in case of MSVC because, on x86_64, neither
+      # SSE2 nor SSE4.1 can be turned on explicitly. There is an SSE2 option
+      # but it's not applicable in our case, and the only other options (see
       # https://docs.microsoft.com/en-us/cpp/build/reference/arch-x64) are
       # various versions of AVX which appears to have some overlap with
       # SSE4.1, but the upstream build does not turn any of the AVX options
       # on.
       #
-    }
+      sse_opts = ($cxx.id == 'icc' ? /QxSSE4.1 : )
   }
 }
 

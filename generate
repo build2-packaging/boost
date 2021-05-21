@@ -396,6 +396,7 @@ function ised () # <file-path> <sed-option>...
 declare -A manifest_url=()
 declare -A manifest_builds=()
 declare -A binless_libs=()
+declare -A cxx_only=()
 declare -A include_headers=()
 declare -A exclude_headers=()
 source override
@@ -686,7 +687,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -le 4 ]] && read line; do
+cat levels | while [[ "$level" -le 5 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -721,7 +722,13 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     # Suboptions to the `bdep-new` `--lang` option. Start off with the primary
     # and, if applicable, secondary language suboptions. For example, "c++,c".
     #
-    lo="$(detect_lang "$udp" "$binful")"
+    # Override the language to C++ if necessary (see the `override` file).
+    #
+    if [[ "${cxx_only[$pn]}" ]]; then
+      lo="c++"
+    else
+      lo="$(detect_lang "$udp" "$binful")"
+    fi
 
     case "$lo" in
       # Primary language is C++.
@@ -756,13 +763,10 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     # is binful or not.
     #
     lib_bfile= # Library buildfile (the one that declares the library target).
-    custom_lib_bfile= # Path to custom lib buildfile (note: may not exist).
     if [[ "$binful" ]]; then
       lib_bfile="$pn/src/buildfile"
-      custom_lib_bfile="downstream/libs/$udn/src/buildfile"
     else
       lib_bfile="$pn/include/boost/buildfile"
-      custom_lib_bfile="downstream/libs/$udn/include/boost/buildfile"
       to+=",binless"
     fi
 
@@ -863,13 +867,19 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     #
     ised "$pn/manifest" "${ised_ops[@]}"
 
-    # If this library has a custom buildfile, copy it over the bdep-generated
-    # one (before we modify it).
+    # If this library has any custom buildfiles, copy them over the
+    # bdep-generated ones (before we modify them).
     #
-    # Note that we don't symlink this file since we will edit the copy.
+    # Note that we don't symlink these files since we will edit the copy.
     #
-    if [[ -f "$custom_lib_bfile" ]]; then
-      cp "$custom_lib_bfile" "$lib_bfile"
+    f="downstream/libs/$udn/src/buildfile"
+    if [[ -f "$f" ]]; then
+      cp "$f" "$pn/src/"
+    fi
+
+    f="downstream/libs/$udn/include/boost/buildfile"
+    if [[ -f "$f" ]]; then
+      cp "$f" "$pn/include/boost/"
     fi
 
     # Fix up package buildfile(s).
@@ -917,10 +927,13 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
     # "symbol", for example "symbol exporting code".
     #
     if [[ "$binful" ]]; then
+      # Determine the build2 language module. Note that `lo` is likely to
+      # contain more than just the primary and secondary language suboptions.
+      #
       case "$lo" in
-        c++*) mod="cxx" ;;
-        c*)   mod="c"   ;;
-        *)    mod="cc"  ;;
+        c++,c*|c,c++*) mod="cc"  ;;
+        c++*)          mod="cxx" ;;
+        *)             mod="c"   ;;
       esac
 
       # BOOST_<lib>_NO_LIB:      Disable auto-linking of this library.
@@ -961,7 +974,7 @@ cat levels | while [[ "$level" -le 4 ]] && read line; do
       # Define `BOOST_<lib>_SOURCE` on obj{} targets.
       #
       ised_ops+=(-e "/.+ -DBOOST_STATIC_BUILD$/\
-i{hbmi  obj }{*}: cxx.poptions += -DBOOST_${umn}_SOURCE")
+i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
 
       # Define `BOOST_<lib>_STATIC_LINK` on obja{} targets. Note that this
       # replaces the bdep-generated `-DBOOST_STATIC_BUILD`.
@@ -1002,17 +1015,47 @@ i{hbmi  obj }{*}: cxx.poptions += -DBOOST_${umn}_SOURCE")
     # headers. (But while developing, remember to ensure that your system
     # Boost installation isn't masking breakages.)
     #
-    # It's also possible to provide a custom smoke test for a library by
-    # putting the custom test driver source file at
-    # `downstream/libs/<lib>/test/basics/driver.cpp`. If it exists, this file
-    # will be symlinked over the `bdep-new`-generated one (otherwise one will
-    # be generated).
+
+    # Install custom test files if they exist: symlink any files in
+    # `downstream/libs/$udn/test/` or one of its subdirectories into
+    # `<lib>/tests/`, replacing the `bdep-new`-generated ones. Note that we're
+    # merging directory contents and therefore we cannot simply link to
+    # directories.
     #
+    ctd="downstream/libs/$udn/test" # Custom test directory.
+    if [[ -d "$ctd" ]]; then
+      find "$ctd" -type f | while read f; do
+        # Source directory path, relative to `downstream/libs/`.
+        #
+        # $udn/test/, $udn/test/basics/, etc
+        #
+        sd="$(dirname "${f#downstream/libs/}")/"
+
+        # Project root directory relative to the symlink directory.
+        #
+        # ../../, ../../../, etc
+        #
+        rd="$(sed -E "s%[^/]+%..%g" <<<"$sd")"
+
+        # Destination directory, relative to `downstream/libs/<lib>/tests/`.
+        #
+        # <empty>, basics/, etc
+        #
+        dd="${sd#$udn/test/}"
+
+        # Create the destination directory if it doesn't exist.
+        #
+        if [[ ! -d "$pn/tests/$dd" ]]; then
+          mkdir -p "$pn/tests/$dd"
+        fi
+
+        ln -fs "$rd$f" "$pn/tests/$dd"
+      done
+    fi
 
     # Generate the smoke test if this package does not have a custom one.
     #
-    ctp="downstream/libs/$udn/test/basics/driver.cpp" # Custom test path.
-    if [[ ! -f "$ctp" ]]; then
+    if [[ ! -L "$pn/tests/basics/driver.$se" ]]; then
       # Build the include directive(s) appropriate for this library. If it
       # exists, include only the super-header (a single header which includes
       # all of its headers), otherwise include all headers in
@@ -1097,11 +1140,6 @@ main ()
   return 0;
 }
 EOF
-    else
-      # A custom smoke test exists, so install it.
-      #
-      info "using custom smoke test for $pn"
-      ln -fs ../../../"$ctp" "$pn/tests/basics/driver.$se"
     fi
   done
 

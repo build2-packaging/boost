@@ -28,6 +28,17 @@ binless_libs["libboost-system"]=true
 binless_libs["libboost-exception"]=true
 binless_libs["libboost-chrono"]=true
 
+## cxx_only
+##
+## Libraries that need to be C++-only regardless of whether they are detected
+## as mixed-language.
+##
+
+# Boost.Stacktrace is detected as mixed-language but it just has a few (what
+# looks like to be badly-named) .h headers in detail/.
+#
+cxx_only["libboost-stacktrace"]=true
+
 ## include_headers
 ##
 ## For each library, a space-separated list of the complete set of header
