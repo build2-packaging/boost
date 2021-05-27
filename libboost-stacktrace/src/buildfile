@@ -1,0 +1,184 @@
+import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-winapi%lib{boost_winapi}
+impl_libs = # Implementation dependencies.
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+tclass = $cxx.target.class
+tsys   = $cxx.target.system
+
+# Boost.Stacktrace comes in a number of variants, each of which is compiled to
+# a different library file with the names conforming to the following scheme:
+#
+#   libboost_stacktrace_<variant>
+#
+# The user selects a variant by linking against the corresponding library
+# name. (If using Boost.Stacktrace as a header-only library, the variant is
+# selected by defining the corresponding macro.)
+#
+
+# The list of library variants that will be built.
+#
+# The `noop` variant disables backtracing and is supported on all platforms.
+#
+# @@ Add boost_stacktrace_backtrace when libbacktrace is packaged for build2.
+#
+variants = boost_stacktrace_noop
+
+# Select additional variants to be built.
+#
+# This is a condensed version of Table 37.2 at
+# https://www.boost.org/doc/libs/1_75_0/doc/html/stacktrace/configuration_and_build.html,
+# which shows on which platforms each library variant can be built:
+#
+# Library variant  Platforms
+# -----------------------------------------------------
+# noop             All
+# windbg           MSVC, Intel on Windows, Mingw-w64
+# windbg_cached    MSVC, Intel on Windows
+# basic            POSIX (any compiler), MinGW
+# backtrace        POSIX (any compiler), MinGW, Mingw-w64
+# addr2line        POSIX (any compiler)
+#
+# We make the following simplifications:
+#
+# - Don't distinguish between MinGW and Mingw-w64 because we support only the
+#   latter. So we provide support for Mingw-w64 if MinGW is officially
+#   supported.
+#
+# - Build the `windbg*` variants for any compiler on Windows, including Clang
+#   targeting the MSVC runtime.
+#
+# - Don't support the `backtrace` variant because the libbacktrace library it
+#   depends on is not always available. We can add support for this variant in
+#   the future, when package libbacktrace for build2.
+#
+if ($tclass == 'windows')
+  variants += boost_stacktrace_windbg        \
+              boost_stacktrace_windbg_cached
+else
+  variants += boost_stacktrace_addr2line
+
+if ($tclass != 'windows' || $tsys == 'mingw32')
+  variants += boost_stacktrace_basic
+
+./: lib{$variants}
+
+# Let each variant require all headers because the upstream headers are not
+# cleanly separated by variant implementation.
+#
+lib{$variants}: $pub/{$pub_hdrs}
+
+# Private headers and dependencies.
+#
+lib{$variants}: {hxx ixx txx h}{**} $impl_libs $intf_libs
+
+# Add source files to the library targets of the selected variants. Each
+# variant has a single source file named `<variant>.cpp`.
+#
+for l: $variants # l: library name.
+{
+  f = $regex.replace($l, "boost_stacktrace_", "") # Filename (no extension).
+  lib{$l}: cxx{$f}
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cc.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+               "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# Boost.Stacktrace's dynamic/static build configuration mechanism differs from
+# that of other Boost libraries (see `generate` for details). To build/use one
+# of Boost.Stacktrace's static libraries one has to define the
+# BOOST_STACKTRACE_LINK macro. To build or use one of its dynamic libraries,
+# one can either a) define BOOST_STACKTRACE_LINK (as in the static case) and
+# BOOST_ALL_DYN_LINK, or b) define just BOOST_STACKTRACE_DYN_LINK.
+#
+
+# Note that we don't define BOOST_STACKTRACE_LINK on static object files (as
+# we do below when we set the export options) because it's already done,
+# unconditionally, in the upstream source files. Furthermore, the `generate`
+# script will define BOOST_STACKTRACE_DYN_LINK on the shared object targets
+# and BOOST_STACKTRACE_STATIC_LINK on the static object targets below; note
+# that although the former is necessary the latter is redundant in the case of
+# Boost.Stacktrace.
+#
+{hbmi  obj }{*}: cc.poptions += -DBOOST_STACKTRACE_SOURCE
+{hbmia obja}{*}: cc.poptions += -DBOOST_STACKTRACE_STATIC_LINK
+{hbmis objs}{*}: cc.poptions += -DBOOST_STACKTRACE_DYN_LINK
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Link each variant to the libraries it requires.
+#
+for l: $variants # l: library name.
+{
+  switch $l: path.match, $tclass
+  {
+    case 'boost_stacktrace_windbg*'
+    {
+      if ($tsys == 'mingw32')
+        lib{$l}: cxx.libs += -lole32 -ldbgeng
+      else
+        lib{$l}: cxx.libs += ole32.lib dbgeng.lib
+    }
+
+    case 'boost_stacktrace_basic' | 'boost_stacktrace_addr2line', 'linux'
+      lib{$l}: cxx.libs += -ldl
+  }
+}
+
+# Export options.
+#
+lib{$variants}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_STACKTRACE_NO_LIB
+  cxx.export.libs     = $intf_libs
+}
+
+# Note that the `generate` script will change `-DBOOST_SHARED` to
+# `-DBOOST_STACKTRACE_DYN_LINK` but leave `-DBOOST_STACKTRACE_LINK` unchanged.
+#
+liba{$variants}: cxx.export.poptions += -DBOOST_STACKTRACE_LINK
+libs{$variants}: cxx.export.poptions += -DBOOST_STACKTRACE_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{$variants}: bin.lib.version = @"-$version.project_id"
+else
+  lib{$variants}: bin.lib.version = @"-$version.major.$version.minor"
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Don't install private headers.
+#
+{hxx ixx txx h}{*}: install = false
