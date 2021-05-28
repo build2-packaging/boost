@@ -86,7 +86,7 @@ lib{$variants}: $pub/{$pub_hdrs}
 
 # Private headers and dependencies.
 #
-lib{$variants}: {hxx ixx txx h}{**} $impl_libs $intf_libs
+lib{$variants}: {hxx ixx txx}{**} $impl_libs $intf_libs
 
 # Add source files to the library targets of the selected variants. Each
 # variant has a single source file named `<variant>.cpp`.
@@ -181,4 +181,4 @@ else
 
 # Don't install private headers.
 #
-{hxx ixx txx h}{*}: install = false
+{hxx ixx txx}{*}: install = false

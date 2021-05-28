@@ -1,11 +1,11 @@
-pub_hdrs = {hxx ixx txx}{**} file{**.h}
+pub_hdrs = hxx{** **.h} {ixx txx}{**}
 
 ./: $pub_hdrs
 
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
-{hxx ixx txx}{*} file{*.h}:
+{hxx ixx txx}{*}:
 {
   install         = include/boost/
   install.subdirs = true
