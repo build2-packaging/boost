@@ -1,0 +1,14 @@
+pub_hdrs = {hxx ixx txx}{**} file{**.h}
+
+./: $pub_hdrs
+
+hxx{export}@./: cxx.importable = false
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*} file{*.h}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

@@ -396,6 +396,7 @@ function ised () # <file-path> <sed-option>...
 declare -A manifest_url=()
 declare -A manifest_builds=()
 declare -A binless_libs=()
+declare -A cxx_libs=()
 declare -A include_headers=()
 declare -A exclude_headers=()
 source override
@@ -723,6 +724,12 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
     #
     lo="$(detect_lang "$udp" "$binful")"
 
+    # Override the language to C++ if necessary (see the `overrides` file).
+    #
+    if [[ "${cxx_libs[$pn]}" ]]; then
+      lo="c++"
+    fi
+
     case "$lo" in
       # Primary language is C++.
       #
@@ -863,13 +870,19 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
     #
     ised "$pn/manifest" "${ised_ops[@]}"
 
-    # If this library has a custom buildfile, copy it over the bdep-generated
-    # one (before we modify it).
+    # If this library has any custom buildfiles, copy them over the
+    # bdep-generated ones (before we modify them).
     #
-    # Note that we don't symlink this file since we will edit the copy.
+    # Note that we don't symlink these files since we will edit the copy.
     #
-    if [[ -f "$custom_lib_bfile" ]]; then
-      cp "$custom_lib_bfile" "$lib_bfile"
+    f="downstream/libs/$udn/src/buildfile"
+    if [[ -f "$f" ]]; then
+      cp "$f" "$pn/src/"
+    fi
+
+    f="downstream/libs/$udn/include/boost/buildfile"
+    if [[ -f "$f" ]]; then
+      cp "$f" "$pn/include/boost/"
     fi
 
     # Fix up package buildfile(s).

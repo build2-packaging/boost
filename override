@@ -28,6 +28,19 @@ binless_libs["libboost-system"]=true
 binless_libs["libboost-exception"]=true
 binless_libs["libboost-chrono"]=true
 
+## cxx_libs
+##
+## Libraries that need to be C++-only regardless of whether they are detected
+## as mixed-language.
+##
+
+# Boost.Stacktrace is detected as mixed-language but this causes the language
+# and thus link rule to be used for the test driver executable targets to be
+# ambiguous because the targest in its custom tests buildfile are specified at
+# a finer granularity than usual.
+#
+cxx_libs["libboost-stacktrace"]=true
+
 ## include_headers
 ##
 ## For each library, a space-separated list of the complete set of header

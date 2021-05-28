@@ -25,10 +25,11 @@ for d: $variants # d: driver.
   ln = $regex.replace($d, 'driver-', 'boost_stacktrace_') # Library name.
   import lib = libboost-stacktrace%lib{$ln}
 
-  # @@ I don't know what to do with that 'multiple rules matching' error. I
-  #    believe there is no way to provide a hint to disambiguate. Can also be
-  #    a build2 bug. Anyway, need to ask Boris.
-  #
+# @@ How about this arrangement?
+#
+#   obj{$d}: cxx{driver} $lib
+#   exe{$d}: obj{$d} $lib
+#
   exe{$d}: obj{$d}: cxx{driver} $lib
   exe{$d}: $lib
 }
