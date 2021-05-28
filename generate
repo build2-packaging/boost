@@ -722,12 +722,12 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
     # Suboptions to the `bdep-new` `--lang` option. Start off with the primary
     # and, if applicable, secondary language suboptions. For example, "c++,c".
     #
-    lo="$(detect_lang "$udp" "$binful")"
-
     # Override the language to C++ if necessary (see the `overrides` file).
     #
     if [[ "${cxx_libs[$pn]}" ]]; then
       lo="c++"
+    else
+      lo="$(detect_lang "$udp" "$binful")"
     fi
 
     case "$lo" in
@@ -763,13 +763,10 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
     # is binful or not.
     #
     lib_bfile= # Library buildfile (the one that declares the library target).
-    custom_lib_bfile= # Path to custom lib buildfile (note: may not exist).
     if [[ "$binful" ]]; then
       lib_bfile="$pn/src/buildfile"
-      custom_lib_bfile="downstream/libs/$udn/src/buildfile"
     else
       lib_bfile="$pn/include/boost/buildfile"
-      custom_lib_bfile="downstream/libs/$udn/include/boost/buildfile"
       to+=",binless"
     fi
 

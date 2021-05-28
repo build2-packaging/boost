@@ -36,7 +36,7 @@ binless_libs["libboost-chrono"]=true
 
 # Boost.Stacktrace is detected as mixed-language but this causes the language
 # and thus link rule to be used for the test driver executable targets to be
-# ambiguous because the targest in its custom tests buildfile are specified at
+# ambiguous because the targets in its custom tests buildfile are specified at
 # a finer granularity than usual.
 #
 cxx_libs["libboost-stacktrace"]=true

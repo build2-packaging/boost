@@ -15,8 +15,6 @@ else
 if ($tclass != 'windows' || $tsys == 'mingw32')
   variants += driver-basic
 
-./: exe{$variants}
-
 # For each variant's driver executable, add the (same) source file and link to
 # the corresponding variant of libboost-stacktrace.
 #
@@ -25,11 +23,6 @@ for d: $variants # d: driver.
   ln = $regex.replace($d, 'driver-', 'boost_stacktrace_') # Library name.
   import lib = libboost-stacktrace%lib{$ln}
 
-# @@ How about this arrangement?
-#
-#   obj{$d}: cxx{driver} $lib
-#   exe{$d}: obj{$d} $lib
-#
-  exe{$d}: obj{$d}: cxx{driver} $lib
-  exe{$d}: $lib
+  ./: exe{$d}: obje{$d} $lib
+  obje{$d}: cxx{driver} $lib
 }
