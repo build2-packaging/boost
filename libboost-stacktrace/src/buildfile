@@ -107,8 +107,8 @@ src_pfx_inc = [dir_path] $src_root/include/
 out_pfx_src = [dir_path] $out_root/src/
 src_pfx_src = [dir_path] $src_root/src/
 
-cc.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
-               "-I$out_pfx_inc" "-I$src_pfx_inc"
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
 
 # Boost.Stacktrace's dynamic/static build configuration mechanism differs from
 # that of other Boost libraries (see `generate` for details). To build/use one
@@ -126,9 +126,9 @@ cc.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 # that although the former is necessary the latter is redundant in the case of
 # Boost.Stacktrace.
 #
-{hbmi  obj }{*}: cc.poptions += -DBOOST_STACKTRACE_SOURCE
-{hbmia obja}{*}: cc.poptions += -DBOOST_STACKTRACE_STATIC_LINK
-{hbmis objs}{*}: cc.poptions += -DBOOST_STACKTRACE_DYN_LINK
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_STACKTRACE_SOURCE
+{hbmia obja}{*}: cxx.poptions += -DBOOST_STACKTRACE_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_STACKTRACE_DYN_LINK
 
 # BEGIN MANUAL CUSTOMIZATION
 #
