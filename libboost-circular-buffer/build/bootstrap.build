@@ -1,0 +1,7 @@
+project = libboost-circular-buffer
+
+using version
+using config
+using test
+using install
+using dist

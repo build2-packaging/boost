@@ -1,0 +1,3 @@
+import libs = libboost-circular-buffer%lib{boost_circular_buffer}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

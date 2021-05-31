@@ -1,0 +1,7 @@
+project = libboost-dynamic-bitset
+
+using version
+using config
+using test
+using install
+using dist

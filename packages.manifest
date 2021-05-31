@@ -72,3 +72,15 @@ location: libboost-numeric-interval/
 location: libboost-pool/
 :
 location: libboost-safe-numerics/
+:
+location: libboost-circular-buffer/
+:
+location: libboost-dynamic-bitset/
+:
+location: libboost-intrusive/
+:
+location: libboost-smart-ptr/
+:
+location: libboost-stacktrace/
+:
+location: libboost-utility/

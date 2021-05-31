@@ -1,0 +1,7 @@
+project = libboost-smart-ptr
+
+using version
+using config
+using test
+using install
+using dist

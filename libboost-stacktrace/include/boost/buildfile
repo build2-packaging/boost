@@ -1,0 +1,16 @@
+# BEGIN MANUAL CUSTOMIZATION
+#
+pub_hdrs = hxx{** **.h} {ixx txx}{**}
+#
+# END MANUAL CUSTOMIZATION
+
+./: $pub_hdrs
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
