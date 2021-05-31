@@ -1,0 +1,24 @@
+: 1
+name: libboost-dynamic-bitset
+version: 1.75.0-a.0.z
+project: boost
+summary: boost-dynamic-bitset C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/dynamic_bitset
+doc-url: https://www.boost.org/doc/libs/1_75_0/libs/dynamic_bitset
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-container-hash == $
+depends: libboost-core == $
+depends: libboost-integer == $
+depends: libboost-move == $
+depends: libboost-static-assert == $
+depends: libboost-throw-exception == $
