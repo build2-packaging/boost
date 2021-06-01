@@ -26,7 +26,6 @@ manifest_builds["libboost-winapi"]="&windows ; Provides Windows API declarations
 
 binless_libs["libboost-system"]=true
 binless_libs["libboost-exception"]=true
-binless_libs["libboost-chrono"]=true
 
 ## cxx_only
 ##
@@ -38,6 +37,40 @@ binless_libs["libboost-chrono"]=true
 # looks like to be badly-named) .h headers in detail/.
 #
 cxx_only["libboost-stacktrace"]=true
+
+## source_macro
+##
+## The libraries that need `BOOST_<lib>_SOURCE` to be defined on the
+## compilation command line.
+##
+## Other libraries define it unconditionally in every one of their source
+## files. Do not define this macro in the latter cases otherwise the compiler
+## will complain that it's been redefined. (Not all libraries define this
+## macro to have the same value: most use an empty value but some use `1`).
+##
+source_macro["libboost-atomic"]=true
+source_macro["libboost-json"]=true
+source_macro["libboost-stacktrace"]=true
+
+## nonboost_intf_deps
+##
+## Non-Boost interface dependencies.
+##
+## Each value is a space-separated list of dependencies in the Buildfile
+## project-qualified target format, optionally with a package version
+## constraint appended.
+##
+## If there are multiple instances of a project, only the first one's package
+## version constraint will be used (and subsequent ones ignored).
+##
+## Although the version constraints cannot contain spaces (because these
+## values are space-separated), spaces will be inserted as required in the
+## `generate` script (but not around ranges).
+##
+nonboost_intf_deps["libboost-regex"]="\
+libicuuc%lib{icuuc}^65.1.0 \
+libicui18n%lib{icui18n}^65.1.0 \
+"
 
 ## include_headers
 ##
@@ -100,6 +133,10 @@ detail/lightweight_main.hpp \
 detail/lightweight_test_report.hpp \
 detail/utf8_codecvt_facet.hpp \
 "
+
+# function_output_iterator.hpp: deprecated header.
+#
+exclude_headers["libboost-iterator"]="function_output_iterator.hpp"
 
 # checked_float.hpp: does not compile and is not used in any of Boost's own
 #                    tests.

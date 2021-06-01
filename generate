@@ -397,6 +397,8 @@ declare -A manifest_url=()
 declare -A manifest_builds=()
 declare -A binless_libs=()
 declare -A cxx_only=()
+declare -A source_macro=()
+declare -A nonboost_intf_deps=()
 declare -A include_headers=()
 declare -A exclude_headers=()
 source override
@@ -608,32 +610,77 @@ done
 # Add dependencies to a library's package manifest and buildfiles.
 #
 # The <manifest> and <buildfile> arguments are the paths to the files to
-# edit. The <deps> argument is a space-separated list of the package's
-# dependencies in the `boostdep` name format. The <bf-var> argument is the
-# name of the buildfile variable to modify: either "intf_libs" or "impl_libs".
+# edit.
+#
+# The <deps> argument is a space-separated list of the package's dependencies
+# either in the `boostdep` name format or in the Buildfile project-qualified
+# target format with an optional package version constraint appended. For
+# example:
+#
+#   atomic
+#   filesystem
+#   numeric~ublas
+#   libicuuc%lib{icuuc}^65.1.0
+#   libicuuc%lib{icudata}
+#   libicui18n%lib{icui18n}==65.1.0
+#
+# See the `override` file for more information.
+#
+# The <bf-var> argument is the name of the buildfile variable to modify:
+# either "intf_libs" or "impl_libs".
 #
 function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 {
   local mf="$1"   # Path to the manifest.
   local bf="$2"   # Path to the buildfile.
-  local deps=($3) # Dependencies (`boostdep` format).
+  local deps=($3) # Dependencies.
   local vn="$4"   # Buildfile variable name.
 
   # Build a list of editing scripts for each file, then pass them all at once
   # to `sed`, thus invoking it only once per file.
   #
-  local mscr=() # Sed scripts for the package manifest.
-  local bscr=() # Sed scripts for the library buildfile.
+  local mscr=()     # Sed scripts for the package manifest.
+  local bscr=()     # Sed scripts for the library buildfile.
+  local -A mdeps=() # Dependency project names already added to the manifest.
 
   local i
   for i in "${!deps[@]}"; do
-    local d="${deps[$i]}"             # Dependency in `boostdep` format.
-    local dpn="$(pkg_name "$d")"      # Dependency's build2 package name.
-    local dun="$(upstream_name "$d")" # Dependency upstream name.
+    local d="${deps[$i]}" # Dependency.
 
-    # Append the current dependency to the package manifest in a new line.
+    local dpn= # Dependency package name.
+    local dln= # Dependency library name.
+    local dvc= # Dependency version constraint.
+
+    if [[ "$d" =~ ^(.+)'%lib{'(.+)'}'(.+)?$ ]]; then
+      # Dependency is in project-qualified target format.
+      #
+      dpn="${BASH_REMATCH[1]}"
+      dln="${BASH_REMATCH[2]}"
+
+      if [[ -n "${BASH_REMATCH[3]}" ]]; then # Is version constraint present?
+        # Insert a space before the version constraint operator and, if it's a
+        # comparison operator, also after it. (Ranges are not supported.)
+        #
+        dvc=" $(sed -Ee "s%(==|<|<=|>|>=)%\1 %" <<<"${BASH_REMATCH[3]}")"
+      fi
+    else
+      # Dependency is in `boostdep` name format.
+      #
+      dpn="$(pkg_name "$d")"
+      dln="boost_$(upstream_name "$d")"
+      dvc=" == $"
+    fi
+
+    # Append the current dependency to the package manifest in a new line
+    # unless it's already been added (in which case <deps> contains multiple
+    # targets from the same project/package).
     #
-    mscr+=(-e "/^depends: \* bpkg/adepends: $dpn == $")
+    if [[ ! "${mdeps[$dpn]}" ]]; then
+      mscr+=(-e "/^depends: \* bpkg/a\\
+depends: $dpn$dvc")
+
+      mdeps["$dpn"]=true
+    fi
 
     # Update the "(intf|impl)_libs = ..." Buildfile variable with the current
     # dependency.
@@ -653,7 +700,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
     #    Therefore we're deferring dealing with conditional dependencies until
     #    another, more pressing case arises.
     #
-    local dt="$dpn%lib\{boost_$dun\}" # Dependency text.
+    local dt="$dpn%lib\{$dln\}" # Dependency text.
     if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
       local a=" = " # The formatted assignment operator.
       if [[ "${#deps[@]}" -gt 1 ]]; then
@@ -661,7 +708,8 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
       fi
       bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
     else # Subsequent dependencies: update/append to variable.
-      bscr+=(-e "/^import $vn.*/aimport $vn += $dt")
+      bscr+=(-e "/^import $vn.*/a\\
+import $vn += $dt")
     fi
   done
 
@@ -687,7 +735,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -le 5 ]] && read line; do
+cat levels | while [[ "$level" -le 10 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -848,19 +896,24 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
     ised_ops=(\
       -e "s%^(version:).+%\1 $boostver$version_suffix%" \
       -e "s%^(url:).+%\1 $url%" \
-      -e "/^url:/adoc-url: $doc_url" \
+      -e "/^url:/a\\
+doc-url: $doc_url" \
       -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%" \
       -e "s%^#(build-error-email:).+%\1 builds@build2.org%" \
       -e "/^#depends:/d" \
-      -e "/^license:/atopics: C++, Boost" \
-      -e "/^url:/apackage-url: https://github.com/build2-packaging/boost" \
-      -e "/^email:/apackage-email: packaging@build2.org ; Mailing list.")
+      -e "/^license:/a\\
+topics: C++, Boost" \
+      -e "/^url:/a\\
+package-url: https://github.com/build2-packaging/boost" \
+      -e "/^email:/a\\
+package-email: packaging@build2.org ; Mailing list.")
 
     # The `builds` package manifest value (see the override file for
     # deviations).
     #
     if [[ -v "manifest_builds[$pn]" ]]; then
-      ised_ops+=(-e "/build-error-email/abuilds: ${manifest_builds[$pn]}")
+      ised_ops+=(-e "/build-error-email/a\\
+builds: ${manifest_builds[$pn]}")
     fi
 
     # Fix up the package manifest.
@@ -908,7 +961,9 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
 
     # Add dependencies to the package manifest and the library buildfile.
     #
-    add_deps "$pn/manifest" "$lib_bfile" "${intf_deps[$pn]}" "intf_libs"
+    add_deps "$pn/manifest" "$lib_bfile" \
+             "${nonboost_intf_deps[$pn]} ${intf_deps[$pn]}" \
+             "intf_libs"
     add_deps "$pn/manifest" "$lib_bfile" "${impl_deps[$pn]}" "impl_libs"
 
     # Make a number of changes to the library buildfile in a batch.
@@ -971,10 +1026,13 @@ cat levels | while [[ "$level" -le 5 ]] && read line; do
       #
       umn="${un^^}" # Upstream name for C macros (upstream name in uppercase).
 
-      # Define `BOOST_<lib>_SOURCE` on obj{} targets.
+      # Define `BOOST_<lib>_SOURCE` on obj{} targets if required for this
+      # library (see the `override` file for details).
       #
-      ised_ops+=(-e "/.+ -DBOOST_STATIC_BUILD$/\
+      if [[ "${source_macro[$pn]}" ]]; then
+        ised_ops+=(-e "/.+ -DBOOST_STATIC_BUILD$/\
 i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
+      fi
 
       # Define `BOOST_<lib>_STATIC_LINK` on obja{} targets. Note that this
       # replaces the bdep-generated `-DBOOST_STATIC_BUILD`.
@@ -1107,14 +1165,24 @@ i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
         incl="#include <boost/$udn.$he>"$'\n'
       else
         # No super-header found, so include all headers directly under
-        # `include/boost/` and `include/boost/<lib>/`.
+        # `include/boost/` and `include/boost/$udn/`.
         #
         # Find and include all public headers. All paths returned by `find`
         # will be of the `$udp/include/boost/foo.hpp` or
         # `$udp/include/boost/$udn/foo.hpp` forms.
         #
         eh=(${exclude_headers["$pn"]}) # Excluded headers for this library.
-        find "$udp/include/boost/" -maxdepth 2 -type f -name "*.$he" | sort | \
+
+        # The value of the `-maxdepth` option to `find`. Increase it if the
+        # upstream directory name is a path (for example,
+        # `numeric/conversion`).
+        #
+        md=2
+        if [[ "$udn" == *"/"* ]]; then
+          md=3
+        fi
+        find "$udp/include/boost/" -maxdepth "$md" -type f -name "*.$he" |\
+          sort |\
           while read hp; do # hp: header path.
             # Header filename, relative to `$udp/include/boost/`.
             #
@@ -1162,6 +1230,13 @@ done
 ised buildfile -e "s%(import pkgs =) \*/%\
 \1 \{*/ -upstream/ -downstream/$exclusions\}%"
 
-# Remove commented-out and empty lines from `repositories.manifest`.
+# Remove commented-out and empty lines from `repositories.manifest`. Also add
+# repositories for non-Boost dependencies.
 #
-ised repositories.manifest -e "/(^#|^$)/d"
+ised repositories.manifest \
+     -e "/(^#|^$)/d" \
+     -e '/^summary:.+/a\
+\
+:\
+role: prerequisite\
+location: https://github.com/build2-packaging/icu.git##HEAD'

@@ -6,3 +6,7 @@ libboost-wave
 # of Boost.Compatibility.
 #
 libboost-compatibility
+
+# Excluded only temporarily.
+#
+libboost-filesystem
