@@ -1,0 +1,21 @@
+pub_hdrs = {hxx ixx txx}{**}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Include `json.natvis` in the distribution. It customizes the display of
+# Boost.Json's types in the MSVC debugger.
+#
+./: $pub_hdrs file{json/json.natvis}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

@@ -1063,17 +1063,6 @@ BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR is defined.
 
 We package this library as binless.
 
-2.b libboost-chrono
-
-It's listed by `boostdep --boost-root upstream --list-buildable`. It has the
-two separate Debian packages like the truly compiled Boost libraries do, but
-it contains no binaries.
-
-Its three source files do nothing but include the corresponding header
-file. For example, foo.cpp just includes foo.hpp.
-
-We package this library as binless.
-
 2.b libboost-system
 
 It's listed by `boostdep --boost-root upstream --list-buildable`. Its
@@ -1086,3 +1075,8 @@ see https://stackoverflow.com/a/54184692,
 https://www.boost.org/doc/libs/1_75_0/libs/system/doc/html/system.html#changes_in_boost_1_69,
 and
 https://github.com/boostorg/system/blob/69bc20fb15483e77ff7aa36c76c0750f0a9a18a6/include/boost/system/config.hpp#L16).
+
+2.c libboost-regex
+
+Boost.Regex went header-only (that is, compilation is deprecated) in Boost
+1.76.

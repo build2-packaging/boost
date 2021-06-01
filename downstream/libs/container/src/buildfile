@@ -1,0 +1,67 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_container}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Private headers and sources as well as dependencies.
+#
+# There are multiple C source files but only `alloc_lib.c` must be compiled.
+# However, the other `.c` files need to be distributed because they are
+# included by `alloc_lib.c` so include them as ad hoc prerequisites.
+#
+lib{boost_container}: {hxx h cxx}{**} c{alloc_lib} $impl_libs $intf_libs
+
+lib{boost_container}: c{dlmalloc_*}: include = adhoc
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cc.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+               "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cc.poptions += -DBOOST_STATIC_BUILD
+{hbmis objs}{*}: cc.poptions += -DBOOST_SHARED_BUILD
+
+
+# Export options.
+#
+lib{boost_container}:
+{
+  cc.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cc.export.libs = $intf_libs
+}
+
+liba{boost_container}: cc.export.poptions += -DBOOST_STATIC
+libs{boost_container}: cc.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_container}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_container}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx h}{*}: install = false
