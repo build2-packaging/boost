@@ -1,0 +1,3 @@
+import libs = libboost-rational%lib{boost_rational}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,59 @@
+import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-system%lib{boost_system}
+import impl_libs  = libboost-chrono%lib{boost_chrono}
+import impl_libs += libboost-io%lib{boost_io}
+import impl_libs += libboost-predef%lib{boost_predef}
+import impl_libs += libboost-throw-exception%lib{boost_throw_exception}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_timer}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_timer}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_TIMER_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_TIMER_DYN_LINK
+
+# Export options.
+#
+lib{boost_timer}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_TIMER_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_timer}: cxx.export.poptions += -DBOOST_TIMER_STATIC_LINK
+libs{boost_timer}: cxx.export.poptions += -DBOOST_TIMER_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_timer}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_timer}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

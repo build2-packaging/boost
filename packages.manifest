@@ -84,3 +84,79 @@ location: libboost-smart-ptr/
 location: libboost-stacktrace/
 :
 location: libboost-utility/
+:
+location: libboost-container/
+:
+location: libboost-conversion/
+:
+location: libboost-exception/
+:
+location: libboost-mpl/
+:
+location: libboost-optional/
+:
+location: libboost-rational/
+:
+location: libboost-static-string/
+:
+location: libboost-type-index/
+:
+location: libboost-any/
+:
+location: libboost-format/
+:
+location: libboost-function/
+:
+location: libboost-function-types/
+:
+location: libboost-json/
+:
+location: libboost-metaparse/
+:
+location: libboost-numeric-conversion/
+:
+location: libboost-outcome/
+:
+location: libboost-qvm/
+:
+location: libboost-ratio/
+:
+location: libboost-unordered/
+:
+location: libboost-variant/
+:
+location: libboost-chrono/
+:
+location: libboost-functional/
+:
+location: libboost-fusion/
+:
+location: libboost-scope-exit/
+:
+location: libboost-tti/
+:
+location: libboost-hana/
+:
+location: libboost-iterator/
+:
+location: libboost-local-function/
+:
+location: libboost-parameter/
+:
+location: libboost-timer/
+:
+location: libboost-heap/
+:
+location: libboost-lambda/
+:
+location: libboost-lockfree/
+:
+location: libboost-multi-array/
+:
+location: libboost-regex/
+:
+location: libboost-signals2/
+:
+location: libboost-tokenizer/
+:
+location: libboost-yap/

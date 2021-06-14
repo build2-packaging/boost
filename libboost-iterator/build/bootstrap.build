@@ -1,0 +1,7 @@
+project = libboost-iterator
+
+using version
+using config
+using test
+using install
+using dist

@@ -1,0 +1,3 @@
+import libs = libboost-local-function%lib{boost_local_function}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

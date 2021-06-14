@@ -1,0 +1,7 @@
+project = libboost-unordered
+
+using version
+using config
+using test
+using install
+using dist

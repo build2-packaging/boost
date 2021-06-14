@@ -1,0 +1,1 @@
+../upstream/libs/static_string/README.md

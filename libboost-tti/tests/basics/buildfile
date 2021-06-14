@@ -1,0 +1,3 @@
+import libs = libboost-tti%lib{boost_tti}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

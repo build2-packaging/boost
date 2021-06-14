@@ -1,0 +1,7 @@
+project = libboost-ratio
+
+using version
+using config
+using test
+using install
+using dist

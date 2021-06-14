@@ -1,0 +1,26 @@
+import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs += libboost-exception%lib{boost_exception}
+import intf_libs += libboost-system%lib{boost_system}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+
+lib{boost_outcome}: {hxx ixx txx h}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_outcome}:
+{
+  cc.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cc.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx h}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

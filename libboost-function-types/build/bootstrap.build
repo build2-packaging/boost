@@ -1,0 +1,7 @@
+project = libboost-function-types
+
+using version
+using config
+using test
+using install
+using dist

@@ -1,0 +1,12 @@
+pub_hdrs = {hxx ixx txx h}{**}
+
+./: $pub_hdrs
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx h}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

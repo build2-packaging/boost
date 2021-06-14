@@ -1,0 +1,3 @@
+import libs = libboost-hana%lib{boost_hana}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

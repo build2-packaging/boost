@@ -1,0 +1,3 @@
+import libs = libboost-numeric-conversion%lib{boost_numeric_conversion}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
