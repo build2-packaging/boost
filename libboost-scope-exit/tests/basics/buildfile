@@ -1,0 +1,3 @@
+import libs = libboost-scope-exit%lib{boost_scope_exit}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

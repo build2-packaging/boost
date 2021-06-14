@@ -1,0 +1,7 @@
+project = libboost-scope-exit
+
+using version
+using config
+using test
+using install
+using dist

@@ -1,0 +1,3 @@
+import libs = libboost-heap%lib{boost_heap}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

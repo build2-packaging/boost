@@ -1,0 +1,7 @@
+project = libboost-optional
+
+using version
+using config
+using test
+using install
+using dist

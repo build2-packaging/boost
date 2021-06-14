@@ -1,0 +1,3 @@
+import libs = libboost-outcome%lib{boost_outcome}
+
+exe{driver}: {hxx ixx txx h cxx c}{**} $libs testscript{**}

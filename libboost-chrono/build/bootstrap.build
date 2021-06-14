@@ -1,0 +1,7 @@
+project = libboost-chrono
+
+using version
+using config
+using test
+using install
+using dist

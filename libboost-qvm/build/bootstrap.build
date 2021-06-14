@@ -1,0 +1,7 @@
+project = libboost-qvm
+
+using version
+using config
+using test
+using install
+using dist

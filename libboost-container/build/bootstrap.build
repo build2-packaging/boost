@@ -1,0 +1,7 @@
+project = libboost-container
+
+using version
+using config
+using test
+using install
+using dist

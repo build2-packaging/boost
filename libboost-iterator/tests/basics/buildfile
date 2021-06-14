@@ -1,0 +1,3 @@
+import libs = libboost-iterator%lib{boost_iterator}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

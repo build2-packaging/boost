@@ -1,0 +1,3 @@
+import libs = libboost-format%lib{boost_format}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

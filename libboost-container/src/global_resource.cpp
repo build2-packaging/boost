@@ -1,0 +1,1 @@
+../../upstream/libs/container/src/global_resource.cpp

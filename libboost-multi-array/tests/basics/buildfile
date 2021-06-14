@@ -1,0 +1,3 @@
+import libs = libboost-multi-array%lib{boost_multi_array}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

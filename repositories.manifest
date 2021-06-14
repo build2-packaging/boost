@@ -1,2 +1,6 @@
 : 1
 summary: boost project repository
+
+:
+role: prerequisite
+location: https://github.com/build2-packaging/icu.git##HEAD

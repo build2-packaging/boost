@@ -1,0 +1,3 @@
+import libs = libboost-regex%lib{boost_regex}
+
+exe{driver}: {hxx ixx txx h cxx c}{**} $libs testscript{**}

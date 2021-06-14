@@ -1,0 +1,3 @@
+import libs = libboost-ratio%lib{boost_ratio}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

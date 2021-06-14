@@ -1,0 +1,7 @@
+project = libboost-outcome
+
+using version
+using config
+using test
+using install
+using dist

@@ -1,0 +1,7 @@
+project = libboost-hana
+
+using version
+using config
+using test
+using install
+using dist

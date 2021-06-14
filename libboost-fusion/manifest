@@ -1,0 +1,26 @@
+: 1
+name: libboost-fusion
+version: 1.75.0-a.0.z
+project: boost
+summary: boost-fusion C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+url: https://github.com/boostorg/fusion
+doc-url: https://www.boost.org/doc/libs/1_75_0/libs/fusion
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-config == $
+depends: libboost-container-hash == $
+depends: libboost-core == $
+depends: libboost-function-types == $
+depends: libboost-mpl == $
+depends: libboost-preprocessor == $
+depends: libboost-static-assert == $
+depends: libboost-tuple == $
+depends: libboost-type-traits == $
+depends: libboost-typeof == $
+depends: libboost-utility == $

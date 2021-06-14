@@ -1,0 +1,3 @@
+import libs = libboost-timer%lib{boost_timer}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

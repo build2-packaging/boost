@@ -1,0 +1,7 @@
+project = libboost-static-string
+
+using version
+using config
+using test
+using install
+using dist

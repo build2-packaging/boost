@@ -1,0 +1,3 @@
+import libs = libboost-unordered%lib{boost_unordered}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
