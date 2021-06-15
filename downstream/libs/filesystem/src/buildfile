@@ -1,0 +1,117 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost-filesystem}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost-filesystem}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+tclass  = $cxx.target.class
+tsys    = $cxx.target.system
+
+# Define various BOOST_FILESYSTEM_* macros as appropriate for each OS and use
+# the appropriate compiler option to link to the bcrypt library on Windows.
+# The BOOST_FILESYSTEM_HAS_STAT_* macros pertain to the mtime- and
+# birthtime-related fields of `struct stat`. Although these stat macros are
+# only used in operations.cpp the upstream build defines it globally so copy
+# them.
+#
+switch $tclass, $tsys
+{
+  # The statx(2) syscall was added in Linux 4.11 in 2017 and statx() was added
+  # to glibc 2.28 in 2018.
+  #
+  # @@ So should we assume it is too recent to exist? Probably yes. While we
+  #    can get the standard library id via $cc.stdlib, we unable to get its
+  #    version.  Perhaps the right way would be to extract the libc version
+  #    and make it available in buildfiles.
+  #
+  case 'linux'
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
+                    # -DBOOST_FILESYSTEM_HAS_STATX_SYSCALL \
+                    # -DBOOST_FILESYSTEM_HAS_STATX
+
+  case 'bsd', 'freebsd'
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM
+
+  case 'bsd', 'openbsd'
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
+
+  case 'bsd', 'netbsd'
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC
+
+  # The `st_birthtimespec` field is only present if inode_t is 64 bits in size
+  # (_DARWIN_FEATURE_64_BIT_INODE is defined). Given that 64-bit (by-default;
+  # read about _DARWIN_USE_64_BIT_INODE in stat(2)) inodes were introduced in
+  # 2009 with Mac OSX 10.6 Snow Leopard, assume `st_birthtimespec` is present.
+  #
+  case 'macos'
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC
+
+  case 'windows', 'mingw32'
+  {
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT
+    cxx.libs     += -lbcrypt
+  }
+  case 'windows'
+  {
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT
+    cxx.libs     += bcrypt.lib
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+lib{boost-filesystem}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost-filesystem}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-filesystem}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-filesystem}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost-filesystem}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

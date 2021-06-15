@@ -49,6 +49,7 @@ cxx_only["libboost-stacktrace"]=true
 ## macro to have the same value: most use an empty value but some use `1`).
 ##
 source_macro["libboost-atomic"]=true
+source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
 source_macro["libboost-stacktrace"]=true
 

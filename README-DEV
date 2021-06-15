@@ -1080,3 +1080,121 @@ https://github.com/boostorg/system/blob/69bc20fb15483e77ff7aa36c76c0750f0a9a18a6
 
 Boost.Regex went header-only (that is, compilation is deprecated) in Boost
 1.76.
+
+2.d libboost-filesystem
+
+This is what struct stat looks like on various OSs (only the mtime- and
+birthtime-related fields are pertinent):
+
+ - POSIX
+
+   // <2008
+   struct stat {
+     time_t st_mtime;
+   };
+
+   // >=2008
+   struct stat {
+     struct timespec st_mtim;
+     #define st_mtime st_mtim.tv_sec
+   };
+
+
+ - Linux
+
+   struct stat {
+     struct timespec st_mtim;
+     #define st_mtime st_mtim.tv_sec
+   };
+
+   // If _POSIX_C_SOURCE < 200809L ||
+   // _XOPEN_SOURCE < 700 ||
+   // (_BSD_SOURCE undef && _SVID_SOURCE undef)
+   //
+   struct stat {
+     time_t st_mtime;
+     long st_mtimensec;
+   };
+
+ - NetBSD
+
+   struct stat {
+     time_t      st_mtime;
+     long        st_mtimensec;
+     time_t      st_birthtime;
+     long        st_birthtimensec;
+#ifdef _NETBSD_SOURCE
+     struct timespec     st_mtimespec;
+     struct timespec     st_birthtimespec;
+#endif
+   };
+
+ - FreeBSD
+
+   struct stat {
+     struct	timespec st_mtim;
+     #define st_mtime		     st_mtim.tv_sec
+     struct timespec st_birthtim;
+#ifndef _POSIX_SOURCE
+      #define st_birthtime	     st_birthtim.tv_sec
+      #define st_birthtimespec	     st_birthtim
+      #define st_mtimespec	     st_mtim
+#endif
+   };
+
+ - OpenBSD
+
+   struct stat {
+     struct timespec st_mtim;
+     #define st_mtime		     st_mtim.tv_sec
+
+     // Deprecated
+     #define st_mtimensec             st_mtim.tv_nsec
+     #define st_mtimespec             st_mtim
+
+     // No birthtime fields
+   };
+
+ - Darwin
+
+   // 32-bit inodes
+   struct stat {
+     time_t      st_mtime;
+     struct timespec st_mtimespec;
+   };
+
+   // 64-bit inodes
+   struct stat {
+     time_t      st_mtime;
+     struct timespec st_mtimespec;
+     time_t      st_birthtime;
+     struct timespec st_birthtimespec;
+   };
+
+ - Windows
+
+   struct stat {
+     time_t st_mtime;
+   };
+
+@@ 3. Circular dependencies in Boost 1.75
+
+Boost.Random (R), Boost.Math (M), Boost.Multiprecision (MP), all on dependency
+level 13.
+
+R  <-> M
+R  <-> MP
+MP  -> M
+
+In Boost 1.76 these circular dependencies were broken. The dependencies now
+look like this:
+
+M  -> R
+MP -> M
+   -> R
+
+In addition the third-party tool boost_dep_graph reported three dependency
+cycles for Boost 1.75 but reports none for 1.76. I also checked manually using
+boostdep and it checks out.
+
+So should we upgrade to 1.76 before moving forward?
