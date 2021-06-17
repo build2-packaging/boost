@@ -145,6 +145,8 @@ location: libboost-parameter/
 :
 location: libboost-timer/
 :
+location: libboost-filesystem/
+:
 location: libboost-heap/
 :
 location: libboost-lambda/
