@@ -1,0 +1,3 @@
+import libs = libboost-filesystem%lib{boost_filesystem}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

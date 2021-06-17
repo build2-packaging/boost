@@ -6,7 +6,7 @@ pub_hdrs = {hxx ixx txx}{**}
 # Include `json.natvis` in the distribution. It customizes the display of
 # Boost.Json's types in the MSVC debugger.
 #
-./: $pub_hdrs file{json/json.natvis}
+./: $pub_hdrs json/file{json.natvis}
 
 #
 # END MANUAL CUSTOMIZATION
