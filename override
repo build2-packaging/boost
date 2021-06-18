@@ -24,8 +24,15 @@ manifest_builds["libboost-winapi"]="&windows ; Provides Windows API declarations
 ##
 ## Libraries that are binless despite having one or more source files.
 
-binless_libs["libboost-system"]=true
 binless_libs["libboost-exception"]=true
+
+# Since 1.76 Boost.Regex is header-only but will be detected as binful because
+# it still supports compilation for users with C++03 compilers or who use the
+# deprecated POSIX C APIs.
+#
+binless_libs["libboost-regex"]=true
+
+binless_libs["libboost-system"]=true
 
 ## cxx_only
 ##
