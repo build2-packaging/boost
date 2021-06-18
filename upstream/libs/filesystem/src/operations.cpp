@@ -1237,9 +1237,12 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     goto fail;
   }
 
+  mode_t to_mode = from_mode;
+#if !defined(__wasm)
   // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
   // which checks the file permission on the server, even if the client's file descriptor supports writing.
-  mode_t to_mode = from_mode | S_IWUSR;
+  to_mode |= S_IWUSR;
+#endif
   int oflag = O_WRONLY | O_CLOEXEC;
 
   if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
@@ -1353,6 +1356,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
   if (BOOST_UNLIKELY(err != 0))
     goto fail; // err already contains the error code
 
+#if !defined(__wasm)
   // If we created a new file with an explicitly added S_IWUSR permission,
   // we may need to update its mode bits to match the source file.
   if (to_mode != from_mode)
@@ -1360,6 +1364,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0))
       goto fail_errno;
   }
+#endif
 
   // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
   // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
@@ -1449,17 +1454,17 @@ void copy_symlink(const path& existing_symlink, const path& new_symlink, system:
 BOOST_FILESYSTEM_DECL
 bool create_directories(const path& p, system::error_code* ec)
 {
- if (p.empty())
- {
-   if (!ec)
-   {
-     BOOST_FILESYSTEM_THROW(filesystem_error(
-       "boost::filesystem::create_directories", p,
-       system::errc::make_error_code(system::errc::invalid_argument)));
-   }
-   ec->assign(system::errc::invalid_argument, system::generic_category());
-   return false;
- }
+  if (p.empty())
+  {
+    if (!ec)
+    {
+      BOOST_FILESYSTEM_THROW(filesystem_error(
+        "boost::filesystem::create_directories", p,
+        system::errc::make_error_code(system::errc::invalid_argument)));
+    }
+    ec->assign(system::errc::invalid_argument, system::generic_category());
+    return false;
+  }
 
   if (p.filename_is_dot() || p.filename_is_dot_dot())
     return create_directories(p.parent_path(), ec);
@@ -1471,6 +1476,13 @@ bool create_directories(const path& p, system::error_code* ec)
   {
     if (ec)
       ec->clear();
+    return false;
+  }
+  else if (BOOST_UNLIKELY(p_status.type() == status_error))
+  {
+    if (!ec)
+      BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", p, local_ec));
+    *ec = local_ec;
     return false;
   }
 
@@ -1485,13 +1497,18 @@ bool create_directories(const path& p, system::error_code* ec)
     if (parent_status.type() == file_not_found)
     {
       create_directories(parent, local_ec);
-      if (local_ec)
+      if (BOOST_UNLIKELY(!!local_ec))
       {
+      parent_fail_local_ec:
         if (!ec)
           BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", parent, local_ec));
         *ec = local_ec;
         return false;
       }
+    }
+    else if (BOOST_UNLIKELY(parent_status.type() == status_error))
+    {
+      goto parent_fail_local_ec;
     }
   }
 

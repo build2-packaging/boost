@@ -8,6 +8,6 @@ main ()
   // libicuuc, one of libboost-regex's interface dependencies, so call it here
   // to ensure ICU is being exported properly.
   //
-  boost::icu_regex_traits::char_type c;
+  boost::icu_regex_traits::char_type c ('a');
   return boost::icu_regex_traits ().tolower (c) == c ? 0 : 1;
 }
