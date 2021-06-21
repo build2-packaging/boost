@@ -1,6 +1,6 @@
 $out_root/
 {
-  include src/
+  include include/boost/
 }
 
-export $out_root/src/$import.target
+export $out_root/include/boost/$import.target

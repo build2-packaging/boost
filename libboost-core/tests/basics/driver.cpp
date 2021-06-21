@@ -2,7 +2,9 @@
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/alloc_construct.hpp>
+#include <boost/core/bit.hpp>
 #include <boost/core/checked_delete.hpp>
+#include <boost/core/cmath.hpp>
 #include <boost/core/default_allocator.hpp>
 #include <boost/core/demangle.hpp>
 #include <boost/core/empty_value.hpp>

@@ -15,6 +15,8 @@ location: libboost-predef/
 :
 location: libboost-preprocessor/
 :
+location: libboost-qvm/
+:
 location: libboost-assert/
 :
 location: libboost-io/
@@ -55,17 +57,19 @@ location: libboost-integer/
 :
 location: libboost-logic/
 :
+location: libboost-move/
+:
 location: libboost-tuple/
 :
 location: libboost-typeof/
 :
 location: libboost-atomic/
 :
+location: libboost-circular-buffer/
+:
 location: libboost-container-hash/
 :
 location: libboost-crc/
-:
-location: libboost-move/
 :
 location: libboost-numeric-interval/
 :
@@ -73,39 +77,39 @@ location: libboost-pool/
 :
 location: libboost-safe-numerics/
 :
-location: libboost-circular-buffer/
-:
-location: libboost-dynamic-bitset/
-:
-location: libboost-intrusive/
-:
 location: libboost-smart-ptr/
-:
-location: libboost-stacktrace/
-:
-location: libboost-utility/
-:
-location: libboost-container/
 :
 location: libboost-conversion/
 :
+location: libboost-dynamic-bitset/
+:
 location: libboost-exception/
+:
+location: libboost-intrusive/
+:
+location: libboost-stacktrace/
+:
+location: libboost-type-index/
+:
+location: libboost-utility/
+:
+location: libboost-any/
+:
+location: libboost-container/
+:
+location: libboost-function/
 :
 location: libboost-mpl/
 :
 location: libboost-optional/
 :
+location: libboost-outcome/
+:
 location: libboost-rational/
 :
 location: libboost-static-string/
 :
-location: libboost-type-index/
-:
-location: libboost-any/
-:
 location: libboost-format/
-:
-location: libboost-function/
 :
 location: libboost-function-types/
 :
@@ -115,11 +119,9 @@ location: libboost-metaparse/
 :
 location: libboost-numeric-conversion/
 :
-location: libboost-outcome/
-:
-location: libboost-qvm/
-:
 location: libboost-ratio/
+:
+location: libboost-scope-exit/
 :
 location: libboost-unordered/
 :
@@ -131,15 +133,13 @@ location: libboost-functional/
 :
 location: libboost-fusion/
 :
-location: libboost-scope-exit/
+location: libboost-local-function/
 :
 location: libboost-tti/
 :
 location: libboost-hana/
 :
 location: libboost-iterator/
-:
-location: libboost-local-function/
 :
 location: libboost-parameter/
 :
