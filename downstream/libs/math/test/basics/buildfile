@@ -1,0 +1,30 @@
+# The library implementing the primary (header-only) interface.
+#
+import libs_math = libboost-math%lib{boost_math}
+
+# The libraries implementing the TR1-conforming interface.
+#
+import libs_tr1  = libboost-math%lib{boost_math_tr1f} \
+                   libboost-math%lib{boost_math_tr1}
+
+# The libraries implementing the C99-conforming interface.
+#
+import libs_c99  = libboost-math%lib{boost_math_c99f} \
+                   libboost-math%lib{boost_math_c99}
+
+# Boost.Math does not support long double on FreeBSD so only link to the long
+# double libraries on other systems.
+#
+if ($cxx.target.system != 'freebsd')
+{
+  import libs_tr1 += libboost-math%lib{boost_math_tr1l}
+  import libs_c99 += libboost-math%lib{boost_math_c99l}
+}
+
+./: exe{driver driver-tr1 driver-c99}
+
+# One driver executable for each interface, each with its own source file.
+#
+exe{driver}:     cxx{driver}     $libs_math
+exe{driver-tr1}: cxx{driver-tr1} $libs_tr1
+exe{driver-c99}: cxx{driver-c99} $libs_c99

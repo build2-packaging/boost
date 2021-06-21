@@ -399,6 +399,7 @@ declare -A binless_libs=()
 declare -A cxx_only=()
 declare -A source_macro=()
 declare -A nonboost_intf_deps=()
+declare -A nonboost_impl_deps=()
 declare -A include_headers=()
 declare -A exclude_headers=()
 source override
@@ -604,6 +605,16 @@ function contains () # <target> <word0> <word1> ...
     #
     echo "$lib:${intf_deps[$pn]}" >> dependencies
     echo "$lib:${impl_deps[$pn]}" >> dependencies
+
+  elif [[ -n "$line" && ! ("$line" =~ ':'$) ]]; then
+    # This is a library with no dependencies (this line is neither empty, nor
+    # does it end with a colon, nor does it contain an arrow; so it is neither
+    # the report heading or the blank line following it, nor a library with
+    # dependencies. Write empty interface and implementation dependencies
+    # entries, so if it gets dependencies on upgrade we could easily
+    # distinguish it from a new library using gitk.
+    #
+    echo "$line:"$'\n'"$line:" >> dependencies
   fi
 done
 
@@ -735,7 +746,7 @@ import $vn += $dt")
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 level=0
-cat levels | while [[ "$level" -le 10 ]] && read line; do
+cat levels | while [[ "$level" -le 14 ]] && read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -964,7 +975,9 @@ builds: ${manifest_builds[$pn]}")
     add_deps "$pn/manifest" "$lib_bfile" \
              "${nonboost_intf_deps[$pn]} ${intf_deps[$pn]}" \
              "intf_libs"
-    add_deps "$pn/manifest" "$lib_bfile" "${impl_deps[$pn]}" "impl_libs"
+    add_deps "$pn/manifest" "$lib_bfile" \
+             "${nonboost_impl_deps[$pn]} ${impl_deps[$pn]}" \
+             "impl_libs"
 
     # Make a number of changes to the library buildfile in a batch.
     #
@@ -1074,11 +1087,13 @@ i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
     # Boost installation isn't masking breakages.)
     #
 
-    # Install custom test files if they exist: symlink any files in
+    # Install custom test files if they exist: copy any files in
     # `downstream/libs/$udn/test/` or one of its subdirectories into
     # `<lib>/tests/`, replacing the `bdep-new`-generated ones. Note that we're
     # merging directory contents and therefore we cannot simply link to
-    # directories.
+    # directories, and also that we copy instead of symlink because, since
+    # version 2.32, git ignores .gitattributes and .gitignore if they are
+    # symlinks.
     #
     ctd="downstream/libs/$udn/test" # Custom test directory.
     if [[ -d "$ctd" ]]; then
@@ -1088,12 +1103,6 @@ i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
         # $udn/test/, $udn/test/basics/, etc
         #
         sd="$(dirname "${f#downstream/libs/}")/"
-
-        # Project root directory relative to the symlink directory.
-        #
-        # ../../, ../../../, etc
-        #
-        rd="$(sed -E "s%[^/]+%..%g" <<<"$sd")"
 
         # Destination directory, relative to `downstream/libs/<lib>/tests/`.
         #
@@ -1107,13 +1116,13 @@ i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
           mkdir -p "$pn/tests/$dd"
         fi
 
-        ln -fs "$rd$f" "$pn/tests/$dd"
+        cp "$f" "$pn/tests/$dd"
       done
     fi
 
     # Generate the smoke test if this package does not have a custom one.
     #
-    if [[ ! -L "$pn/tests/basics/driver.$se" ]]; then
+    if [[ ! -f "$ctd/basics/driver.$se" ]]; then
       # Build the include directive(s) appropriate for this library. If it
       # exists, include only the super-header (a single header which includes
       # all of its headers), otherwise include all headers in
@@ -1239,4 +1248,17 @@ ised repositories.manifest \
 \
 :\
 role: prerequisite\
-location: https://github.com/build2-packaging/icu.git##HEAD'
+location: https://pkg.cppget.org/1/stable\
+trust: 70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43\
+\
+:\
+role: prerequisite\
+location: https://github.com/build2-packaging/bzip2.git##HEAD\
+\
+:\
+role: prerequisite\
+location: https://github.com/build2-packaging/zlib.git##HEAD\
+\
+:\
+role: prerequisite\
+location: https://github.com/build2-packaging/Eigen.git##HEAD'

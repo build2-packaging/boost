@@ -18,11 +18,29 @@ manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"
 ## @@ One value can potentially be too restrictive, but let's not complicate
 ##    things before it is required.
 
-manifest_builds["libboost-winapi"]="&windows ; Provides Windows API declarations."
+manifest_builds["libboost-winapi"]=\
+"&windows ; Provides Windows API declarations."
+
+# Instead of `!` for logical NOT, Boost.Sort uses `not`. MSVC does not support
+# alternative operator representations by default and therefore code using
+# Boost.Sort as-is does not compile under MSVC. This can only be worked around
+# by taking measures, none of which are practical, in the client project. A
+# bug has been filed at https://github.com/boostorg/sort/issues/43 but it does
+# not look like they plan to fix it.
+#
+manifest_builds["libboost-sort"]="-msvc ; Contains code not accepted by MSVC."
 
 ## binless_libs
 ##
 ## Libraries that are binless despite having one or more source files.
+
+# Boost.Date_Time has transitioned to header-only, leaving only a single stub
+# source file, src/gregorian/greg_month.cpp, to produce a stub library for
+# clients that still link against it. Confusingly there are other source files
+# under src/ that are clearly not stubs, but they are not referenced from
+# anywhere, so presumably these are stale source files.
+#
+binless_libs["libboost-date-time"]=true
 
 binless_libs["libboost-exception"]=true
 
@@ -80,6 +98,17 @@ libicuuc%lib{icuuc}^65.1.0 \
 libicui18n%lib{icui18n}^65.1.0 \
 "
 
+nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
+
+## nonboost_impl_deps
+##
+## Non-Boost implementation dependencies.
+##
+nonboost_impl_deps["libboost-iostreams"]="\
+libz%lib{z}^1.2.1100 \
+libbzip2%lib{bzip2}^1.0.8 \
+"
+
 ## include_headers
 ##
 ## For each library, a space-separated list of the complete set of header
@@ -99,6 +128,7 @@ include_headers["libboost-chrono"]="chrono.hpp"
 include_headers["libboost-dynamic-bitset"]="dynamic_bitset/dynamic_bitset.hpp"
 include_headers["libboost-endian"]="endian.hpp"
 include_headers["libboost-optional"]="optional/optional.hpp"
+include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 
 # The comment at the top of this header says "Include the default amount of
 # outcome" so it must be the super-header.
@@ -108,6 +138,8 @@ include_headers["libboost-outcome"]="outcome.hpp"
 include_headers["libboost-ratio"]="ratio.hpp"
 include_headers["libboost-stacktrace"]="stacktrace.hpp"
 include_headers["libboost-static-string"]="static_string/static_string.hpp"
+include_headers["libboost-test"]="test/unit_test.hpp"
+include_headers["libboost-thread"]="thread.hpp"
 include_headers["libboost-variant"]="variant.hpp"
 
 ## exclude_headers
@@ -142,9 +174,58 @@ detail/lightweight_test_report.hpp \
 detail/utf8_codecvt_facet.hpp \
 "
 
+# Boost.ICL's headers are sensitive to include order. Instead of trying to fix
+# the order, excluding the headers below is sufficient to make the build
+# succeed.
+#
+exclude_headers["libboost-icl"]="\
+icl/associative_element_container.hpp \
+icl/associative_interval_container.hpp \
+icl/interval_base_map.hpp \
+"
+
+# These headers can only be included on Windows or systems with XSI shared
+# memory support.
+#
+# The Windows-specific headers are only required to interoperate with
+# processes that don't use Boost.Interprocess, so exluding these headers does
+# not disable shared memory on Windows. The XSI shared memory is also a
+# separate and non-default interface. (The default is the POSIX shared memory
+# interface in interprocess/shared_memory_object.hpp.) So excluding these
+# headers seems like the simplest way to get our smoke test to build on all
+# platforms.
+#
+exclude_headers["libboost-interprocess"]="\
+interprocess/managed_windows_shared_memory.hpp \
+interprocess/windows_shared_memory.hpp \
+interprocess/managed_xsi_shared_memory.hpp \
+interprocess/xsi_key.hpp \
+interprocess/xsi_shared_memory.hpp \
+"
+
 # function_output_iterator.hpp: deprecated header.
 #
 exclude_headers["libboost-iterator"]="function_output_iterator.hpp"
+
+# random.hpp is a deprecated header; float128.hpp only works under the GCC or
+# Intel compilers; complex128.hpp depends on float128.hpp; the rest are for
+# backends that require unpackaged libraries.
+#
+exclude_headers["libboost-multiprecision"]="\
+multiprecision/complex128.hpp \
+multiprecision/float128.hpp \
+multiprecision/gmp.hpp \
+multiprecision/mpc.hpp \
+multiprecision/mpfi.hpp \
+multiprecision/mpfr.hpp \
+multiprecision/random.hpp \
+multiprecision/tommath.hpp \
+"
+
+# nowide/windows.hpp, which can only be included on Windows, is included
+# conditionally by nowide/args.hpp so we do not have to include it.
+#
+exclude_headers["libboost-nowide"]="nowide/windows.hpp"
 
 # checked_float.hpp: does not compile and is not used in any of Boost's own
 #                    tests.
