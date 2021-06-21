@@ -1177,24 +1177,22 @@ birthtime-related fields are pertinent):
      time_t st_mtime;
    };
 
-@@ 3. Circular dependencies in Boost 1.75
+@@ Boost.Multiprecision CI failures under Clang 11 on Windows
 
-Boost.Random (R), Boost.Math (M), Boost.Multiprecision (MP), all on dependency
-level 13.
+Eigen uses std::result_of which was deprecated in C++17 and removed from
+C++20.
 
-R  <-> M
-R  <-> MP
-MP  -> M
+Microsoft STL removed std::result_of from its C++20 mode at the end of 2019
+(https://github.com/microsoft/STL/pull/380). The version running on our
+Windows VMs includes this update.
 
-In Boost 1.76 these circular dependencies were broken. The dependencies now
-look like this:
+Currently libboost-multiprecision passes all CI configs except for the Clang
+11 on Windows ones (of which there are 4). Clang 11 gets `-std=c++2a` from
+`cxx.std = latest` while the older Clang versions get `-std=c++17`, and the
+MSVC configs get `/std:c++17`, which explains why only the Clang 11 configs
+fail.
 
-M  -> R
-MP -> M
-   -> R
-
-In addition the third-party tool boost_dep_graph reported three dependency
-cycles for Boost 1.75 but reports none for 1.76. I also checked manually using
-boostdep and it checks out.
-
-So should we upgrade to 1.76 before moving forward?
+An issue has been filed for Eigen upstream but it does not look like it's been
+resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
+decided not to do anything with the expectation that Eigen upstream will fix
+it before too long.

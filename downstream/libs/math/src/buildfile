@@ -1,0 +1,194 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+freebsd = ($cxx.target.system == 'freebsd')
+
+# In addition to its primary, header-only interface, Boost.Math presents two
+# interfaces which are really just thin adaptors around (parts of) the primary
+# interface: a C99-conforming interface and a TR1-conforming interface. These
+# two interfaces are both declared in the `tr1.hpp` header and implemented in
+# a number of compiled libraries (but not all functions in those standards are
+# implemented).
+#
+# We could probably make the boost_math library as an interface dependency of
+# the boost_math_* libraries by splitting the headers, making lib{boost_math}
+# a prerequisite of lib{boost-math-*} targets, etc. This, however, feels a bit
+# hairy. Let's keep it simple and consider all the libraries as independent
+# and sharing the same full set of public headers under the boost/math/
+# subdirectory.
+
+# The names of the libraries implementing the C99 and TR1 interfaces.
+#
+# The 'f'-suffixed libraries implement the float versions, and the
+# 'l'-suffixed libraries the long double versions of the functions in the
+# suffixless libraries (all of which take double). The same naming scheme is
+# applied to the source files.
+#
+compiled_libs = boost_math_c99f \
+                boost_math_c99  \
+                boost_math_tr1f \
+                boost_math_tr1
+
+# Boost.Math does not support long double on FreeBSD so only build the long
+# double libraries on other systems.
+#
+if! $freebsd
+  compiled_libs += boost_math_c99l boost_math_tr1l
+
+# `boost_math` is the library target for the primary, header-only interface.
+#
+all_libs = boost_math $compiled_libs
+
+# Private headers and dependencies.
+#
+./: lib{$all_libs}: $pub/{$pub_hdrs} {hxx ixx txx}{**} $impl_libs $intf_libs
+
+# Sources (binful libraries only).
+#
+
+# The names of the source files belonging to the C99 library, double version.
+#
+# The source files for the float/long double versions have the same name with
+# 'f'/'l' appended. Note that these are C++ source files which implement C
+# functions.
+#
+src_c99 = acosh      \
+          asinh      \
+          atanh      \
+          cbrt       \
+          copysign   \
+          erfc       \
+          erf        \
+          expm1      \
+          fmax       \
+          fmin       \
+          fpclassify \
+          hypot      \
+          lgamma     \
+          llround    \
+          log1p      \
+          lround     \
+          nextafter  \
+          nexttoward \
+          round      \
+          tgamma     \
+          trunc
+
+# The names of the source files belonging to the TR1 library, double version.
+#
+# The source files for the float/long double versions have the same name with
+# 'f'/'l' appended.
+#
+src_tr1 = assoc_laguerre \
+          assoc_legendre \
+          beta           \
+          comp_ellint_1  \
+          comp_ellint_2  \
+          comp_ellint_3  \
+          cyl_bessel_i   \
+          cyl_bessel_j   \
+          cyl_bessel_k   \
+          cyl_neumann    \
+          ellint_1       \
+          ellint_2       \
+          ellint_3       \
+          expint         \
+          hermite        \
+          laguerre       \
+          legendre       \
+          riemann_zeta   \
+          sph_bessel     \
+          sph_legendre   \
+          sph_neumann
+
+lib{boost_math_c99}:  tr1/cxx{$src_c99}
+lib{boost_math_c99f}: tr1/cxx{$regex.apply($src_c99, '(.)$', '\1f')}
+
+lib{boost_math_tr1}:  tr1/cxx{$src_tr1}
+lib{boost_math_tr1f}: tr1/cxx{$regex.apply($src_tr1, '(.)$', '\1f')}
+
+# Associate the long double sources with the corresponding library targets on
+# all systems but FreeBSD. On FreeBSD, where the long double library targets
+# do not exist, make the source files prerequisites of the directory instead
+# (otherwise they will not be included in the distribution).
+#
+if! $freebsd
+{
+  lib{boost_math_c99l}: tr1/cxx{$regex.apply($src_c99, '(.)$', '\1l')}
+  lib{boost_math_tr1l}: tr1/cxx{$regex.apply($src_tr1, '(.)$', '\1l')}
+}
+else
+{
+  ./: tr1/cxx{$regex.apply($src_c99 $src_tr1, '(.)$', '\1l')}
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Note that the source files include one of the private headers as <pch.hpp>.
+#
+src_pfx_src = [dir_path] $src_root/src/tr1/
+
+#
+# END MANUAL CUSTOMIZATION
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Note that this macro name is unconventional.
+#
+{hbmis objs}{*}: cxx.poptions += -DBOOST_MATH_TR1_DYN_LINK
+
+# Export options.
+#
+# Note that we're adding `-DBOOST_MATH_TR1_NO_LIB` to cxx.export.poptions of
+# the header-only library as well which, although redundant, is also harmless.
+#
+lib{$all_libs}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                        -DBOOST_MATH_TR1_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+libs{$compiled_libs}: cxx.export.poptions += -DBOOST_MATH_TR1_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{$compiled_libs}: bin.lib.version = @"-$version.project_id"
+else
+  lib{$compiled_libs}: bin.lib.version = @"-$version.major.$version.minor"
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

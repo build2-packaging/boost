@@ -1,0 +1,72 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost-test}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Private headers and sources as well as dependencies.
+#
+# Exclude sources that define main().
+#
+lib{boost-test}: {hxx ixx txx}{**}            \
+                 cxx{** -cpp_main -test_main} \
+                 $impl_libs $intf_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# @@ We do not plan to use these options but leaving them here for now until
+#    this library has been CI'd.
+#
+# if(MSVC)
+#   set(MSVC_Additional_flags "/fp:fast /GF /Oy /GT /Ox /Ob2 /Oi /Os")
+# endif()
+
+
+# Export options.
+#
+lib{boost-test}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost-test}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-test}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-test}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost-test}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

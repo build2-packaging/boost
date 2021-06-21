@@ -1,0 +1,70 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost-iostreams}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Private headers and sources as well as dependencies.
+#
+# Exclude the source files implementing LZMA and ZSTD compression because they
+# require unpackaged libraries. (Note that this does not disable compression
+# because the zlib and bzip2 source files are included by `**`.)
+#
+# Note that the user trying to use the excluded functionality will fail with a
+# linker error. We could probably also exclude the related headers
+# (boost/iostreams/filter/lzma.hpp, etc) but let's keep it simple for now.
+#
+lib{boost-iostreams}: {hxx ixx txx}{**}     \
+                      cxx{** -lzma -zstd}   \
+                      $impl_libs $intf_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+{hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# Export options.
+#
+lib{boost-iostreams}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost-iostreams}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-iostreams}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-iostreams}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost-iostreams}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

@@ -1,0 +1,119 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost-thread}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+
+# Private headers and sources as well as dependencies.
+#
+# Note that upstream doesn't use tss_null.cpp during the build. Thus, we also
+# exclude it from the build and don't distribute it.
+#
+lib{boost-thread}: {hxx ixx txx}{**} cxx{future} $impl_libs $intf_libs
+
+lib{boost-thread}: win32/cxx{*}: include = $windows
+
+# Do not compile `once_atomic.cpp` because it is included by another source
+# file.
+#
+lib{boost-thread}: pthread/cxx{* -once_atomic}: include = (! $windows)
+
+lib{boost-thread}: pthread/cxx{once_atomic}:
+{
+  include = ($windows ? false : adhoc)
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Boost.Thread's BOOST_THREAD_BUILD_{DLL,LIB} is its own equivalent of the
+# conventional combination of BOOST_THREAD_SOURCE and
+# BOOST_THREAD_{DYN,STATIC}_LINK (defined when building the library).
+#
+# Confusingly it follows convention in using BOOST_THREAD_{DYN,STATIC}_LINK to
+# indicate that the library is being used, so those macros are still exported
+# to clients as usual.
+#
+{hbmia obja}{*}: cxx.poptions += -DBOOST_THREAD_BUILD_LIB
+{hbmis objs}{*}: cxx.poptions += -DBOOST_THREAD_BUILD_DLL
+
+if $windows
+{
+  cxx.poptions += -DWIN32_LEAN_AND_MEAN -DBOOST_USE_WINDOWS_H
+}
+else
+{
+  cxx.poptions += -D_REENTRANT
+  cxx.libs     += -lpthread
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+lib{boost-thread}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if! $windows
+{
+  # Note that libpthread is an interface dependency, since pthread API is used
+  # in the libboost-thread inline functions.
+  #
+  lib{boost_thread}:
+  {
+    cxx.export.poptions += -D_REENTRANT
+    cxx.export.libs     += -lpthread
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+liba{boost-thread}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-thread}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-thread}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost-thread}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false
