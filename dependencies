@@ -30,7 +30,7 @@ compute: algorithm array assert chrono config core filesystem function function_
 compute:
 concept_check: config preprocessor static_assert type_traits
 concept_check:
-container: assert config container_hash core intrusive move static_assert type_traits
+container: assert config core intrusive move static_assert type_traits winapi
 container:
 container_hash: assert config core detail integer static_assert type_traits
 container_hash:
@@ -42,7 +42,7 @@ conversion: assert config core smart_ptr throw_exception type_traits typeof
 conversion:
 convert: config core function_types lexical_cast math mpl optional parameter range spirit type_traits
 convert:
-core: assert config
+core: assert config static_assert
 core:
 coroutine: assert config context core exception move system throw_exception type_traits utility
 coroutine: thread
@@ -112,7 +112,7 @@ json: align assert config container exception system throw_exception utility
 json:
 lambda: bind config core detail iterator mpl preprocessor tuple type_traits utility
 lambda:
-lexical_cast: array assert config container core integer math numeric~conversion range static_assert throw_exception type_traits
+lexical_cast: array assert config container core integer numeric~conversion range static_assert throw_exception type_traits
 lexical_cast:
 local_function: config mpl preprocessor scope_exit type_traits typeof utility
 local_function:
@@ -124,11 +124,11 @@ log: array assert atomic config container core date_time exception filesystem fu
 log: align asio bind interprocess io random
 logic: config core
 logic:
-math: algorithm array assert atomic concept_check config core detail fusion integer lambda lexical_cast mp11 mpl predef random range smart_ptr static_assert throw_exception tuple type_traits
+math: algorithm array assert atomic concept_check config core detail integer lambda lexical_cast predef random range smart_ptr static_assert throw_exception type_traits
 math:
 metaparse: config mpl predef preprocessor static_assert type_traits
 metaparse:
-move: assert config core detail static_assert winapi
+move: assert config core static_assert winapi
 move:
 mpi: assert config core foreach function graph integer iterator mpl optional python serialization smart_ptr static_assert throw_exception type_traits
 mpi: lexical_cast utility
@@ -140,7 +140,7 @@ multi_array: array assert concept_check config core functional iterator mpl stat
 multi_array:
 multi_index: assert bind config container_hash core foreach integer iterator move mpl preprocessor serialization smart_ptr static_assert throw_exception tuple type_traits utility
 multi_index:
-multiprecision: array assert atomic config container_hash core integer lexical_cast math mpl predef random rational smart_ptr static_assert throw_exception type_traits
+multiprecision: array assert config container_hash core integer lexical_cast math predef random rational throw_exception
 multiprecision:
 nowide: config filesystem
 nowide:
@@ -182,9 +182,7 @@ ptr_container: array assert circular_buffer config core iterator mpl range seria
 ptr_container:
 python: bind config conversion core detail foreach function iterator lexical_cast mpl numeric~conversion preprocessor smart_ptr static_assert tuple type_traits utility
 python: graph integer property_map
-qvm: assert core exception static_assert throw_exception
-qvm:
-random: assert config core dynamic_bitset integer io math multiprecision range static_assert system throw_exception type_traits utility
+random: array assert config core dynamic_bitset integer io range static_assert system throw_exception type_traits utility
 random:
 range: array assert concept_check config container_hash core detail iterator mpl numeric~conversion optional preprocessor regex static_assert tuple type_traits utility
 range:
@@ -206,7 +204,7 @@ smart_ptr: assert config core move static_assert throw_exception type_traits
 smart_ptr:
 sort: config core range static_assert type_traits
 sort:
-spirit: array assert config core endian foreach function function_types fusion integer io iterator math move mpl optional phoenix pool preprocessor proto range regex smart_ptr static_assert thread throw_exception type_traits typeof unordered utility variant
+spirit: array assert config core endian foreach function function_types fusion integer io iterator move mpl optional phoenix pool preprocessor proto range regex smart_ptr static_assert thread throw_exception type_traits typeof unordered utility variant
 spirit:
 stacktrace: array config container_hash core predef static_assert type_traits winapi
 stacktrace:
@@ -236,7 +234,7 @@ tuple: config core static_assert type_traits
 tuple:
 type_erasure: assert config core fusion iterator mp11 mpl preprocessor smart_ptr throw_exception type_traits typeof vmd
 type_erasure: thread
-type_index: config container_hash core preprocessor smart_ptr static_assert throw_exception type_traits
+type_index: config container_hash core preprocessor static_assert throw_exception type_traits
 type_index:
 type_traits: config static_assert
 type_traits:

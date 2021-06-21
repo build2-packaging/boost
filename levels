@@ -1,19 +1,18 @@
-callable_traits compatibility config hof leaf mp11 pfr predef preprocessor
+callable_traits compatibility config hof leaf mp11 pfr predef preprocessor qvm
 assert io polygon static_assert variant2 vmd winapi
 core stl_interfaces system throw_exception type_traits
-align array bind concept_check detail endian integer logic tuple typeof
-atomic container_hash crc move numeric~interval pool safe_numerics
-circular_buffer dynamic_bitset intrusive smart_ptr stacktrace utility
-container conversion exception mpl optional rational static_string type_index
-any format function function_types json metaparse numeric~conversion outcome qvm ratio unordered variant
-chrono functional fusion scope_exit tti
-hana iterator local_function parameter timer
+align array bind concept_check detail endian integer logic move tuple typeof
+atomic circular_buffer container_hash crc numeric~interval pool safe_numerics smart_ptr
+conversion dynamic_bitset exception intrusive stacktrace type_index utility
+any container function mpl optional outcome rational static_string
+format function_types json metaparse numeric~conversion ratio scope_exit unordered variant
+chrono functional fusion local_function tti
+hana iterator parameter timer
 filesystem heap lambda lockfree multi_array regex signals2 tokenizer yap
 gil nowide range
-algorithm foreach proto sort
-lexical_cast math multiprecision phoenix random test
-date_time iostreams program_options xpressive
-icl interprocess thread
+algorithm foreach lexical_cast proto random sort
+date_time iostreams math phoenix program_options test xpressive
+icl interprocess multiprecision thread
 context contract locale spirit statechart type_erasure
 convert coroutine coroutine2 dll fiber poly_collection serialization
 asio geometry histogram msm multi_index ptr_container units uuid

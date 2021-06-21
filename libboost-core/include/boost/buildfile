@@ -1,5 +1,6 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
 
 lib{boost_core}: {hxx ixx txx}{**} $intf_libs
 
