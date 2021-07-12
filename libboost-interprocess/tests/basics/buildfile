@@ -1,0 +1,3 @@
+import libs = libboost-interprocess%lib{boost_interprocess}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,7 @@
+project = libboost-proto
+
+using version
+using config
+using test
+using install
+using dist

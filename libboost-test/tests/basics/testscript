@@ -1,0 +1,3 @@
+# Suppress all runtime output.
+#
+$* --report_level=no --log_level=nothing

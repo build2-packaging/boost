@@ -1,0 +1,35 @@
+import intf_libs  = Eigen%lib{Eigen}
+import intf_libs += libboost-array%lib{boost_array}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-integer%lib{boost_integer}
+import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+import intf_libs += libboost-math%lib{boost_math}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-random%lib{boost_random}
+import intf_libs += libboost-rational%lib{boost_rational}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+
+lib{boost_multiprecision}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_multiprecision}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

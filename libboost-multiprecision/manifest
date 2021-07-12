@@ -1,0 +1,29 @@
+: 1
+name: libboost-multiprecision
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-multiprecision C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/multiprecision
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/multiprecision
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: Eigen ^3.3.8
+depends: libboost-array == $
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-container-hash == $
+depends: libboost-core == $
+depends: libboost-integer == $
+depends: libboost-lexical-cast == $
+depends: libboost-math == $
+depends: libboost-predef == $
+depends: libboost-random == $
+depends: libboost-rational == $
+depends: libboost-throw-exception == $

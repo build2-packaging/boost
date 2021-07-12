@@ -1,0 +1,3 @@
+import libs = libboost-test%lib{boost_test}
+
+exe{driver}: cxx{driver} $libs testscript

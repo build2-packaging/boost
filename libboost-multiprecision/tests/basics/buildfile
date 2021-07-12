@@ -1,0 +1,3 @@
+import libs = libboost-multiprecision%lib{boost_multiprecision}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

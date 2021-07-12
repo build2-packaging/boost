@@ -162,3 +162,43 @@ location: libboost-signals2/
 location: libboost-tokenizer/
 :
 location: libboost-yap/
+:
+location: libboost-gil/
+:
+location: libboost-nowide/
+:
+location: libboost-range/
+:
+location: libboost-algorithm/
+:
+location: libboost-foreach/
+:
+location: libboost-lexical-cast/
+:
+location: libboost-proto/
+:
+location: libboost-random/
+:
+location: libboost-sort/
+:
+location: libboost-date-time/
+:
+location: libboost-iostreams/
+:
+location: libboost-math/
+:
+location: libboost-phoenix/
+:
+location: libboost-program-options/
+:
+location: libboost-test/
+:
+location: libboost-xpressive/
+:
+location: libboost-icl/
+:
+location: libboost-interprocess/
+:
+location: libboost-multiprecision/
+:
+location: libboost-thread/

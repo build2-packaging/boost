@@ -1,0 +1,3 @@
+import libs = libboost-date-time%lib{boost_date_time}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

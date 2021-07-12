@@ -1,0 +1,3 @@
+import libs = libboost-xpressive%lib{boost_xpressive}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

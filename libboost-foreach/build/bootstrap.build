@@ -1,0 +1,7 @@
+project = libboost-foreach
+
+using version
+using config
+using test
+using install
+using dist

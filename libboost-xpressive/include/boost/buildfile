@@ -1,0 +1,43 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-conversion%lib{boost_conversion}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-exception%lib{boost_exception}
+import intf_libs += libboost-fusion%lib{boost_fusion}
+import intf_libs += libboost-integer%lib{boost_integer}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-proto%lib{boost_proto}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-typeof%lib{boost_typeof}
+import intf_libs += libboost-utility%lib{boost_utility}
+
+lib{boost_xpressive}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_xpressive}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

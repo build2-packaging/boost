@@ -1,0 +1,146 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-atomic%lib{boost_atomic}
+import intf_libs += libboost-bind%lib{boost_bind}
+import intf_libs += libboost-chrono%lib{boost_chrono}
+import intf_libs += libboost-concept-check%lib{boost_concept_check}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container%lib{boost_container}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-date-time%lib{boost_date_time}
+import intf_libs += libboost-exception%lib{boost_exception}
+import intf_libs += libboost-function%lib{boost_function}
+import intf_libs += libboost-intrusive%lib{boost_intrusive}
+import intf_libs += libboost-io%lib{boost_io}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-move%lib{boost_move}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-system%lib{boost_system}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-tuple%lib{boost_tuple}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-utility%lib{boost_utility}
+import intf_libs += libboost-winapi%lib{boost_winapi}
+import impl_libs  = libboost-algorithm%lib{boost_algorithm}
+import impl_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_thread}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+
+# Private headers and sources as well as dependencies.
+#
+# Note that upstream doesn't use tss_null.cpp during the build. Thus, we also
+# exclude it from the build and don't distribute it.
+#
+lib{boost_thread}: {hxx ixx txx}{**} cxx{future} $impl_libs $intf_libs
+
+lib{boost_thread}: win32/cxx{*}: include = $windows
+
+# Do not compile `once_atomic.cpp` because it is included by another source
+# file.
+#
+lib{boost_thread}: pthread/cxx{* -once_atomic}: include = (! $windows)
+
+lib{boost_thread}: pthread/cxx{once_atomic}:
+{
+  include = ($windows ? false : adhoc)
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Boost.Thread's BOOST_THREAD_BUILD_{DLL,LIB} is its own equivalent of the
+# conventional combination of BOOST_THREAD_SOURCE and
+# BOOST_THREAD_{DYN,STATIC}_LINK (defined when building the library).
+#
+# Confusingly it follows convention in using BOOST_THREAD_{DYN,STATIC}_LINK to
+# indicate that the library is being used, so those macros are still exported
+# to clients as usual.
+#
+{hbmia obja}{*}: cxx.poptions += -DBOOST_THREAD_BUILD_LIB
+{hbmis objs}{*}: cxx.poptions += -DBOOST_THREAD_BUILD_DLL
+
+if $windows
+{
+  cxx.poptions += -DWIN32_LEAN_AND_MEAN -DBOOST_USE_WINDOWS_H
+}
+else
+{
+  cxx.poptions += -D_REENTRANT
+  cxx.libs     += -lpthread
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+lib{boost_thread}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_THREAD_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if! $windows
+{
+  # Note that libpthread is an interface dependency, since pthread API is used
+  # in the libboost-thread inline functions.
+  #
+  lib{boost_thread}:
+  {
+    cxx.export.poptions += -D_REENTRANT
+    cxx.export.libs     += -lpthread
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+liba{boost_thread}: cxx.export.poptions += -DBOOST_THREAD_STATIC_LINK
+libs{boost_thread}: cxx.export.poptions += -DBOOST_THREAD_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_thread}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_thread}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

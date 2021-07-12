@@ -1,0 +1,7 @@
+project = libboost-thread
+
+using version
+using config
+using test
+using install
+using dist

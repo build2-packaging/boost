@@ -1,0 +1,37 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-concept-check%lib{boost_concept_check}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container%lib{boost_container}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-date-time%lib{boost_date_time}
+import intf_libs += libboost-detail%lib{boost_detail}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-move%lib{boost_move}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-rational%lib{boost_rational}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-utility%lib{boost_utility}
+
+lib{boost_icl}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_icl}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

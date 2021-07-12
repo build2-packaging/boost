@@ -1,0 +1,3 @@
+import libs = libboost-random%lib{boost_random}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

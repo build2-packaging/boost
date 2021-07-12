@@ -1,0 +1,36 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-bind%lib{boost_bind}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-function%lib{boost_function}
+import intf_libs += libboost-fusion%lib{boost_fusion}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-proto%lib{boost_proto}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-utility%lib{boost_utility}
+
+lib{boost_phoenix}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_phoenix}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

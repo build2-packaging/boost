@@ -1,1 +1,12 @@
-../../downstream/libs/stacktrace/test/.gitignore
+# Test executables.
+#
+driver-addr2line
+driver-basic
+driver-backtrace
+driver-noop
+driver-windbg*
+
+# Testscript output directories (can be symlinks).
+#
+test
+test-*
