@@ -1,0 +1,3 @@
+import libs = libboost-phoenix%lib{boost_phoenix}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

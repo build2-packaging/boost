@@ -1,0 +1,3 @@
+import libs = libboost-iostreams%lib{boost_iostreams}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

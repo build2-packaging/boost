@@ -1,0 +1,3 @@
+import libs = libboost-thread%lib{boost_thread}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

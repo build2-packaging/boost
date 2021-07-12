@@ -1,0 +1,1 @@
+../../upstream/libs/test/src/compiler_log_formatter.cpp

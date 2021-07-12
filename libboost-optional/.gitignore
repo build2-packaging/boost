@@ -8,6 +8,9 @@
 *.ii.*
 *.o
 *.obj
+*.gcm
+*.pcm
+*.ifc
 *.so
 *.dll
 *.a

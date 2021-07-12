@@ -1,0 +1,34 @@
+: 1
+name: libboost-math
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-math C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/math
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/math
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-algorithm == $
+depends: libboost-array == $
+depends: libboost-assert == $
+depends: libboost-atomic == $
+depends: libboost-concept-check == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-detail == $
+depends: libboost-integer == $
+depends: libboost-lambda == $
+depends: libboost-lexical-cast == $
+depends: libboost-predef == $
+depends: libboost-random == $
+depends: libboost-range == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-throw-exception == $
+depends: libboost-type-traits == $

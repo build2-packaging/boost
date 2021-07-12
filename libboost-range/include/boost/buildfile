@@ -1,0 +1,39 @@
+import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-concept-check%lib{boost_concept_check}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-detail%lib{boost_detail}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-regex%lib{boost_regex}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-tuple%lib{boost_tuple}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-utility%lib{boost_utility}
+
+lib{boost_range}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_range}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

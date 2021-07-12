@@ -1,0 +1,7 @@
+project = libboost-nowide
+
+using version
+using config
+using test
+using install
+using dist

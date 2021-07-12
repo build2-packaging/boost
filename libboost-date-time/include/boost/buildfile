@@ -1,0 +1,52 @@
+import intf_libs  = libboost-algorithm%lib{boost_algorithm}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-io%lib{boost_io}
+import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+import intf_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-tokenizer%lib{boost_tokenizer}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-utility%lib{boost_utility}
+import intf_libs += libboost-winapi%lib{boost_winapi}
+
+lib{boost_date_time}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_date_time}:
+{
+  # BEGIN MANUAL CUSTOMIZATION
+  #
+
+  # Boost.Date_Time requires BOOST_DATE_TIME_NO_LIB, which disables
+  # auto-linking, despite it being header-only, which is unconventional. Most
+  # likely this is a result of it only recently having switched from compiled
+  # to header-only. (The online docs are apparently outdated so see
+  # build/Jamfile.v2 and https://github.com/boostorg/date_time/issues/134
+  # regarding the switch to header-only.)
+  #
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx" \
+                        -DBOOST_DATE_TIME_NO_LIB
+
+  #
+  # END MANUAL CUSTOMIZATION
+
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

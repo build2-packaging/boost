@@ -1,0 +1,7 @@
+project = libboost-interprocess
+
+using version
+using config
+using test
+using install
+using dist
