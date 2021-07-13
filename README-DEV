@@ -1049,7 +1049,7 @@ A good interface for examining (the contents of) Debian packages is at
 https://packages.debian.org/bullseye/amd64/libs/ for non-dev and
 https://packages.debian.org/bullseye/amd64/libdevel/ for dev packages.
 
-2.a libboost-exception
+2.1 libboost-exception
 
 This library is listed by `boostdep --boost-root upstream
 --list-buildable`. It has a separate Debian package, but only a `-dev` version
@@ -1063,7 +1063,7 @@ BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR is defined.
 
 We package this library as binless.
 
-2.b libboost-system
+2.2 libboost-system
 
 It's listed by `boostdep --boost-root upstream --list-buildable`. Its
 standalone Debian packages are typical for compiled Boost libraries (contains
@@ -1076,12 +1076,12 @@ https://www.boost.org/doc/libs/1_75_0/libs/system/doc/html/system.html#changes_i
 and
 https://github.com/boostorg/system/blob/69bc20fb15483e77ff7aa36c76c0750f0a9a18a6/include/boost/system/config.hpp#L16).
 
-2.c libboost-regex
+2.3 libboost-regex
 
 Boost.Regex went header-only (that is, compilation is deprecated) in Boost
 1.76.
 
-2.d libboost-filesystem
+2.4 libboost-filesystem
 
 This is what struct stat looks like on various OSs (only the mtime- and
 birthtime-related fields are pertinent):
@@ -1177,7 +1177,61 @@ birthtime-related fields are pertinent):
      time_t st_mtime;
    };
 
-@@ Boost.Multiprecision CI failures under Clang 11 on Windows
+2.5 libboost-context
+
+ASM vs. C++
+
+Certain portions of this library are implemented in ASM and C++. The ASM
+implementation is referred to as `fcontext_t`; the POSIX C++ implementation as
+`ucontext_t`, and the Windows C++ implementation as `WinFiber` (Win32 Fibers).
+
+Our build currently uses ucontext_t and WinFiber, but we plan to switch to
+fcontext_t when build2 gets builtin ASM support. fcontext_t is around 50 times
+faster than ucontext_t according to the upstream benchmarks at
+https://www.boost.org/doc/libs/1_76_0/libs/context/doc/html/context/performance.html#performance),
+but only 5 times faster than WinFiber so this is much more of an issue on
+POSIX systems.
+
+The supported assemblers are GAS on POSIX, MASM on Windows/x86, and ARMasm on
+Windows/ARM.
+
+Segmented stacks
+
+Our build does not enable segmented stacks because they can only be used with
+ucontext_t, and they have also been dropped from major implementations such as
+Go and Rust, primarily for the unpredictable performance of dynamic stack
+allocation; see
+https://mail.mozilla.org/pipermail/rust-dev/2013-November/006314.html for the
+Rust motivation).
+
+The test driver (the code of which was taken from the upstream
+examples/fiber/fibonacci.cpp) segfaults on Mac OS 10.15 and 11 with Clang 11
+and 12 but succeeds (that is, produces the right output) on all other
+platforms. This program does nothing but use the most fundamental
+functionality of the Boost.Context API: it does little more than call
+boost::context::fiber::resume()) a few times.
+
+The key to triggering the segfault is to select the C++ implementation
+(ucontext) instead of the ASM one (fcontext) on Mac OS.
+
+The segfault can be reproduced with the upstream build by running the
+following commands on Mac OS:
+
+  b2 toolset=clang cxxflags='-std=c++11' --with-context context-impl=ucontext stage
+  cd libs/context/examples/fiber
+  b2 toolset=clang cxxflags='-std=c++11' context-impl=ucontext
+  [Note the output path of the example programs in the output]
+  .../bin.v2/libs/context/example/fiber/.../fibonacci
+  segmentation fault
+
+The segfault occurs with the shared and static versions of the library (the
+examples link statically by default).
+
+An issue has been logged here: https://github.com/boostorg/context/issues/184.
+
+2.6 libboost-multiprecision
+
+CI fails under Clang 11 on Windows.
 
 Eigen uses std::result_of which was deprecated in C++17 and removed from
 C++20.
@@ -1196,3 +1250,17 @@ An issue has been filed for Eigen upstream but it does not look like it's been
 resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
 decided not to do anything with the expectation that Eigen upstream will fix
 it before too long.
+
+2.7 libboost-log
+
+Although the upstream build doesn't define BOOST_LOG_DLL on the shared version
+of lib{boost_log_setup}'s object files it is absolutely required: in
+detail/config.hpp, included by detail/setup_config.hpp, if BOOST_LOG_DLL is
+not defined then the namespace will become `v2s_mt` (in which `s` means
+static) instead of `v2_mt` which would be correct for the dynamic library (see
+https://www.boost.org/doc/libs/1_76_0/libs/log/doc/html/log/rationale/namespace_mangling.html).
+And BOOST_LOG_DLL is not set anywhere but Jamfile.v2 and detail/config.hpp,
+but here only if using the library, not when building it.
+
+No quite clear how the upstream build of the shared boost_log_setup even
+works.

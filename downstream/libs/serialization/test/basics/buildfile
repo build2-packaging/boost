@@ -1,0 +1,7 @@
+import libs      = libboost-serialization%lib{boost_serialization}
+import libs_wide = libboost-serialization%lib{boost_wserialization}
+
+./: exe{driver driver-wide}
+
+exe{driver}:      cxx{driver}      $libs
+exe{driver-wide}: cxx{driver-wide} $libs_wide

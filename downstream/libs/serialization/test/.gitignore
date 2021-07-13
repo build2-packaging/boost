@@ -1,0 +1,9 @@
+# Test executables.
+#
+driver
+driver-wide
+
+# Testscript output directories (can be symlinks).
+#
+test
+test-*
