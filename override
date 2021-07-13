@@ -21,15 +21,6 @@ manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"
 manifest_builds["libboost-winapi"]=\
 "&windows ; Provides Windows API declarations."
 
-# Instead of `!` for logical NOT, Boost.Sort uses `not`. MSVC does not support
-# alternative operator representations by default and therefore code using
-# Boost.Sort as-is does not compile under MSVC. This can only be worked around
-# by taking measures, none of which are practical, in the client project. A
-# bug has been filed at https://github.com/boostorg/sort/issues/43 but it does
-# not look like they plan to fix it.
-#
-manifest_builds["libboost-sort"]="-msvc ; Contains code not accepted by MSVC."
-
 ## binless_libs
 ##
 ## Libraries that are binless despite having one or more source files.
@@ -74,6 +65,9 @@ cxx_only["libboost-stacktrace"]=true
 ## macro to have the same value: most use an empty value but some use `1`).
 ##
 source_macro["libboost-atomic"]=true
+source_macro["libboost-context"]=true
+source_macro["libboost-coroutine"]=true
+source_macro["libboost-fiber"]=true
 source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
 source_macro["libboost-stacktrace"]=true
@@ -93,20 +87,25 @@ source_macro["libboost-stacktrace"]=true
 ## values are space-separated), spaces will be inserted as required in the
 ## `generate` script (but not around ranges).
 ##
-nonboost_intf_deps["libboost-regex"]="\
-libicuuc%lib{icuuc}^65.1.0 \
-libicui18n%lib{icui18n}^65.1.0 \
+nonboost_intf_deps["libboost-locale"]="\
+libicuuc%lib{icuuc}^65.1.0            \
+libicui18n%lib{icui18n}^65.1.0        \
 "
 
 nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
+
+nonboost_intf_deps["libboost-regex"]="\
+libicuuc%lib{icuuc}^65.1.0            \
+libicui18n%lib{icui18n}^65.1.0        \
+"
 
 ## nonboost_impl_deps
 ##
 ## Non-Boost implementation dependencies.
 ##
 nonboost_impl_deps["libboost-iostreams"]="\
-libz%lib{z}^1.2.1100 \
-libbzip2%lib{bzip2}^1.0.8 \
+libz%lib{z}^1.2.1100                      \
+libbzip2%lib{bzip2}^1.0.8                 \
 "
 
 ## include_headers
@@ -123,10 +122,15 @@ libbzip2%lib{bzip2}^1.0.8 \
 
 include_headers["libboost-align"]="align.hpp"
 include_headers["libboost-atomic"]="atomic.hpp"
+include_headers["libboost-bimap"]="bimap.hpp"
 include_headers["libboost-bind"]="bind/bind.hpp"
 include_headers["libboost-chrono"]="chrono.hpp"
+include_headers["libboost-coroutine"]="coroutine/all.hpp"
 include_headers["libboost-dynamic-bitset"]="dynamic_bitset/dynamic_bitset.hpp"
 include_headers["libboost-endian"]="endian.hpp"
+include_headers["libboost-flyweight"]="flyweight.hpp"
+include_headers["libboost-geometry"]="geometry/geometry.hpp"
+include_headers["libboost-histogram"]="histogram.hpp"
 include_headers["libboost-optional"]="optional/optional.hpp"
 include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 
@@ -155,11 +159,11 @@ include_headers["libboost-variant"]="variant.hpp"
 # `include/boost/core/detail/`.
 #
 exclude_headers["libboost-core"]="\
-detail/iterator.hpp \
-detail/lightweight_test.hpp \
-detail/no_exceptions_support.hpp \
-detail/scoped_enum_emulation.hpp \
-detail/sp_typeinfo.hpp \
+detail/iterator.hpp               \
+detail/lightweight_test.hpp       \
+detail/no_exceptions_support.hpp  \
+detail/scoped_enum_emulation.hpp  \
+detail/sp_typeinfo.hpp            \
 "
 
 # lightweight_main.hpp, lightweight_test_report.hpp: these files define main().
@@ -169,19 +173,19 @@ detail/sp_typeinfo.hpp \
 #                         indirectly via other libraries is good enough.
 #
 exclude_headers["libboost-detail"]="\
-detail/lightweight_main.hpp \
-detail/lightweight_test_report.hpp \
-detail/utf8_codecvt_facet.hpp \
+detail/lightweight_main.hpp         \
+detail/lightweight_test_report.hpp  \
+detail/utf8_codecvt_facet.hpp       \
 "
 
 # Boost.ICL's headers are sensitive to include order. Instead of trying to fix
 # the order, excluding the headers below is sufficient to make the build
 # succeed.
 #
-exclude_headers["libboost-icl"]="\
-icl/associative_element_container.hpp \
+exclude_headers["libboost-icl"]="      \
+icl/associative_element_container.hpp  \
 icl/associative_interval_container.hpp \
-icl/interval_base_map.hpp \
+icl/interval_base_map.hpp              \
 "
 
 # These headers can only be included on Windows or systems with XSI shared
@@ -195,31 +199,42 @@ icl/interval_base_map.hpp \
 # headers seems like the simplest way to get our smoke test to build on all
 # platforms.
 #
-exclude_headers["libboost-interprocess"]="\
+exclude_headers["libboost-interprocess"]="     \
 interprocess/managed_windows_shared_memory.hpp \
-interprocess/windows_shared_memory.hpp \
-interprocess/managed_xsi_shared_memory.hpp \
-interprocess/xsi_key.hpp \
-interprocess/xsi_shared_memory.hpp \
+interprocess/windows_shared_memory.hpp         \
+interprocess/managed_xsi_shared_memory.hpp     \
+interprocess/xsi_key.hpp                       \
+interprocess/xsi_shared_memory.hpp             \
 "
 
 # function_output_iterator.hpp: deprecated header.
 #
 exclude_headers["libboost-iterator"]="function_output_iterator.hpp"
 
+# leda_graph.hpp, stanford_graph.hpp: depend on unpackaged libraries.
+#
+# edmunds_karp_max_flow.hpp, relaxed_heap.hpp: deprecated.
+#
+exclude_headers["libboost-graph"]="\
+graph/leda_graph.hpp               \
+graph/stanford_graph.hpp           \
+graph/edmunds_karp_max_flow.hpp    \
+pending/relaxed_heap.hpp           \
+"
+
 # random.hpp is a deprecated header; float128.hpp only works under the GCC or
 # Intel compilers; complex128.hpp depends on float128.hpp; the rest are for
 # backends that require unpackaged libraries.
 #
 exclude_headers["libboost-multiprecision"]="\
-multiprecision/complex128.hpp \
-multiprecision/float128.hpp \
-multiprecision/gmp.hpp \
-multiprecision/mpc.hpp \
-multiprecision/mpfi.hpp \
-multiprecision/mpfr.hpp \
-multiprecision/random.hpp \
-multiprecision/tommath.hpp \
+multiprecision/complex128.hpp               \
+multiprecision/float128.hpp                 \
+multiprecision/gmp.hpp                      \
+multiprecision/mpc.hpp                      \
+multiprecision/mpfi.hpp                     \
+multiprecision/mpfr.hpp                     \
+multiprecision/random.hpp                   \
+multiprecision/tommath.hpp                  \
 "
 
 # nowide/windows.hpp, which can only be included on Windows, is included
@@ -227,20 +242,79 @@ multiprecision/tommath.hpp \
 #
 exclude_headers["libboost-nowide"]="nowide/windows.hpp"
 
+# opencl.hpp requires Boost.Compute and OpenCL, neither of which are packaged
+# (see note for exclude_dependencies["libboost-numeric-ublas"] below).
+#
+exclude_headers["libboost-numeric-ublas"]="numeric/ublas/opencl.hpp"
+
 # checked_float.hpp: does not compile and is not used in any of Boost's own
 #                    tests.
 #
 # range_value.hpp:   requires but does not include <ios>.
 #
 exclude_headers["libboost-safe-numerics"]="\
-safe_numerics/checked_float.hpp \
-safe_numerics/range_value.hpp \
+safe_numerics/checked_float.hpp            \
+safe_numerics/range_value.hpp              \
 "
 
 # system/*_error.hpp: deprecated headers.
 #
 exclude_headers["libboost-system"]="\
-system/cygwin_error.hpp \
-system/linux_error.hpp \
-system/windows_error.hpp \
+system/cygwin_error.hpp             \
+system/linux_error.hpp              \
+system/windows_error.hpp            \
 "
+
+## exclude_dependencies
+##
+## For each library, a space-separated list of Boost dependencies, in
+## `boostdep` format, to exclude.
+
+# Break Boost.Property_Map's dependency on Boost.MPI because it is part of a
+# cycle with Boost.Graph (and we're also not packaging Boost.MPI).
+#
+# It's safe to break this dependency because it is very weak: MPI headers are
+# only included from the `include/boost/property_map/parallel/` directory, and
+# headers from that directory are only included if the BOOST_GRAPH_USE_MPI
+# macro is defined (which it is not by default, upstream).
+#
+exclude_dependencies["libboost-property-map"]="mpi"
+
+# This dependency is not detected by `boostdep` because Boost.Graph uses its
+# own macro to include Boost.Graph_Parallel's headers (conditionally, based on
+# whether the BOOST_GRAPH_USE_MPI macro is defined). However, if, for example,
+# Boost.Graph ever switches to a direct #include, it will be detected so
+# preempt that here.
+#
+exclude_dependencies["libboost-graph"]="graph_parallel"
+
+# Break Boost.Odeint's dependency on Boost.MPI and Boost.Compute because we're
+# not packaging them (for now). It's safe to break these dependencies because
+# they are very weak: they are entirely self-contained within
+# `include/boost/numeric/odeint/external/{mpi,compute}/`.
+#
+exclude_dependencies["libboost-numeric-odeint"]="mpi compute"
+
+# Break Boost.Ublas's dependency on Boost.Compute because we're not packaging
+# the latter (for now). It's safe to break this dependency because it is very
+# weak: it is entirely self-contained within
+# `include/boost/numeric/ublas/opencl/` and the Boost.Ublas documentation
+# currently doesn't seem to even mention Boost.Compute or OpenCL.
+#
+exclude_dependencies["libboost-numeric-ublas"]="compute"
+
+# This dependency is optional according to the upstream Boost.Asio
+# documentation: "... (optional) if you use spawn() to launch coroutines". The
+# dependency is also quite weak: the spawn functionality is entirely contained
+# within a single header, boost/asio/spawn.hpp, out of around 93 others inside
+# that directory.
+#
+# @@ Break this dependency only until we've fixed libboost-coroutine's
+#    problems (see the `exclude` file for details).
+#
+exclude_dependencies["libboost-asio"]="coroutine"
+
+# Boost.Context only depends on Boost.Thread if C++11's <mutex> header is not
+# available.
+#
+exclude_dependencies["libboost-context"]="thread"

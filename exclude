@@ -1,8 +1,29 @@
-# We won't be packaging the following libraries.
+# We won't be packaging the following libraries for now.
 #
+# Compute is excluded because it depends on OpenCL which is not packaged (and
+# the dependency is not configurable).
+#
+libboost-compute
+libboost-graph-parallel
+libboost-mpi
+libboost-parameter-python
+libboost-python
 libboost-wave
 
 # We don't plan to support the kinds of compilers that would require the use
 # of Boost.Compatibility.
 #
 libboost-compatibility
+
+# This library uses Boost.Context's ASM implementation (fcontext_t) directly
+# which we have chosen not to compile for now. This seems like a mistake and
+# the path of the header it includes being `boost/context/detail/fcontext.hpp`
+# seems to confirm it.
+#
+# We may want to consider not even packaging this library because, in addition
+# to the above problem, it's also been deprecated in favour of coroutine2. The
+# only Boost library that depends on it is Boost.Asio and this is an optional
+# and relatively weak dependency (see libboost-asio's `exclude_dependencies`
+# entry in the `override` file).
+#
+libboost-coroutine

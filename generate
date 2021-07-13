@@ -402,6 +402,7 @@ declare -A nonboost_intf_deps=()
 declare -A nonboost_impl_deps=()
 declare -A include_headers=()
 declare -A exclude_headers=()
+declare -A exclude_dependencies=()
 source override
 
 # The Boost version, but formatted for use in the `doc-url` package manifest
@@ -439,14 +440,24 @@ function detect_lang () # <lib-dir-path> <binful>
   # If there are any public C++ headers then the primary language is C++,
   # otherwise it's C.
   #
-  # Use `-maxdepth 2` to prevent the search for C++ headers from descending
-  # below `include/boost/<lib>/` otherwise it would return private headers, in
-  # which case a C library with a single private C++ header would be detected
-  # as a C++ library. (This `find` option is not in POSIX but is supported on
-  # Linux, the BSDs, and Mac OS.)
+  # Pass `-maxdepth` to `find` in order to prevent the search for C++ headers
+  # from descending below `include/boost/<lib>/` otherwise it would return
+  # private headers, in which case a C library with a single private C++
+  # header would be detected as a C++ library. (This `find` option is not in
+  # POSIX but is supported on Linux, the BSDs, and Mac OS.)
   #
+
+  # The value of the `-maxdepth` option to `find`. Increase it if the upstream
+  # directory path is not directly under `upstream/libs/` (that is, it has
+  # more than two slashes (for example, `upstream/libs/numeric/conversion`).
+  #
+  local md=2
+  if [[ "$d" == "upstream/libs/"*"/"* ]]; then
+    md=3
+  fi
+
   local hsp="$d/include/boost" # Header search path.
-  if [[ -n "$(find "$hsp" -maxdepth 2 -type f -name "*.hpp")" ]]; then
+  if [[ -n "$(find "$hsp" -maxdepth "$md" -type f -name "*.hpp")" ]]; then
     r="c++"
 
     # If there are any C headers (public or private) or C source files then
@@ -458,6 +469,8 @@ function detect_lang () # <lib-dir-path> <binful>
     fi
   else
     r="c"
+
+    info "warning: detected $pn to be a C library"
 
     # If there are any C++ source files then the secondary language is
     # C++.
@@ -568,6 +581,25 @@ function contains () # <target> <word0> <word1> ...
   done
 }
 
+# Return the set difference of <A> and <B>. That is, every element in <A> that
+# is not also an element of <B>. <A> and <B> are strings consisting of each
+# set's space-separated elements.
+#
+function difference () # <A> <B>
+{
+  local a=($1)
+  local b=($2)
+
+  local i
+  for i in "${!a[@]}"; do
+    if [[ "$(contains "${a[$i]}" "${b[@]}")" ]]; then
+      unset "a[$i]"
+    fi
+  done
+
+  echo "${a[@]}"
+}
+
 # Gather implementation dependencies for all libraries.
 #
 # Also write the `dependencies` file in this loop in order to take advantage
@@ -580,24 +612,18 @@ function contains () # <target> <word0> <word1> ...
            --track-sources \
            --module-overview | while read line; do
   if [[ "$line" =~ (.+)" -> "(.+) ]]; then
-    lib="${BASH_REMATCH[1]}"              # Library name in `boostdep` format.
-    pn="$(pkg_name $lib)"                 # build2 package name.
-    deps=(${BASH_REMATCH[2]/(unknown) /}) # Dependencies minus "(unknown)".
+    lib="${BASH_REMATCH[1]}"  # Library name in `boostdep` format.
+    deps="${BASH_REMATCH[2]}" # Library dependencies.
+    pn="$(pkg_name $lib)"     # build2 package name.
 
-    # Exclude implementation dependencies that are also interface dependencies
-    # because the latter takes precedence.
+    # Save the implementation dependencies in `impl_deps`, if any.
     #
-    ifdeps=(${intf_deps["$pn"]}) # Interface dependencies for this package.
-    for i in "${!deps[@]}"; do
-      if [[ "$(contains "${deps[$i]}" "${ifdeps[@]}")" ]]; then
-        unset "deps[$i]"
-      fi
-    done
-
-    # Save the dependencies in `impl_deps`, if any.
+    # Exclude the "(unknown)" dependency and all interface dependencies,
+    # leaving only the implementation dependencies.
     #
-    if [[ "${#deps[@]}" -ne 0 ]]; then
-      impl_deps["$pn"]=" ${deps[@]}"
+    r="$(difference "$deps" "(unknown) ${intf_deps[$pn]}")"
+    if [[ -n "$r" ]]; then
+      impl_deps["$pn"]=" $r"
     fi
 
     # Now that we have all interface and all implementation dependencies for
@@ -610,9 +636,9 @@ function contains () # <target> <word0> <word1> ...
     # This is a library with no dependencies (this line is neither empty, nor
     # does it end with a colon, nor does it contain an arrow; so it is neither
     # the report heading or the blank line following it, nor a library with
-    # dependencies. Write empty interface and implementation dependencies
+    # dependencies). Write empty interface and implementation dependencies
     # entries, so if it gets dependencies on upgrade we could easily
-    # distinguish it from a new library using gitk.
+    # distinguish it from a new library using git diff.
     #
     echo "$line:"$'\n'"$line:" >> dependencies
   fi
@@ -737,16 +763,13 @@ import $vn += $dt")
 #
 # Do one dependency level at a time, starting at level 0.
 #
-# @@ We're not yet doing all dependency levels.
-#
 # @@ Package manifest values yet to be customized:
 #
 #    - email: currently using boost-users@boost.org but we'll probably be
 #      switching to the maintainer email addresses in
 #      upstream/libs/<lib>/meta/libraries.json.
 #
-level=0
-cat levels | while [[ "$level" -le 14 ]] && read line; do
+cat levels | while read line; do
   libs=($line) # The libraries at the current dependency level.
 
   # Create a build2 project for each library at the current dependency level.
@@ -969,6 +992,22 @@ builds: ${manifest_builds[$pn]}")
     if [[ "$binful" ]]; then
       ised "$pn/include/boost/buildfile" -e "/hxx\{export\}/,/^$/d"
     fi
+
+    # Deduplicate interface dependencies (across the entire dependency graph,
+    # not just this library's direct dependencies) if there are any.
+    #
+    if [[ "${#intf_deps[$pn]}" -ne 0 ]]; then
+      ised "$lib_bfile" -e '/#import xxxx_libs/a\
+\
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)'
+    fi
+
+    # Remove dependencies that were manually excluded.
+    #
+    intf_deps["$pn"]="$(difference "${intf_deps[$pn]}" \
+                                   "${exclude_dependencies[$pn]}")"
+    impl_deps["$pn"]="$(difference "${impl_deps[$pn]}" \
+                                   "${exclude_dependencies[$pn]}")"
 
     # Add dependencies to the package manifest and the library buildfile.
     #
@@ -1223,22 +1262,6 @@ EOF
   ((++level))
 done
 
-# Modify the root buildfile to exclude the upstream and custom smoke tests
-# directories and those packages which build configuration set differs from
-# the default class set (see the override file for deviations).
-#
-# Note that we could probably exclude only the packages that are not buildable
-# on Linux (our development OS). Let's, however, not complicate things for now
-# and reuse the manifest_builds override.
-#
-exclusions=
-for p in "${!manifest_builds[@]}"; do # p: build2 package name.
-  exclusions+='\\\n'"                  -$p/"
-done
-
-ised buildfile -e "s%(import pkgs =) \*/%\
-\1 \{*/ -upstream/ -downstream/$exclusions\}%"
-
 # Remove commented-out and empty lines from `repositories.manifest`. Also add
 # repositories for non-Boost dependencies.
 #
@@ -1249,16 +1272,10 @@ ised repositories.manifest \
 :\
 role: prerequisite\
 location: https://pkg.cppget.org/1/stable\
-trust: 70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43\
-\
-:\
-role: prerequisite\
-location: https://github.com/build2-packaging/bzip2.git##HEAD\
-\
-:\
-role: prerequisite\
-location: https://github.com/build2-packaging/zlib.git##HEAD\
-\
-:\
-role: prerequisite\
-location: https://github.com/build2-packaging/Eigen.git##HEAD'
+trust: 70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43'
+
+# Remove the root buildfile because building all packages at once is a very
+# uncommon use case and the generated buildfile does not work without
+# modification.
+#
+rm buildfile

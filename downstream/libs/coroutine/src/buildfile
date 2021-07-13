@@ -10,18 +10,21 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
-lib{boost-test}: $pub/{$pub_hdrs}
+lib{boost-coroutine}: $pub/{$pub_hdrs}
 
 # BEGIN MANUAL CUSTOMIZATION
 #
 
+windows = ($cxx.target.class == 'windows')
+
 # Private headers and sources as well as dependencies.
 #
-# Exclude sources that define main().
-#
-lib{boost-test}: {hxx ixx txx}{**}            \
-                 cxx{** -cpp_main -test_main} \
-                 $impl_libs $intf_libs
+lib{boost-coroutine}: {hxx ixx txx}{**}             \
+                      cxx{** -posix/** -windows/**} \
+                      $impl_libs $intf_libs
+
+lib{boost-coroutine}: windows/cxx{**}: include = $windows
+lib{boost-coroutine}: posix/cxx{**}:   include = (! $windows)
 
 #
 # END MANUAL CUSTOMIZATION
@@ -41,23 +44,23 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 # Export options.
 #
-lib{boost-test}:
+lib{boost-coroutine}:
 {
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs = $intf_libs
 }
 
-liba{boost-test}: cxx.export.poptions += -DBOOST_STATIC
-libs{boost-test}: cxx.export.poptions += -DBOOST_SHARED
+liba{boost-coroutine}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-coroutine}: cxx.export.poptions += -DBOOST_SHARED
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost-test}: bin.lib.version = @"-$version.project_id"
+  lib{boost-coroutine}: bin.lib.version = @"-$version.project_id"
 else
-  lib{boost-test}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost-coroutine}: bin.lib.version = @"-$version.major.$version.minor"
 
 # Don't install private headers.
 #

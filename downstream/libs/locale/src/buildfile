@@ -10,18 +10,21 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
-lib{boost-test}: $pub/{$pub_hdrs}
+lib{boost-locale}: $pub/{$pub_hdrs}
 
 # BEGIN MANUAL CUSTOMIZATION
 #
 
+windows = ($cxx.target.class == 'windows')
+
 # Private headers and sources as well as dependencies.
 #
-# Exclude sources that define main().
-#
-lib{boost-test}: {hxx ixx txx}{**}            \
-                 cxx{** -cpp_main -test_main} \
-                 $impl_libs $intf_libs
+lib{boost_locale}: {hxx ixx txx}{**}           \
+                   cxx{** -posix/** -win32/**} \
+                   $impl_libs $intf_libs
+
+lib{boost_locale}: win32/cxx{**}: include = $windows
+lib{boost_locale}: posix/cxx{**}: include = (! $windows)
 
 #
 # END MANUAL CUSTOMIZATION
@@ -33,31 +36,43 @@ src_pfx_inc = [dir_path] $src_root/include/
 out_pfx_src = [dir_path] $out_root/src/
 src_pfx_src = [dir_path] $src_root/src/
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+
 cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
-                "-I$out_pfx_inc" "-I$src_pfx_inc"
+                "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                -DBOOST_LOCALE_WITH_ICU=1
+
+if $windows
+  cxx.poptions += -DBOOST_LOCALE_NO_POSIX_BACKEND
+else
+  cxx.poptions += -DBOOST_LOCALE_NO_WINAPI_BACKEND
+
+#
+# END MANUAL CUSTOMIZATION
 
 {hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
 {hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
 
 # Export options.
 #
-lib{boost-test}:
+lib{boost-locale}:
 {
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs = $intf_libs
 }
 
-liba{boost-test}: cxx.export.poptions += -DBOOST_STATIC
-libs{boost-test}: cxx.export.poptions += -DBOOST_SHARED
+liba{boost-locale}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-locale}: cxx.export.poptions += -DBOOST_SHARED
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost-test}: bin.lib.version = @"-$version.project_id"
+  lib{boost-locale}: bin.lib.version = @"-$version.project_id"
 else
-  lib{boost-test}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost-locale}: bin.lib.version = @"-$version.major.$version.minor"
 
 # Don't install private headers.
 #

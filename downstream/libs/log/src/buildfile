@@ -1,0 +1,176 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+
+libs = boost_log boost_log_setup
+
+# Splitting the library headers feels a bit hairy. Let's keep it simple and
+# consider both libraries sharing the same full set of public headers under
+# the boost/log/ subdirectory.
+#
+./: lib{$libs}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+# Disable AVX2 support because it seems to be fairly new: the first supporting
+# Intel CPU was Haswell in 2013 and the first AMD one was Excavator in 2015.
+#
+lib{boost_log}: {hxx ixx txx cxx}{** -posix/**   \
+                                     -windows/** \
+                                     -setup/**   \
+                                     -dump_avx2} \
+                file{windows/simple_event_log.mc}
+
+# Disable Event Log support (Windows only) for now because, although `mc.exe`,
+# which is required to generate `event_log_backend.h` from
+# `event_log_backend.mc`, is part of the platform SDK, it is not available
+# under MinGW. (Note that, if Event Log support is ever enabled, we will need
+# to add `psapi.lib` to cxx.libs below.)
+#
+lib{boost_log}: windows/{hxx ixx txx}{**}:          include = $windows
+lib{boost_log}: windows/cxx{** -event_log_backend}: include = $windows
+lib{boost_log}: posix/{hxx ixx txx cxx}{**}:        include = (! $windows)
+
+lib{boost_log_setup}: setup/{hxx ixx txx cxx}{**} lib{boost_log}
+
+# While these libraries have potentially different dependency sets we are
+# unable to easily deduce them, since `boostdep` is not of much help here. We
+# also don't want to maintain these sets manually. Thus, let's assume that
+# both libraries require the full set of dependencies.
+#
+# Note also that because log is an interface dependency of log_setup, we
+# omit $intf_libs from its dependency list (in a sense, this is the manual
+# version of $cxx.deduplicate_export_libs() above).
+#
+lib{boost_log}: $intf_libs
+lib{$libs}:     $impl_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                -D__STDC_CONSTANT_MACROS -DBOOST_SPIRIT_USE_PHOENIX_V3=1
+
+if $windows
+{
+  # See above regarding the disabling of Event Log support.
+  #
+  cxx.poptions += -DBOOST_LOG_WITHOUT_EVENT_LOG    \
+                  -DWIN32_LEAN_AND_MEAN -DNOMINMAX \
+                  -DSECURITY_WIN32 -DBOOST_USE_WINDOWS_H
+}
+else
+{
+  cxx.poptions += -DBOOST_LOG_HAS_PTHREAD_MUTEX_ROBUST \
+                  -DBOOST_LOG_USE_NATIVE_SYSLOG
+
+  if ($cxx.target.class == 'linux')
+    cxx.poptions += -D_XOPEN_SOURCE=600
+}
+
+{hbmi  obj }{** -setup/**}: cxx.poptions += -DBOOST_LOG_BUILDING_THE_LIB=1 \
+                                            -DBOOST_LOG_USE_SSSE3
+
+{hbmis objs}{** -setup/**}: cxx.poptions += -DBOOST_LOG_DLL
+
+{hbmi  obj }{setup/**}:     cxx.poptions += -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1
+
+{hbmis objs}{setup/**}:     cxx.poptions += -DBOOST_LOG_SETUP_DLL \
+                                            -DBOOST_LOG_DLL
+
+# SSE3 compiler options.
+#
+# Do not pass any SSE compiler options to MSVC because on x86 it's enabled by
+# default (`/arch:SSE2`) and on x86_64 it is always enabled.
+#
+if ($cxx.class == 'gcc')
+  {hbmi obj}{dump_ssse3}: cxx.coptions += -msse -msse2 -msse3 -mssse3
+
+# Disable MSVC warning C4005 (macro redefinition) because some of the source
+# files include <boost/regex.hpp> which defines WIN32_LEAN_AND_MEAN
+# unconditionally (a bug which will be fixed in Boost 1.77; see
+# https://github.com/boostorg/regex/issues/127) resulting in this compiler
+# warning about the redefinition (we also define it above).
+#
+# @@ TODO Remove this once we've upgraded to Boost 1.77.
+#
+if ($cxx.class == 'msvc')
+  cxx.coptions += /wd4005
+
+switch $cxx.target.class, $cxx.target.system
+{
+  case 'windows', 'mingw32'
+  {
+    lib{boost_log}:
+      cxx.libs += -lsecur32 -lws2_32 -lmswsock -ladvapi32
+  }
+  case 'windows'
+  {
+    lib{boost_log}:
+      cxx.libs += secur32.lib ws2_32.lib mswsock.lib advapi32.lib
+  }
+  case 'linux'
+  case 'bsd', 'freebsd'
+    lib{boost_log}: cxx.libs += -lrt
+}
+
+# Export options.
+#
+lib{boost_log}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs     = $intf_libs
+}
+libs{boost_log}: cxx.export.poptions += -DBOOST_LOG_DYN_LINK=1
+
+
+lib{boost_log_setup}:
+{
+  # Note that `generate` will define BOOST_LOG_NO_LIB in lib{boost_log}'s
+  # export options above.
+  #
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                        -DBOOST_LOG_SETUP_NO_LIB
+  cxx.export.libs     = lib{boost_log}
+}
+libs{boost_log_setup}: cxx.export.poptions += -DBOOST_LOG_SETUP_DYN_LINK=1
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{$libs}: bin.lib.version = @"-$version.project_id"
+else
+  lib{$libs}: bin.lib.version = @"-$version.major.$version.minor"
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false
