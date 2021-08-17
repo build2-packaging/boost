@@ -4,6 +4,8 @@ import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-utility%lib{boost_utility}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_static_string}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

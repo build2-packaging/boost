@@ -1,0 +1,7 @@
+project = libboost-assign
+
+using version
+using config
+using test
+using install
+using dist

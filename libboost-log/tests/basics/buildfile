@@ -1,0 +1,7 @@
+import libs       = libboost-log%lib{boost_log}
+import libs_setup = libboost-log%lib{boost_log_setup}
+
+./: exe{driver driver-setup}
+
+exe{driver}:       cxx{driver}       $libs
+exe{driver-setup}: cxx{driver-setup} $libs_setup

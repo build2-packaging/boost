@@ -1,0 +1,7 @@
+project = libboost-accumulators
+
+using version
+using config
+using test
+using install
+using dist

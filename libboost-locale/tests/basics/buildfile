@@ -1,0 +1,3 @@
+import libs = libboost-locale%lib{boost_locale}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

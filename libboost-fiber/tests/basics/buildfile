@@ -1,0 +1,7 @@
+import libs      = libboost-fiber%lib{boost_fiber}
+import libs_numa = libboost-fiber%lib{boost_fiber_numa}
+
+./: exe{driver driver-numa}
+
+exe{driver}:      cxx{driver}      $libs
+exe{driver-numa}: cxx{driver-numa} $libs_numa

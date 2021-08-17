@@ -1,0 +1,7 @@
+project = libboost-numeric-odeint
+
+using version
+using config
+using test
+using install
+using dist

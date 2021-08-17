@@ -1,0 +1,24 @@
+: 1
+name: libboost-poly-collection
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-poly-collection C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/poly_collection
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/poly_collection
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-iterator == $
+depends: libboost-mp11 == $
+depends: libboost-mpl == $
+depends: libboost-type-erasure == $
+depends: libboost-type-traits == $

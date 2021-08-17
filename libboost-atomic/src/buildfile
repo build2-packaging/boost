@@ -7,6 +7,8 @@ import impl_libs  = libboost-align%lib{boost_align}
 import impl_libs += libboost-predef%lib{boost_predef}
 import impl_libs += libboost-preprocessor%lib{boost_preprocessor}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

@@ -1,6 +1,8 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_logic}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

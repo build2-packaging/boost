@@ -1,0 +1,3 @@
+import libs = libboost-beast%lib{boost_beast}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,6 +1,8 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-predef%lib{boost_predef}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_winapi}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

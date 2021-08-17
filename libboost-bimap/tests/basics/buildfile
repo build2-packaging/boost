@@ -1,0 +1,3 @@
+import libs = libboost-bimap%lib{boost_bimap}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

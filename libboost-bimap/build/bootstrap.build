@@ -1,0 +1,7 @@
+project = libboost-bimap
+
+using version
+using config
+using test
+using install
+using dist

@@ -5,6 +5,8 @@ import intf_libs += libboost-integer%lib{boost_integer}
 import intf_libs += libboost-logic%lib{boost_logic}
 import intf_libs += libboost-mp11%lib{boost_mp11}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_safe_numerics}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

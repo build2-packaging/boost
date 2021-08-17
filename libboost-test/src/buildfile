@@ -18,6 +18,8 @@ import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
 impl_libs = # Implementation dependencies.
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/
@@ -54,14 +56,6 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 {hbmia obja}{*}: cxx.poptions += -DBOOST_TEST_STATIC_LINK
 {hbmis objs}{*}: cxx.poptions += -DBOOST_TEST_DYN_LINK
-
-# @@ We do not plan to use these options but leaving them here for now until
-#    this library has been CI'd.
-#
-# if(MSVC)
-#   set(MSVC_Additional_flags "/fp:fast /GF /Oy /GT /Ox /Ob2 /Oi /Os")
-# endif()
-
 
 # Export options.
 #

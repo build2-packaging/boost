@@ -1,0 +1,35 @@
+import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-function-types%lib{boost_function_types}
+import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+import intf_libs += libboost-math%lib{boost_math}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-parameter%lib{boost_parameter}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-spirit%lib{boost_spirit}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+lib{boost_convert}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_convert}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

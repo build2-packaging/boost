@@ -1,0 +1,1 @@
+../../upstream/libs/serialization/src/text_woarchive.cpp

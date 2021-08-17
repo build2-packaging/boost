@@ -10,6 +10,8 @@ import intf_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-variant2%lib{boost_variant2}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_gil}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

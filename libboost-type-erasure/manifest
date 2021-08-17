@@ -1,0 +1,29 @@
+: 1
+name: libboost-type-erasure
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-type-erasure C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+url: https://github.com/boostorg/type_erasure
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/type_erasure
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-thread == $
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-fusion == $
+depends: libboost-iterator == $
+depends: libboost-mp11 == $
+depends: libboost-mpl == $
+depends: libboost-preprocessor == $
+depends: libboost-smart-ptr == $
+depends: libboost-throw-exception == $
+depends: libboost-type-traits == $
+depends: libboost-typeof == $
+depends: libboost-vmd == $

@@ -1,0 +1,3 @@
+import libs = libboost-property-tree%lib{boost_property_tree}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

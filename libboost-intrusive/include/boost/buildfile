@@ -5,6 +5,8 @@ import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-move%lib{boost_move}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_intrusive}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

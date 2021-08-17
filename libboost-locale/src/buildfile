@@ -1,0 +1,90 @@
+import intf_libs  = libicuuc%lib{icuuc}
+import intf_libs += libicui18n%lib{icui18n}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-function%lib{boost_function}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import impl_libs  = libboost-thread%lib{boost_thread}
+import impl_libs += libboost-unordered%lib{boost_unordered}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_locale}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_locale}: {hxx ixx txx}{**}           \
+                   cxx{** -posix/** -win32/**} \
+                   $impl_libs $intf_libs
+
+lib{boost_locale}: win32/cxx{**}: include = $windows
+lib{boost_locale}: posix/cxx{**}: include = (! $windows)
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                -DBOOST_LOCALE_WITH_ICU=1
+
+if $windows
+  cxx.poptions += -DBOOST_LOCALE_NO_POSIX_BACKEND
+else
+  cxx.poptions += -DBOOST_LOCALE_NO_WINAPI_BACKEND
+
+#
+# END MANUAL CUSTOMIZATION
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_LOCALE_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_LOCALE_DYN_LINK
+
+# Export options.
+#
+lib{boost_locale}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_LOCALE_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_locale}: cxx.export.poptions += -DBOOST_LOCALE_STATIC_LINK
+libs{boost_locale}: cxx.export.poptions += -DBOOST_LOCALE_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_locale}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_locale}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

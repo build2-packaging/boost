@@ -1,0 +1,43 @@
+import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-bind%lib{boost_bind}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-function%lib{boost_function}
+import intf_libs += libboost-fusion%lib{boost_fusion}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-math%lib{boost_math}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-multi-array%lib{boost_multi_array}
+import intf_libs += libboost-numeric-ublas%lib{boost_numeric_ublas}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-units%lib{boost_units}
+import intf_libs += libboost-utility%lib{boost_utility}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+lib{boost_numeric_odeint}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_numeric_odeint}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

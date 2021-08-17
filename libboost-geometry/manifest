@@ -1,0 +1,47 @@
+: 1
+name: libboost-geometry
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-geometry C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/geometry
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/geometry
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-algorithm == $
+depends: libboost-array == $
+depends: libboost-assert == $
+depends: libboost-concept-check == $
+depends: libboost-config == $
+depends: libboost-container == $
+depends: libboost-core == $
+depends: libboost-function-types == $
+depends: libboost-fusion == $
+depends: libboost-integer == $
+depends: libboost-iterator == $
+depends: libboost-lexical-cast == $
+depends: libboost-math == $
+depends: libboost-move == $
+depends: libboost-mpl == $
+depends: libboost-multiprecision == $
+depends: libboost-numeric-conversion == $
+depends: libboost-polygon == $
+depends: libboost-qvm == $
+depends: libboost-range == $
+depends: libboost-rational == $
+depends: libboost-serialization == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-thread == $
+depends: libboost-throw-exception == $
+depends: libboost-tokenizer == $
+depends: libboost-tuple == $
+depends: libboost-type-traits == $
+depends: libboost-utility == $
+depends: libboost-variant == $

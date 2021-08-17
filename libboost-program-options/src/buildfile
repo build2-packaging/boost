@@ -12,6 +12,8 @@ import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import impl_libs  = libboost-bind%lib{boost_bind}
 import impl_libs += libboost-tokenizer%lib{boost_tokenizer}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

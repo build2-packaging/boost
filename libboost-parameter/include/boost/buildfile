@@ -9,6 +9,8 @@ import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_parameter}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

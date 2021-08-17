@@ -1,0 +1,3 @@
+import libs = libboost-numeric-ublas%lib{boost_numeric_ublas}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,30 @@
+: 1
+name: libboost-ptr-container
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-ptr-container C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/ptr_container
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/ptr_container
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-array == $
+depends: libboost-assert == $
+depends: libboost-circular-buffer == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-iterator == $
+depends: libboost-mpl == $
+depends: libboost-range == $
+depends: libboost-serialization == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-type-traits == $
+depends: libboost-unordered == $
+depends: libboost-utility == $

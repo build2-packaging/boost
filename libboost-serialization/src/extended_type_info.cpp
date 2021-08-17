@@ -1,0 +1,1 @@
+../../upstream/libs/serialization/src/extended_type_info.cpp

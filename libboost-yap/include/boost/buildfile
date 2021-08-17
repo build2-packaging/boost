@@ -2,6 +2,8 @@ import intf_libs  = libboost-hana%lib{boost_hana}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-type-index%lib{boost_type_index}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_yap}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

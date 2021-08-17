@@ -1,0 +1,3 @@
+import libs = libboost-geometry%lib{boost_geometry}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

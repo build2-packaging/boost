@@ -4,6 +4,8 @@ import intf_libs += libboost-fusion%lib{boost_fusion}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-tuple%lib{boost_tuple}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_hana}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

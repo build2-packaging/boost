@@ -1,0 +1,96 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-pool%lib{boost_pool}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+impl_libs = # Implementation dependencies.
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_context}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_context}: {hxx ixx txx}{**}                                      \
+                    cxx{** -dummy -untested -windows/** -posix/** -asm/**} \
+                    $impl_libs $intf_libs
+
+lib{boost_context}: windows/cxx{**}: include = $windows
+lib{boost_context}: posix/cxx{**}:   include = (! $windows)
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
+#
+# @@ TODO: when we switch to the ASM implementation, remove the
+#    BOOST_USE_{UCONTEXT,WINFIB} definitions everywhere (no macro is required
+#    for the ASM implementation) and define the BOOST_USE_TSX
+#    BOOST_CONTEXT_EXPORT macros as appropriate.
+#
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src"                      \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"                      \
+                ($windows ? -DBOOST_USE_WINFIB -D_WIN32_WINNT=0x0601 : \
+                            -DBOOST_USE_UCONTEXT)
+
+#
+# END MANUAL CUSTOMIZATION
+
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_CONTEXT_SOURCE
+{hbmia obja}{*}: cxx.poptions += -DBOOST_CONTEXT_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_CONTEXT_DYN_LINK
+
+# Export options.
+#
+lib{boost_context}:
+{
+# BEGIN MANUAL CUSTOMIZATION
+#
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                        -DBOOST_CONTEXT_NO_LIB            \
+                        ($windows ? -DBOOST_USE_WINFIB : -DBOOST_USE_UCONTEXT)
+#
+# END MANUAL CUSTOMIZATION
+
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_context}: cxx.export.poptions += -DBOOST_CONTEXT_STATIC_LINK
+libs{boost_context}: cxx.export.poptions += -DBOOST_CONTEXT_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_context}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_context}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

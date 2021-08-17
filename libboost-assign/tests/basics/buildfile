@@ -1,0 +1,3 @@
+import libs = libboost-assign%lib{boost_assign}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
