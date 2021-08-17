@@ -1,0 +1,46 @@
+: 1
+name: libboost-spirit
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-spirit C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/spirit
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/spirit
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-array == $
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-endian == $
+depends: libboost-foreach == $
+depends: libboost-function == $
+depends: libboost-function-types == $
+depends: libboost-fusion == $
+depends: libboost-integer == $
+depends: libboost-io == $
+depends: libboost-iterator == $
+depends: libboost-move == $
+depends: libboost-mpl == $
+depends: libboost-optional == $
+depends: libboost-phoenix == $
+depends: libboost-pool == $
+depends: libboost-preprocessor == $
+depends: libboost-proto == $
+depends: libboost-range == $
+depends: libboost-regex == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-thread == $
+depends: libboost-throw-exception == $
+depends: libboost-type-traits == $
+depends: libboost-typeof == $
+depends: libboost-unordered == $
+depends: libboost-utility == $
+depends: libboost-variant == $

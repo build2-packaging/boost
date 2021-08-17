@@ -1,0 +1,3 @@
+import libs = libboost-graph%lib{boost_graph}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

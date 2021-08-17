@@ -1,0 +1,3 @@
+import libs = libboost-property-map%lib{boost_property_map}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,7 @@
+project = libboost-ptr-container
+
+using version
+using config
+using test
+using install
+using dist

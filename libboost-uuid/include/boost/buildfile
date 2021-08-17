@@ -1,0 +1,39 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-io%lib{boost_io}
+import intf_libs += libboost-move%lib{boost_move}
+import intf_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-random%lib{boost_random}
+import intf_libs += libboost-serialization%lib{boost_serialization}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-tti%lib{boost_tti}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-winapi%lib{boost_winapi}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+lib{boost_uuid}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_uuid}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

@@ -28,6 +28,8 @@ import intf_libs += libboost-winapi%lib{boost_winapi}
 import impl_libs  = libboost-algorithm%lib{boost_algorithm}
 import impl_libs += libboost-lexical-cast%lib{boost_lexical_cast}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

@@ -1,0 +1,3 @@
+import libs = libboost-poly-collection%lib{boost_poly_collection}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

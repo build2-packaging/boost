@@ -1,6 +1,8 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-winapi%lib{boost_winapi}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_system}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

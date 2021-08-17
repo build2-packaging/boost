@@ -1,0 +1,28 @@
+: 1
+name: libboost-numeric-ublas
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-numeric-ublas C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/ublas
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/numeric/ublas
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-concept-check == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-iterator == $
+depends: libboost-mpl == $
+depends: libboost-numeric-interval == $
+depends: libboost-range == $
+depends: libboost-serialization == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-type-traits == $
+depends: libboost-typeof == $

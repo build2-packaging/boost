@@ -1,0 +1,3 @@
+import libs = libboost-msm%lib{boost_msm}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

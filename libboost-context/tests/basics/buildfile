@@ -1,0 +1,3 @@
+import libs = libboost-context%lib{boost_context}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

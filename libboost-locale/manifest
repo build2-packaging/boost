@@ -1,0 +1,26 @@
+: 1
+name: libboost-locale
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-locale C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+url: https://github.com/boostorg/locale
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/locale
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-thread == $
+depends: libboost-unordered == $
+depends: libicuuc ^65.1.0
+depends: libicui18n ^65.1.0
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-function == $
+depends: libboost-iterator == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-type-traits == $

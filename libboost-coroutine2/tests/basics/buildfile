@@ -1,0 +1,3 @@
+import libs = libboost-coroutine2%lib{boost_coroutine2}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

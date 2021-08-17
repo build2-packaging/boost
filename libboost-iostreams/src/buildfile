@@ -19,6 +19,8 @@ import impl_libs  = libz%lib{z}
 import impl_libs += libbzip2%lib{bzip2}
 import impl_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

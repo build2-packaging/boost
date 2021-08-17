@@ -1,0 +1,3 @@
+import libs = libboost-statechart%lib{boost_statechart}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -1,0 +1,7 @@
+project = libboost-graph
+
+using version
+using config
+using test
+using install
+using dist

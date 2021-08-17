@@ -1,0 +1,3 @@
+import libs = libboost-spirit%lib{boost_spirit}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

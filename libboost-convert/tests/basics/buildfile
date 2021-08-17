@@ -1,0 +1,3 @@
+import libs = libboost-convert%lib{boost_convert}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

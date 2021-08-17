@@ -1,0 +1,3 @@
+import libs = libboost-ptr-container%lib{boost_ptr_container}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

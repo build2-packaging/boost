@@ -1,0 +1,1 @@
+../../upstream/libs/contract/src/contract.cpp

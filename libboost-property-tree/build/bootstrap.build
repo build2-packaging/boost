@@ -1,0 +1,7 @@
+project = libboost-property-tree
+
+using version
+using config
+using test
+using install
+using dist

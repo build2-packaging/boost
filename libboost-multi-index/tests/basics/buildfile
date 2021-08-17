@@ -1,0 +1,3 @@
+import libs = libboost-multi-index%lib{boost_multi_index}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

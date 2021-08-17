@@ -1,0 +1,3 @@
+import libs = libboost-uuid%lib{boost_uuid}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

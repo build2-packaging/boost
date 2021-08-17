@@ -3,6 +3,8 @@ import intf_libs += libboost-exception%lib{boost_exception}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_outcome}: {hxx ixx txx h}{**} $intf_libs
 
 # Export options.

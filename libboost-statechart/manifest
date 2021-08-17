@@ -1,0 +1,27 @@
+: 1
+name: libboost-statechart
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-statechart C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+url: https://github.com/boostorg/statechart
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/statechart
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-assert == $
+depends: libboost-bind == $
+depends: libboost-config == $
+depends: libboost-conversion == $
+depends: libboost-core == $
+depends: libboost-detail == $
+depends: libboost-function == $
+depends: libboost-mpl == $
+depends: libboost-smart-ptr == $
+depends: libboost-static-assert == $
+depends: libboost-thread == $
+depends: libboost-type-traits == $

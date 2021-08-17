@@ -1,0 +1,7 @@
+project = libboost-property-map
+
+using version
+using config
+using test
+using install
+using dist

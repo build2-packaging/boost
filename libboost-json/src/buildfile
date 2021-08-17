@@ -8,6 +8,8 @@ import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-utility%lib{boost_utility}
 impl_libs = # Implementation dependencies.
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

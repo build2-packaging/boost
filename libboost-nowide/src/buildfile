@@ -2,6 +2,8 @@ import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-filesystem%lib{boost_filesystem}
 impl_libs = # Implementation dependencies.
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

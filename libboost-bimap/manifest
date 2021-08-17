@@ -1,0 +1,30 @@
+: 1
+name: libboost-bimap
+version: 1.76.0-a.0.z
+project: boost
+summary: boost-bimap C++ library
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+url: https://github.com/boostorg/bimap
+doc-url: https://www.boost.org/doc/libs/1_76_0/libs/bimap
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+depends: * build2 >= 0.13.0
+depends: * bpkg >= 0.13.0
+depends: libboost-concept-check == $
+depends: libboost-config == $
+depends: libboost-container-hash == $
+depends: libboost-core == $
+depends: libboost-iterator == $
+depends: libboost-lambda == $
+depends: libboost-mpl == $
+depends: libboost-multi-index == $
+depends: libboost-preprocessor == $
+depends: libboost-property-map == $
+depends: libboost-serialization == $
+depends: libboost-static-assert == $
+depends: libboost-throw-exception == $
+depends: libboost-type-traits == $
+depends: libboost-utility == $

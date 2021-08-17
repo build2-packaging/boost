@@ -1,0 +1,54 @@
+import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-endian%lib{boost_endian}
+import intf_libs += libboost-foreach%lib{boost_foreach}
+import intf_libs += libboost-function%lib{boost_function}
+import intf_libs += libboost-function-types%lib{boost_function_types}
+import intf_libs += libboost-fusion%lib{boost_fusion}
+import intf_libs += libboost-integer%lib{boost_integer}
+import intf_libs += libboost-io%lib{boost_io}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-move%lib{boost_move}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-phoenix%lib{boost_phoenix}
+import intf_libs += libboost-pool%lib{boost_pool}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-proto%lib{boost_proto}
+import intf_libs += libboost-range%lib{boost_range}
+import intf_libs += libboost-regex%lib{boost_regex}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-thread%lib{boost_thread}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-typeof%lib{boost_typeof}
+import intf_libs += libboost-unordered%lib{boost_unordered}
+import intf_libs += libboost-utility%lib{boost_utility}
+import intf_libs += libboost-variant%lib{boost_variant}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+lib{boost_spirit}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_spirit}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

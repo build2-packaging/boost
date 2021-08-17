@@ -6,6 +6,8 @@ import impl_libs += libboost-io%lib{boost_io}
 import impl_libs += libboost-predef%lib{boost_predef}
 import impl_libs += libboost-throw-exception%lib{boost_throw_exception}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 # Public headers.
 #
 pub = [dir_path] ../include/boost/

@@ -1,0 +1,7 @@
+project = libboost-histogram
+
+using version
+using config
+using test
+using install
+using dist

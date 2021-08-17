@@ -1,0 +1,117 @@
+import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-detail%lib{boost_detail}
+import intf_libs += libboost-integer%lib{boost_integer}
+import intf_libs += libboost-io%lib{boost_io}
+import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-move%lib{boost_move}
+import intf_libs += libboost-mpl%lib{boost_mpl}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-spirit%lib{boost_spirit}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-unordered%lib{boost_unordered}
+import intf_libs += libboost-utility%lib{boost_utility}
+import intf_libs += libboost-variant%lib{boost_variant}
+import impl_libs = libboost-function%lib{boost_function}
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+libs = boost_serialization boost_wserialization
+
+# Splitting the library headers feels a bit hairy. Let's keep it simple and
+# consider both libraries sharing the same full set of public headers under
+# the boost/{archive/,serialization/} subdirectories.
+#
+./: lib{$libs}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{$libs}:                ixx{basic_xml_grammar}
+lib{boost_serialization}:  cxx{** -*_wi* -*_wo* -xml_wgrammar}
+lib{boost_wserialization}: cxx{    *_wi*  *_wo*  xml_wgrammar} \
+                           lib{boost_serialization}
+
+# While these libraries have potentially different dependency sets we are
+# unable to easily deduce them, since `boostdep` is not of much help here. We
+# also don't want to maintain these sets manually. Thus, let's assume that
+# both libraries require the full set of dependencies and
+# lib{boost_serialization} is an interface dependency of
+# lib{boost_wserialization}.
+#
+# Note also that because serialization is an interface dependency of
+# wserialization, we omit $intf_libs from its dependency list (in a sense,
+# this is the manual version of $cxx.deduplicate_export_libs() above).
+#
+lib{boost_serialization}: $intf_libs
+lib{$libs}:               $impl_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_SERIALIZATION_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_SERIALIZATION_DYN_LINK
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Export options.
+#
+lib{boost_serialization}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_SERIALIZATION_NO_LIB
+  cxx.export.libs     = $intf_libs
+}
+
+lib{boost_wserialization}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_SERIALIZATION_NO_LIB
+  cxx.export.libs     = lib{boost_serialization}
+}
+
+liba{$libs}: cxx.export.poptions += -DBOOST_SERIALIZATION_STATIC_LINK
+libs{$libs}: cxx.export.poptions += -DBOOST_SERIALIZATION_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{$libs}: bin.lib.version = @"-$version.project_id"
+else
+  lib{$libs}: bin.lib.version = @"-$version.major.$version.minor"
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

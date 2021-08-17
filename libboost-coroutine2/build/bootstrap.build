@@ -1,0 +1,7 @@
+project = libboost-coroutine2
+
+using version
+using config
+using test
+using install
+using dist

@@ -202,3 +202,67 @@ location: libboost-interprocess/
 location: libboost-multiprecision/
 :
 location: libboost-thread/
+:
+location: libboost-context/
+:
+location: libboost-contract/
+:
+location: libboost-locale/
+:
+location: libboost-spirit/
+:
+location: libboost-statechart/
+:
+location: libboost-type-erasure/
+:
+location: libboost-convert/
+:
+location: libboost-coroutine2/
+:
+location: libboost-dll/
+:
+location: libboost-fiber/
+:
+location: libboost-poly-collection/
+:
+location: libboost-serialization/
+:
+location: libboost-asio/
+:
+location: libboost-geometry/
+:
+location: libboost-histogram/
+:
+location: libboost-msm/
+:
+location: libboost-multi-index/
+:
+location: libboost-ptr-container/
+:
+location: libboost-units/
+:
+location: libboost-uuid/
+:
+location: libboost-assign/
+:
+location: libboost-beast/
+:
+location: libboost-flyweight/
+:
+location: libboost-process/
+:
+location: libboost-property-tree/
+:
+location: libboost-bimap/
+:
+location: libboost-graph/
+:
+location: libboost-log/
+:
+location: libboost-property-map/
+:
+location: libboost-numeric-ublas/
+:
+location: libboost-accumulators/
+:
+location: libboost-numeric-odeint/

@@ -1,6 +1,8 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
 lib{boost_stl_interfaces}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.

@@ -1,0 +1,7 @@
+project = libboost-flyweight
+
+using version
+using config
+using test
+using install
+using dist
