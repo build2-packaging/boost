@@ -1250,17 +1250,3 @@ An issue has been filed for Eigen upstream but it does not look like it's been
 resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
 decided not to do anything with the expectation that Eigen upstream will fix
 it before too long.
-
-2.7 libboost-log
-
-Although the upstream build doesn't define BOOST_LOG_DLL on the shared version
-of lib{boost_log_setup}'s object files it is absolutely required: in
-detail/config.hpp, included by detail/setup_config.hpp, if BOOST_LOG_DLL is
-not defined then the namespace will become `v2s_mt` (in which `s` means
-static) instead of `v2_mt` which would be correct for the dynamic library (see
-https://www.boost.org/doc/libs/1_76_0/libs/log/doc/html/log/rationale/namespace_mangling.html).
-And BOOST_LOG_DLL is not set anywhere but Jamfile.v2 and detail/config.hpp,
-but here only if using the library, not when building it.
-
-No quite clear how the upstream build of the shared boost_log_setup even
-works.
