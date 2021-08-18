@@ -92,15 +92,23 @@ else
     cxx.poptions += -D_XOPEN_SOURCE=600
 }
 
-{hbmi  obj }{** -setup/**}: cxx.poptions += -DBOOST_LOG_BUILDING_THE_LIB=1 \
-                                            -DBOOST_LOG_USE_SSSE3
+# The names of the object files comprising lib{boost_log} and
+# lib{boost_log_setup}, respectively.
+#
+objn       = $regex.apply({**.cpp -setup/**.cpp}, '.cpp$', '')
+setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 
-{hbmis objs}{** -setup/**}: cxx.poptions += -DBOOST_LOG_DLL
+{hbmi  obj }{$objn}: cxx.poptions += -DBOOST_LOG_BUILDING_THE_LIB=1 \
+                                     -DBOOST_LOG_USE_SSSE3
+{hbmis objs}{$objn}: cxx.poptions += -DBOOST_LOG_DLL
 
-{hbmi  obj }{setup/**}:     cxx.poptions += -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1
-
-{hbmis objs}{setup/**}:     cxx.poptions += -DBOOST_LOG_SETUP_DLL \
-                                            -DBOOST_LOG_DLL
+# Note that lib{boost_log_setup}'s object files will get
+# -DBOOST_LOG_DYN_LINK=1 because it is exported from lib{boost_log}. The
+# upstream build defines this macro explicitly but this is demonstrably
+# redundant.
+#
+{hbmi  obj }{$setup_objn}: cxx.poptions += -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1
+{hbmis objs}{$setup_objn}: cxx.poptions += -DBOOST_LOG_SETUP_DLL
 
 # SSE3 compiler options.
 #
