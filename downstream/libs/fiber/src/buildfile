@@ -87,31 +87,32 @@ else
   cxx.libs     += -lpthread
 }
 
+# Note that Boost.Fiber breaks convention by using "FIBERS", with an S,
+# instead of "FIBER", the library name. Therefore we need to override all of
+# the changes the `generate` script would usually do automatically.
 #
-# END MANUAL CUSTOMIZATION
-
-{hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
-{hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
-
-# BEGIN MANUAL CUSTOMIZATION
-#
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_FIBERS_SOURCE
+{hbmia obja}{*}: cxx.poptions += -DBOOST_FIBERS_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_FIBERS_DYN_LINK
 
 # Export options.
 #
 lib{boost_fiber}:
 {
-  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                        -DBOOST_FIBERS_NO_LIB
   cxx.export.libs     = $intf_libs
 }
 
 lib{boost_fiber_numa}:
 {
-  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                        -DBOOST_FIBERS_NO_LIB
   cxx.export.libs     = lib{boost_fiber}
 }
 
-liba{$libs}: cxx.export.poptions += -DBOOST_STATIC
-libs{$libs}: cxx.export.poptions += -DBOOST_SHARED
+liba{$libs}: cxx.export.poptions += -DBOOST_FIBERS_STATIC_LINK
+libs{$libs}: cxx.export.poptions += -DBOOST_FIBERS_DYN_LINK
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
