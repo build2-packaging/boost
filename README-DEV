@@ -1204,6 +1204,8 @@ allocation; see
 https://mail.mozilla.org/pipermail/rust-dev/2013-November/006314.html for the
 Rust motivation).
 
+Bug #1
+
 The test driver (the code of which was taken from the upstream
 examples/fiber/fibonacci.cpp) segfaults on Mac OS 10.15 and 11 with Clang 11
 and 12 but succeeds (that is, produces the right output) on all other
@@ -1229,6 +1231,19 @@ examples link statically by default).
 
 An issue has been logged here: https://github.com/boostorg/context/issues/184.
 
+Bug #2
+
+In Boost version 1.76, Boost.Context has the following bug
+https://github.com/boostorg/context/issues/171. It is not triggered by
+libboost-context's own tests, but it is triggered by those of
+libboost-fiber. This bug is only triggered by the MinGW configs (the other
+failing configs are due to std::result_of having been removed from C++20 and
+MS's stdlib). I have no explanation for why the sole successful config
+windows_10-msvc_16.10-static_O2 or those with unrelated warnings (all being
+warning 4251) don't trigger this bug.
+
+@@ TODO Check that this has been resolved once we upgrade to Boost 1.77.
+
 2.6 libboost-multiprecision
 
 CI fails under Clang 11 on Windows.
@@ -1250,3 +1265,9 @@ An issue has been filed for Eigen upstream but it does not look like it's been
 resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
 decided not to do anything with the expectation that Eigen upstream will fix
 it before too long.
+
+2.7 libboost-outcome
+
+The combination of Clang and libstdc++ on Linux somehow causes
+__cpp_impl_coroutine (C++20) to be undefined, resulting in `#error "the
+coroutine header requires -fcoroutines"` in /usr/include/c++/10/coroutine.
