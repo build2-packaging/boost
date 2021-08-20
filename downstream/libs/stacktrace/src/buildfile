@@ -31,7 +31,8 @@ tsys   = $cxx.target.system
 #
 # The `noop` variant disables backtracing and is supported on all platforms.
 #
-# @@ Add boost_stacktrace_backtrace when libbacktrace is packaged for build2.
+# @@ TODO Add boost_stacktrace_backtrace when libbacktrace is packaged for
+#    build2.
 #
 variants = boost_stacktrace_noop
 
@@ -76,6 +77,12 @@ if ($tclass != 'windows' || $tsys == 'mingw32')
 # cleanly separated by variant implementation.
 #
 ./: lib{$variants}: $pub/{$pub_hdrs} {hxx ixx txx}{**} $impl_libs $intf_libs
+
+# Ensure that all source files are part of the distribution. The conventional
+# method won't work because not every library target is declared on every
+# platform.
+#
+./: cxx{**}
 
 # Add source files to the library targets of the selected variants. Each
 # variant has a single source file named `<variant>.cpp`.
