@@ -21,6 +21,9 @@ manifest_url["libboost-numeric-ublas"]="https://github.com/boostorg/ublas"
 manifest_builds["libboost-winapi"]=\
 "&windows ; Provides Windows API declarations."
 
+manifest_builds["libboost-config"]=\
+"default ; Performs platform sanity checks."
+
 ## binless_libs
 ##
 ## Libraries that are binless despite having one or more source files.
