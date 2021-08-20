@@ -942,12 +942,16 @@ package-url: https://github.com/build2-packaging/boost" \
       -e "/^email:/a\\
 package-email: packaging@build2.org ; Mailing list.")
 
-    # The `builds` package manifest value (see the override file for
-    # deviations).
+    # The `builds` package manifest value. Set to the default value unless
+    # overridden for this library (see the override file).
     #
     if [[ -v "manifest_builds[$pn]" ]]; then
       ised_ops+=(-e "/build-error-email/a\\
 builds: ${manifest_builds[$pn]}")
+    else
+      ised_ops+=(-e '/build-error-email/a\
+builds: default\
+builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
     fi
 
     # Fix up the package manifest.
