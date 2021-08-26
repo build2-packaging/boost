@@ -174,15 +174,9 @@ if ($cxx.class == 'msvc')
 switch $cxx.target.class, $cxx.target.system
 {
   case 'windows', 'mingw32'
-  {
-    lib{boost_log}:
-      cxx.libs += -lsecur32 -lws2_32 -lmswsock -ladvapi32
-  }
+    lib{boost_log}: cxx.libs += -lsecur32 -lws2_32 -lmswsock -ladvapi32
   case 'windows'
-  {
-    lib{boost_log}:
-      cxx.libs += secur32.lib ws2_32.lib mswsock.lib advapi32.lib
-  }
+    lib{boost_log}: cxx.libs += secur32.lib ws2_32.lib mswsock.lib advapi32.lib
   case 'linux'
   case 'bsd', 'freebsd'
     lib{boost_log}: cxx.libs += -lrt

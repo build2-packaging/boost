@@ -12,6 +12,8 @@ package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 build-error-email: builds@build2.org
+builds: default
+builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.13.0
 depends: * bpkg >= 0.13.0
 depends: libboost-array == $
