@@ -988,6 +988,15 @@ builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
     ised "$lib_bfile"                 -e "$ss"
     ised "$pn/tests/basics/buildfile" -e "$ss"
 
+    # Fail with a diagnostic if a target containing any '-'s (see above) is
+    # imported. Users are likely to make this mistake because we use '-'
+    # instead of '_' in the library package names.
+    #
+    ised "$pn/build/export.build" -e "1i\\
+if (\$regex.search(\$name(\$import.target), '-'))\\
+  fail \"unknown imported target \$import.target, did you mean \$regex.replace(\$string(\$import.target), '-', '_')?\"\\
+"
+
     # Remove the reference to the `bdep-new`-generated export header from the
     # include directory's buildfile if this is a binful library.
     #
