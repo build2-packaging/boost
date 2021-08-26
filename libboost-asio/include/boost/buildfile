@@ -22,11 +22,32 @@ lib{boost_asio}: {hxx ixx txx}{**} $intf_libs
 out_pfx = [dir_path] $out_root/include/
 src_pfx = [dir_path] $src_root/include/
 
-lib{boost_asio}:
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+lib{boost_asio}: cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+
+if ($cxx.target.class == 'windows')
+  lib{boost_asio}: cxx.export.poptions += -DBOOST_ASIO_NO_DEFAULT_LINKED_LIBS
+
+lib{boost_asio}: cxx.export.libs = $intf_libs
+
+switch $cxx.target.class, $cxx.target.system
 {
-  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
-  cxx.export.libs = $intf_libs
+  case 'windows', 'mingw32'
+  {
+    lib{boost_asio}: cxx.libs += -lws2_32 -lmswsock
+    lib{boost_asio}: cxx.export.libs += -lws2_32 -lmswsock
+  }
+  case 'windows'
+  {
+    lib{boost_asio}: cxx.libs += ws2_32.lib mswsock.lib
+    lib{boost_asio}: cxx.export.libs += ws2_32.lib mswsock.lib
+  }
 }
+
+#
+# END MANUAL CUSTOMIZATION
 
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
