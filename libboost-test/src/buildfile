@@ -57,6 +57,17 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 {hbmia obja}{*}: cxx.poptions += -DBOOST_TEST_STATIC_LINK
 {hbmis objs}{*}: cxx.poptions += -DBOOST_TEST_DYN_LINK
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Static variant of this library includes the definition of main() so it must
+# be linked in the whole archive mode.
+#
+liba{boost_test}: bin.whole = true
+
+#
+# END MANUAL CUSTOMIZATION
+
 # Export options.
 #
 lib{boost_test}:
