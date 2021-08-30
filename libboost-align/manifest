@@ -1,6 +1,6 @@
 : 1
 name: libboost-align
-version: 1.76.0-a.0.z
+version: 1.76.0
 project: boost
 summary: boost-align C++ library
 license: BSL-1.0 ; Boost Software License 1.0.
