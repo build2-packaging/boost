@@ -1,6 +1,6 @@
 : 1
 name: libboost-variant2
-version: 1.76.0-a.0.z
+version: 1.76.0
 project: boost
 summary: boost-variant2 C++ library
 license: BSL-1.0 ; Boost Software License 1.0.

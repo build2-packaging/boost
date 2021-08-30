@@ -1,6 +1,6 @@
 : 1
 name: libboost-random
-version: 1.76.0-a.0.z
+version: 1.76.0
 project: boost
 summary: boost-random C++ library
 license: BSL-1.0 ; Boost Software License 1.0.
