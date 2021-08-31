@@ -1,0 +1,66 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_nowide}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_nowide}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Enable use of `__attribute__((init_priority(N)))`.
+#
+if ($cxx.class == 'gcc')
+  cxx.poptions += -DBOOST_NOWIDE_HAS_INIT_PRIORITY
+
+#
+# END MANUAL CUSTOMIZATION
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_NOWIDE_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_NOWIDE_DYN_LINK
+
+# Export options.
+#
+lib{boost_nowide}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_NOWIDE_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_nowide}: cxx.export.poptions += -DBOOST_NOWIDE_STATIC_LINK
+libs{boost_nowide}: cxx.export.poptions += -DBOOST_NOWIDE_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_nowide}: bin.lib.version = @"-$version.project_id"
+else
+  lib{boost_nowide}: bin.lib.version = @"-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

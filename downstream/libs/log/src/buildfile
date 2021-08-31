@@ -118,17 +118,6 @@ setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 if ($cxx.class == 'gcc')
   {hbmi obj}{dump_ssse3}: cxx.coptions += -msse -msse2 -msse3 -mssse3
 
-# Disable MSVC warning C4005 (macro redefinition) because some of the source
-# files include <boost/regex.hpp> which defines WIN32_LEAN_AND_MEAN
-# unconditionally (a bug which will be fixed in Boost 1.77; see
-# https://github.com/boostorg/regex/issues/127) resulting in this compiler
-# warning about the redefinition (we also define it above).
-#
-# @@ TODO Remove this once we've upgraded to Boost 1.77.
-#
-if ($cxx.class == 'msvc')
-  cxx.coptions += /wd4005
-
 switch $cxx.target.class, $cxx.target.system
 {
   case 'windows', 'mingw32'

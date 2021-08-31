@@ -1030,81 +1030,34 @@ boost/spirit/home/classic/utility/scoped_lock.hpp INCLUDES boost/spirit/home/cla
 #include <zlib.h>
 #include <zstd.h>
 
-2. Notes on specific binful libraries
+2. Notes on specific libraries
 
-Here "binful" means that the library has a `src` directory and, by
-implication, that it has at least one source file, and that every source file
-actually contains code (for example, at least one Boost library's source files
-do nothing more than include a single public header).
+2.1 libboost-filesystem
 
-Note: On Debian, all libraries' headers are put in
-libboost<version>-dev. Compiled libraries have separate
-libboost-<lib><version> and libboost-<lib><version>-dev packages, with the
-latter containing some cmake files and a .a binary in addition to the .so
-provided by the non-dev package. Truly header-only libraries have no separate
-packages like the compiled Boost libraries do (that is, all of their files are
-in libboost<version>-dev).
-
-A good interface for examining (the contents of) Debian packages is at
-https://packages.debian.org/bullseye/amd64/libs/ for non-dev and
-https://packages.debian.org/bullseye/amd64/libdevel/ for dev packages.
-
-2.1 libboost-exception
-
-This library is listed by `boostdep --boost-root upstream
---list-buildable`. It has a separate Debian package, but only a `-dev` version
-(that is, only a .a, no .so, is provided).
-
-Its sole source file is MSVC-specific and evaluates to zero code under any
-other compiler. Seems the functionality that requires compiling is optional
-(non-intrusive implementation of exception_ptr for 32-bit _MSC_VER==1310 and
-_MSC_VER==1400) and is only enabled if
-BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR is defined.
-
-We package this library as binless.
-
-2.2 libboost-system
-
-It's listed by `boostdep --boost-root upstream --list-buildable`. Its
-standalone Debian packages are typical for compiled Boost libraries (contains
-.so and .a files).
-
-Has been header-only since Boost 1.69.0. Its build produces a stub library
-only for compatibility (some libraries still want to link to it; for example,
-see https://stackoverflow.com/a/54184692,
-https://www.boost.org/doc/libs/1_75_0/libs/system/doc/html/system.html#changes_in_boost_1_69,
-and
-https://github.com/boostorg/system/blob/69bc20fb15483e77ff7aa36c76c0750f0a9a18a6/include/boost/system/config.hpp#L16).
-
-2.3 libboost-regex
-
-Boost.Regex went header-only (that is, compilation is deprecated) in Boost
-1.76.
-
-2.4 libboost-filesystem
-
-This is what struct stat looks like on various OSs (only the mtime- and
-birthtime-related fields are pertinent):
+This is what struct stat looks like on various OSs (only the fields of
+interest are shown):
 
  - POSIX
 
    // <2008
    struct stat {
      time_t st_mtime;
+     blksize_t st_blksize; // XSI extension
    };
 
    // >=2008
    struct stat {
      struct timespec st_mtim;
      #define st_mtime st_mtim.tv_sec
+     blksize_t st_blksize; // XSI extension
    };
-
 
  - Linux
 
    struct stat {
      struct timespec st_mtim;
      #define st_mtime st_mtim.tv_sec
+     blksize_t st_blksize;
    };
 
    // If _POSIX_C_SOURCE < 200809L ||
@@ -1114,6 +1067,7 @@ birthtime-related fields are pertinent):
    struct stat {
      time_t st_mtime;
      long st_mtimensec;
+     blksize_t st_blksize;
    };
 
  - NetBSD
@@ -1127,6 +1081,7 @@ birthtime-related fields are pertinent):
      struct timespec     st_mtimespec;
      struct timespec     st_birthtimespec;
 #endif
+     blksize_t st_blksize;
    };
 
  - FreeBSD
@@ -1140,6 +1095,7 @@ birthtime-related fields are pertinent):
       #define st_birthtimespec	     st_birthtim
       #define st_mtimespec	     st_mtim
 #endif
+     blksize_t st_blksize;
    };
 
  - OpenBSD
@@ -1153,6 +1109,8 @@ birthtime-related fields are pertinent):
      #define st_mtimespec             st_mtim
 
      // No birthtime fields
+
+     blksize_t st_blksize;
    };
 
  - Darwin
@@ -1161,6 +1119,7 @@ birthtime-related fields are pertinent):
    struct stat {
      time_t      st_mtime;
      struct timespec st_mtimespec;
+     u_long   st_blksize;
    };
 
    // 64-bit inodes
@@ -1169,21 +1128,25 @@ birthtime-related fields are pertinent):
      struct timespec st_mtimespec;
      time_t      st_birthtime;
      struct timespec st_birthtimespec;
+     blksize_t       st_blksize;
    };
 
  - Windows
 
    struct stat {
      time_t st_mtime;
+
+     // No birthtime or blksize fields
    };
 
-2.5 libboost-context
+2.2 libboost-context
 
 ASM vs. C++
 
-Certain portions of this library are implemented in ASM and C++. The ASM
-implementation is referred to as `fcontext_t`; the POSIX C++ implementation as
-`ucontext_t`, and the Windows C++ implementation as `WinFiber` (Win32 Fibers).
+Certain portions of this library have two implementations: one in ASM and one
+in C++. The ASM implementation is referred to as `fcontext_t`; the POSIX C++
+implementation as `ucontext_t`, and the Windows C++ implementation as
+`WinFiber` (Win32 Fibers).
 
 Our build currently uses ucontext_t and WinFiber, but we plan to switch to
 fcontext_t when build2 gets builtin ASM support. fcontext_t is around 50 times
@@ -1231,20 +1194,7 @@ examples link statically by default).
 
 An issue has been logged here: https://github.com/boostorg/context/issues/184.
 
-Bug #2
-
-In Boost version 1.76, Boost.Context has the following bug
-https://github.com/boostorg/context/issues/171. It is not triggered by
-libboost-context's own tests, but it is triggered by those of
-libboost-fiber. This bug is only triggered by the MinGW configs (the other
-failing configs are due to std::result_of having been removed from C++20 and
-MS's stdlib). I have no explanation for why the sole successful config
-windows_10-msvc_16.10-static_O2 or those with unrelated warnings (all being
-warning 4251) don't trigger this bug.
-
-@@ TODO Check that this has been resolved once we upgrade to Boost 1.77.
-
-2.6 libboost-multiprecision
+2.3 libboost-multiprecision
 
 CI fails under Clang 11 on Windows.
 
@@ -1266,8 +1216,147 @@ resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
 decided not to do anything with the expectation that Eigen upstream will fix
 it before too long.
 
-2.7 libboost-outcome
+2.4 libboost-outcome
 
 The combination of Clang and libstdc++ on Linux somehow causes
 __cpp_impl_coroutine (C++20) to be undefined, resulting in `#error "the
 coroutine header requires -fcoroutines"` in /usr/include/c++/10/coroutine.
+
+2.5 libboost-sort
+
+This library gets the following error under MSVC:
+
+include\boost/sort/common/spinlock.hpp(72): error C2065: 'not': undeclared
+identifier
+
+The code in question:
+
+    bool try_lock ( ) noexcept
+    {
+        return not af.test_and_set (std::memory_order_acquire);
+    };
+
+There are two such instances.
+
+MSVC does not support alternative representations for logical operators by
+default. The list of fixes, all of which need to be applied to the client code
+or builds (as this is a header-only library) are:
+
+1) Include <ciso646> in client code, which does not seem like an option for
+   us.
+
+2) Use the /Za option. However, the MSVC and Microsoft people widely advise
+   against using this option because it causes other problems.
+
+3) The /permissive- option is the method recommended by MS people, but it's
+   only supported from MSVC 2017.
+
+Sources:
+https://stackoverflow.com/questions/24414124/why-does-vs-not-define-the-alternative-tokens-for-logical-operators
+https://www.reddit.com/r/cpp/comments/76pmky/til_c_has_and_or_and_not/
+https://github.com/realnc/SDL_audiolib/issues/15
+
+An issue was logged upstream at https://github.com/boostorg/sort/issues/43
+about this almost a year ago but the upstream maintainer blames Microsoft and
+no fix appears to be forthcoming.
+
+2.6 libboost-process
+
+Our builds are failing due to the bug at
+https://github.com/boostorg/process/issues/96 which was fixed in the commit at
+https://github.com/boostorg/process/pull/171 but which has not yet been
+released (as of Boost 1.77).
+
+2.7 libboost-property-tree
+
+Our builds are failing due to the bug at
+https://github.com/boostorg/property_tree/pull/62 fixed in the commit at
+https://github.com/boostorg/property_tree/commit/532853791b650c0fe2c301e1f72e4b064e1506cf
+but which has not yet been released (as of Boost 1.77).
+
+2.8 libboost-math
+
+The Cmake build, added in Boost 1.77, supports only the header-only
+library. That is, it does not build the C99 and TR1 shared libraries as its
+Jamfile and our build currently do.
+
+2.9 Various
+
+Bug #1
+
+Multiple libraries are affected by the issue described under
+libboost-multiprecision above which results from the use of constructs (such
+as std::result_of) removed from C++20.
+
+Bug #2
+
+Overaggressive definition of BOOST_NO_CXX11_HDR_MUTEX under libstdc++ on Mac
+OS. The problem is in Boost.Config but it affects multiple libraries. An issue
+has been logged at https://github.com/boostorg/config/issues/399.
+
+3. Boost upstream upgrade procedure
+
+3.1 Upgrade upstream/
+
+Start from the Boost superproject on Github because the release tarball's
+layout is different from ours (all of the headers are under
+<distroot>/include/ instead of within each library's directory).
+
+  cd ~/work/build2-packaging/boost
+  rm -r upstream
+  git clone git@github.com:boostorg/boost.git upstream
+  cd upstream
+  git checkout boost-1.77.0
+  git submodule init
+  git submodule update
+  cd ..
+  ./generate --clean-upstream
+
+3.2 Examine the changes in the latest release
+
+  - Read the release notes:
+    https://www.boost.org/users/history/version_1_77_0.html.
+
+  - Look for changes in upstream builds (both CMakeLists.txt and Jamfile*)
+    for libraries for which we provide custom buildfiles.
+
+  - Look `generate`, `override`, `exclude`, and downstream/* over for anything
+    that may be affected by the latest upstream changes, paying special
+    attention to @@ comments and TODOs.
+
+  - Check for new Boost libraries and add the necessary support.
+
+  - Test/CI
+    - New libraries
+
+    - Libraries with lots of coverage in the release notes
+
+    - Libraries to which significant build changes have been made
+
+    - Libraries whose dependencies have changed
+
+    - Pay extra attention to libraries to which lots of significant code
+      changes have been made that are also binful or are ones we've had
+      problems with in the past. Although code changes by themselves are
+      unlikely to cause problems we might flush out upstream bugs (such as
+      having forgotten to update the build with feature-check macros newly
+      added to the code).
+
+3.3 Regenerate
+
+After running `generate`, check that any changes in `dependencies` look
+reasonable (the generation of this file might break due to changes in the
+`boostdep` tool, for example).
+
+4 Dependency cycles in Boost 1.77.0
+
+The only known cycle is:
+
+  PropertyMap -> MPI -> Graph -> PropertyMap
+
+(The libraries involved were identified by the third-party tool
+`boost_dep_graph` but unfortunately it does not report the exact cycle
+structure.)
+
+We break this cycle by explicitly breaking the dependency between PropertyMap
+and MPI in the `override` file.
