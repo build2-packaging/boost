@@ -7,6 +7,7 @@ libboost-compute
 libboost-graph-parallel
 libboost-mpi
 libboost-parameter-python
+libboost-property-map-parallel
 libboost-python
 libboost-wave
 

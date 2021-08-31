@@ -36,6 +36,12 @@ manifest_builds["libboost-config"]=\
 #
 binless_libs["libboost-date-time"]=true
 
+# Boost.Exception's sole source file is MSVC-specific and evaluates to zero
+# code under any other compiler. Seems the functionality that requires
+# compiling is optional (non-intrusive implementation of exception_ptr for
+# 32-bit _MSC_VER==1310 and _MSC_VER==1400) and is only enabled if
+# BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR is defined.
+#
 binless_libs["libboost-exception"]=true
 
 # Since 1.76 Boost.Regex is header-only but will be detected as binful because
@@ -44,6 +50,13 @@ binless_libs["libboost-exception"]=true
 #
 binless_libs["libboost-regex"]=true
 
+# Boost.System has been header-only since Boost 1.69.0. Its build produces a
+# stub library only for compatibility (some libraries still want to link to
+# it; for example, see https://stackoverflow.com/a/54184692,
+# https://www.boost.org/doc/libs/1_75_0/libs/system/doc/html/system.html#changes_in_boost_1_69,
+# and
+# https://github.com/boostorg/system/blob/69bc20fb15483e77ff7aa36c76c0750f0a9a18a6/include/boost/system/config.hpp#L16).
+#
 binless_libs["libboost-system"]=true
 
 ## cxx_only
@@ -134,6 +147,7 @@ include_headers["libboost-endian"]="endian.hpp"
 include_headers["libboost-flyweight"]="flyweight.hpp"
 include_headers["libboost-geometry"]="geometry/geometry.hpp"
 include_headers["libboost-histogram"]="histogram.hpp"
+include_headers["libboost-lambda2"]="lambda2.hpp"
 include_headers["libboost-optional"]="optional/optional.hpp"
 include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 
@@ -143,6 +157,7 @@ include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 include_headers["libboost-outcome"]="outcome.hpp"
 
 include_headers["libboost-ratio"]="ratio.hpp"
+include_headers["libboost-spirit"]="spirit/include/classic.hpp"
 include_headers["libboost-stacktrace"]="stacktrace.hpp"
 include_headers["libboost-static-string"]="static_string/static_string.hpp"
 include_headers["libboost-test"]="test/unit_test.hpp"
@@ -154,6 +169,10 @@ include_headers["libboost-variant"]="variant.hpp"
 ## For each library, a space-separated list of header paths that must not be
 ## included directly. Like `include_headers`, the paths are relative to
 ## `include/boost/`.
+##
+## @@ It might be useful to programmatically check that each header in this
+##    array still exists (there seems to be quite a lot of churn between Boost
+##    releases). Let's do (should be pretty simple, presumably).
 
 # detail/*.hpp: deprecated headers.
 #
@@ -316,8 +335,3 @@ exclude_dependencies["libboost-numeric-ublas"]="compute"
 #    problems (see the `exclude` file for details).
 #
 exclude_dependencies["libboost-asio"]="coroutine"
-
-# Boost.Context only depends on Boost.Thread if C++11's <mutex> header is not
-# available.
-#
-exclude_dependencies["libboost-context"]="thread"

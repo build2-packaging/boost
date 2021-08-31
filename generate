@@ -549,7 +549,10 @@ declare -A impl_deps=() # Implementation dependencies for all libraries.
 
 # Gather interface dependencies for all libraries.
 #
+# Note that --no-track-sources must be specified before --module-overview.
+#
 ./boostdep --boost-root upstream \
+           --no-track-sources    \
            --module-overview | while read line; do
   if [[ "$line" =~ (.+)" -> "(.+) && -n "${BASH_REMATCH[2]}" ]]; then
     pn="$(pkg_name ${BASH_REMATCH[1]})" # build2 package name.
