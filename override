@@ -170,9 +170,6 @@ include_headers["libboost-variant"]="variant.hpp"
 ## included directly. Like `include_headers`, the paths are relative to
 ## `include/boost/`.
 ##
-## @@ It might be useful to programmatically check that each header in this
-##    array still exists (there seems to be quite a lot of churn between Boost
-##    releases). Let's do (should be pretty simple, presumably).
 
 # detail/*.hpp: deprecated headers.
 #
