@@ -1273,6 +1273,24 @@ EOF
   fi
 done
 
+# Warn if any excluded headers no longer exist. The reason for exclusion is
+# often deprecation so we can expect many of these to disappear eventually.
+#
+# @@ It's easier to do this here, after all packages have been created,
+#    because then we can use the build2 package name, which is what
+#    `exclude_headers` is indexed with. Otherwise we'd have to write new code
+#    to convert "libboost-foo-bar" back into "foo_bar" so that we can check
+#    `upstream/libs/foo_bar` at the top. These warnings will also be more
+#    visible at the bottom of the output.
+#
+for pn in "${!exclude_headers[@]}"; do # pn: build2 package name.
+  for h in ${exclude_headers["$pn"]}; do
+    if [[ ! -f "$pn/include/boost/$h" ]]; then
+      info "warning: excluded header $pn/include/boost/$h no longer exists"
+    fi
+  done
+done
+
 # Remove commented-out and empty lines from `repositories.manifest`. Also add
 # repositories for non-Boost dependencies.
 #
