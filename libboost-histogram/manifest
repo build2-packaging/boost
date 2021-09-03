@@ -2,7 +2,7 @@
 name: libboost-histogram
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-histogram C++ library
+summary: Fast multi-dimensional histogram with convenient interface for C++14
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

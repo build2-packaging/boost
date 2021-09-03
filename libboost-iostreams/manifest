@@ -2,7 +2,7 @@
 name: libboost-iostreams
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-iostreams C++ library
+summary: Boost.IOStreams provides a framework for defining streams, stream buffers and i/o filters
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

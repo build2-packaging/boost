@@ -2,7 +2,7 @@
 name: libboost-process
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-process C++ library
+summary: Library to create processes in a portable way
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

@@ -2,7 +2,7 @@
 name: libboost-units
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-units C++ library
+summary: Zero-overhead dimensional analysis and unit/quantity manipulation and conversion
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

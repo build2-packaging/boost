@@ -2,7 +2,7 @@
 name: libboost-range
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-range C++ library
+summary: A new infrastructure for generic algorithms that builds on top of the new iterator concepts
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/range

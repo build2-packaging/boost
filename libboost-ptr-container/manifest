@@ -2,7 +2,7 @@
 name: libboost-ptr-container
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-ptr-container C++ library
+summary: Containers for storing heap-allocated polymorphic objects to ease OO-programming
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

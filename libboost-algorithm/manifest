@@ -2,7 +2,7 @@
 name: libboost-algorithm
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-algorithm C++ library
+summary: A collection of useful generic algorithms
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/algorithm

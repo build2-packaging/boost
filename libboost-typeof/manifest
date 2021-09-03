@@ -2,7 +2,7 @@
 name: libboost-typeof
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-typeof C++ library
+summary: Typeof operator emulation
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/typeof

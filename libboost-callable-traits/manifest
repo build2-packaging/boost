@@ -2,7 +2,7 @@
 name: libboost-callable-traits
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-callable-traits C++ library
+summary: A spiritual successor to Boost.FunctionTypes, Boost.CallableTraits is a header-only C++11 library for the compile-time inspection and manipulation of all 'callable' types. Additional support for C++17 features
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

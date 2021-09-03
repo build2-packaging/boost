@@ -2,7 +2,7 @@
 name: libboost-stacktrace
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-stacktrace C++ library
+summary: Gather, store, copy and print backtraces
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

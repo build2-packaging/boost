@@ -2,7 +2,7 @@
 name: libboost-numeric-ublas
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-numeric-ublas C++ library
+summary: uBLAS provides tensor, matrix, and vector classes as well as basic linear algebra routines. Several dense, packed and sparse storage schemes are supported
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

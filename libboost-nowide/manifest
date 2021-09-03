@@ -2,7 +2,7 @@
 name: libboost-nowide
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-nowide C++ library
+summary: Standard library functions with UTF-8 API on Windows
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
