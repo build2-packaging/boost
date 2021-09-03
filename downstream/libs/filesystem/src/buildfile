@@ -66,11 +66,6 @@ switch $tclass, $tsys
   # The statx(2) syscall was added in Linux 4.11 in 2017 and statx() was added
   # to glibc 2.28 in 2018.
   #
-  # @@ So should we assume it is too recent to exist? Probably yes. While we
-  #    can get the standard library id via $cc.stdlib, we unable to get its
-  #    version.  Perhaps the right way would be to extract the libc version
-  #    and make it available in buildfiles.
-  #
   case 'linux'
     cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
                     -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
