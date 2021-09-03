@@ -2,7 +2,7 @@
 name: libboost-iterator
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-iterator C++ library
+summary: The Boost Iterator Library contains two parts. The first is a system of concepts which extend the C++ standard iterator requirements. The second is a framework of components for building iterators based on these extended concepts and includes several useful iterator adaptors
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/iterator

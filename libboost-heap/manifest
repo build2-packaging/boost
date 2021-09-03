@@ -2,7 +2,7 @@
 name: libboost-heap
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-heap C++ library
+summary: Priority queue data structures
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/heap

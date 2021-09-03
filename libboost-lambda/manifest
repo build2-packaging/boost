@@ -2,7 +2,7 @@
 name: libboost-lambda
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-lambda C++ library
+summary: Define small unnamed function objects at the actual call site, and more
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/lambda

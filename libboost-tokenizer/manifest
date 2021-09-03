@@ -2,7 +2,7 @@
 name: libboost-tokenizer
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-tokenizer C++ library
+summary: Break of a string or other character sequence into a series of tokens
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

@@ -2,7 +2,7 @@
 name: libboost-intrusive
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-intrusive C++ library
+summary: Intrusive containers and algorithms
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

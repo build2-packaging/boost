@@ -2,7 +2,7 @@
 name: libboost-type-erasure
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-type-erasure C++ library
+summary: Runtime polymorphism based on concepts
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/type_erasure

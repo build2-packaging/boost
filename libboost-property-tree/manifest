@@ -2,7 +2,7 @@
 name: libboost-property-tree
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-property-tree C++ library
+summary: A tree data structure especially suited to storing configuration data
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

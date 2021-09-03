@@ -2,7 +2,7 @@
 name: libboost-variant
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-variant C++ library
+summary: Safe, generic, stack-based discriminated union container
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

@@ -2,7 +2,7 @@
 name: libboost-xpressive
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-xpressive C++ library
+summary: Regular expressions that can be written as strings or as expression templates, and which can refer to each other and themselves recursively with the power of context-free grammars
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/xpressive

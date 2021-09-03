@@ -2,7 +2,7 @@
 name: libboost-system
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-system C++ library
+summary: Operating system support, including the diagnostics support that will be part of the C++0x standard library
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/system

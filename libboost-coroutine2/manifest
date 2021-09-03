@@ -2,7 +2,7 @@
 name: libboost-coroutine2
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-coroutine2 C++ library
+summary: (C++11) Coroutine library
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md

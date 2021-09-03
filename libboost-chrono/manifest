@@ -2,7 +2,7 @@
 name: libboost-chrono
 version: 1.77.0-a.0.z
 project: boost
-summary: boost-chrono C++ library
+summary: Useful time utilities. C++11
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
