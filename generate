@@ -21,17 +21,6 @@
 #   need, then exit.
 #
 
-# Issues:
-#
-# - Looking at
-#   https://ci.stage.build2.org/@51f8c2d3-f6a0-423f-bb8c-e42b65781a53 you can
-#   see a number of aborted Windows build tasks. At least some of them are due
-#   to build timeout (something hanged or executes to slowly). If this happen
-#   again during some future CI we need to investigate this. For that purpose
-#   you can try to use the recently implemented interactive CI mode. See
-#   bdep-ci man page for more details.
-#
-
 owd="$(pwd)"
 trap "{ cd '$owd'; exit 1; }" ERR
 set -o errtrace     # Trap in functions and subshells.
@@ -770,8 +759,8 @@ import $vn += $dt")
 # the order in which libraries are processed consistent.
 #
 # The sed command puts each library name from the first N levels ('$' denotes
-# the number of the last line) on its own line by replacing spaces with
-# newlines.
+# the number of the last line -- replace with literal N) on its own line by
+# replacing spaces with newlines.
 #
 # @@ Package manifest values yet to be customized:
 #
@@ -930,19 +919,18 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
   #
   doc_url="https://www.boost.org/doc/libs/$doc_url_ver/libs/$udn"
 
-  ised_ops=(\
-            -e "s%^(version:).+%\1 $boostver$version_suffix%" \
-               -e "s%^(url:).+%\1 $url%" \
-               -e "/^url:/a\\
-doc-url: $doc_url" \
-               -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%" \
-               -e "s%^#(build-error-email:).+%\1 builds@build2.org%" \
-               -e "/^#depends:/d" \
-               -e "/^license:/a\\
-topics: C++, Boost" \
-               -e "/^url:/a\\
-package-url: https://github.com/build2-packaging/boost" \
-               -e "/^email:/a\\
+  ised_ops=(-e "s%^(version:).+%\1 $boostver$version_suffix%"
+            -e "s%^(url:).+%\1 $url%"
+            -e "/^url:/a\\
+doc-url: $doc_url"
+            -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%"
+            -e "s%^#(build-error-email:).+%\1 builds@build2.org%"
+            -e "/^#depends:/d"
+            -e "/^license:/a\\
+topics: C++, Boost"
+            -e "/^url:/a\\
+package-url: https://github.com/build2-packaging/boost"
+            -e "/^email:/a\\
 package-email: packaging@build2.org ; Mailing list.")
 
   # The `builds` package manifest value. Set to the default value unless
@@ -1275,13 +1263,6 @@ done
 
 # Warn if any excluded headers no longer exist. The reason for exclusion is
 # often deprecation so we can expect many of these to disappear eventually.
-#
-# @@ It's easier to do this here, after all packages have been created,
-#    because then we can use the build2 package name, which is what
-#    `exclude_headers` is indexed with. Otherwise we'd have to write new code
-#    to convert "libboost-foo-bar" back into "foo_bar" so that we can check
-#    `upstream/libs/foo_bar` at the top. These warnings will also be more
-#    visible at the bottom of the output.
 #
 for pn in "${!exclude_headers[@]}"; do # pn: build2 package name.
   for h in ${exclude_headers["$pn"]}; do
