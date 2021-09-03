@@ -2,7 +2,6 @@ import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container%lib{boost_container}
 import intf_libs += libboost-core%lib{boost_core}
-import intf_libs += libboost-date-time%lib{boost_date_time}
 import intf_libs += libboost-integer%lib{boost_integer}
 import intf_libs += libboost-intrusive%lib{boost_intrusive}
 import intf_libs += libboost-move%lib{boost_move}

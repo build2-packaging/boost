@@ -1,29 +1,265 @@
 : 1
+location: libboost-accumulators/
+:
+location: libboost-algorithm/
+:
+location: libboost-align/
+:
+location: libboost-any/
+:
+location: libboost-array/
+:
+location: libboost-asio/
+:
+location: libboost-assert/
+:
+location: libboost-assign/
+:
+location: libboost-atomic/
+:
+location: libboost-beast/
+:
+location: libboost-bimap/
+:
+location: libboost-bind/
+:
 location: libboost-callable-traits/
+:
+location: libboost-chrono/
+:
+location: libboost-circular-buffer/
+:
+location: libboost-concept-check/
 :
 location: libboost-config/
 :
+location: libboost-container/
+:
+location: libboost-container-hash/
+:
+location: libboost-context/
+:
+location: libboost-contract/
+:
+location: libboost-conversion/
+:
+location: libboost-convert/
+:
+location: libboost-core/
+:
+location: libboost-coroutine2/
+:
+location: libboost-crc/
+:
+location: libboost-date-time/
+:
+location: libboost-describe/
+:
+location: libboost-detail/
+:
+location: libboost-dll/
+:
+location: libboost-dynamic-bitset/
+:
+location: libboost-endian/
+:
+location: libboost-exception/
+:
+location: libboost-fiber/
+:
+location: libboost-filesystem/
+:
+location: libboost-flyweight/
+:
+location: libboost-foreach/
+:
+location: libboost-format/
+:
+location: libboost-function/
+:
+location: libboost-functional/
+:
+location: libboost-function-types/
+:
+location: libboost-fusion/
+:
+location: libboost-geometry/
+:
+location: libboost-gil/
+:
+location: libboost-graph/
+:
+location: libboost-hana/
+:
+location: libboost-heap/
+:
+location: libboost-histogram/
+:
 location: libboost-hof/
+:
+location: libboost-icl/
+:
+location: libboost-integer/
+:
+location: libboost-interprocess/
+:
+location: libboost-intrusive/
+:
+location: libboost-io/
+:
+location: libboost-iostreams/
+:
+location: libboost-iterator/
+:
+location: libboost-json/
+:
+location: libboost-lambda/
+:
+location: libboost-lambda2/
 :
 location: libboost-leaf/
 :
+location: libboost-lexical-cast/
+:
+location: libboost-locale/
+:
+location: libboost-local-function/
+:
+location: libboost-lockfree/
+:
+location: libboost-log/
+:
+location: libboost-logic/
+:
+location: libboost-math/
+:
+location: libboost-metaparse/
+:
+location: libboost-move/
+:
 location: libboost-mp11/
 :
+location: libboost-mpl/
+:
+location: libboost-msm/
+:
+location: libboost-multi-array/
+:
+location: libboost-multi-index/
+:
+location: libboost-multiprecision/
+:
+location: libboost-nowide/
+:
+location: libboost-numeric-conversion/
+:
+location: libboost-numeric-interval/
+:
+location: libboost-numeric-odeint/
+:
+location: libboost-numeric-ublas/
+:
+location: libboost-optional/
+:
+location: libboost-outcome/
+:
+location: libboost-parameter/
+:
 location: libboost-pfr/
+:
+location: libboost-phoenix/
+:
+location: libboost-poly-collection/
+:
+location: libboost-polygon/
+:
+location: libboost-pool/
 :
 location: libboost-predef/
 :
 location: libboost-preprocessor/
 :
+location: libboost-process/
+:
+location: libboost-program-options/
+:
+location: libboost-property-map/
+:
+location: libboost-property-tree/
+:
+location: libboost-proto/
+:
+location: libboost-ptr-container/
+:
 location: libboost-qvm/
 :
-location: libboost-assert/
+location: libboost-random/
 :
-location: libboost-io/
+location: libboost-range/
 :
-location: libboost-polygon/
+location: libboost-ratio/
+:
+location: libboost-rational/
+:
+location: libboost-regex/
+:
+location: libboost-safe-numerics/
+:
+location: libboost-scope-exit/
+:
+location: libboost-serialization/
+:
+location: libboost-signals2/
+:
+location: libboost-smart-ptr/
+:
+location: libboost-sort/
+:
+location: libboost-spirit/
+:
+location: libboost-stacktrace/
+:
+location: libboost-statechart/
 :
 location: libboost-static-assert/
+:
+location: libboost-static-string/
+:
+location: libboost-stl-interfaces/
+:
+location: libboost-system/
+:
+location: libboost-test/
+:
+location: libboost-thread/
+:
+location: libboost-throw-exception/
+:
+location: libboost-timer/
+:
+location: libboost-tokenizer/
+:
+location: libboost-tti/
+:
+location: libboost-tuple/
+:
+location: libboost-type-erasure/
+:
+location: libboost-type-index/
+:
+location: libboost-typeof/
+:
+location: libboost-type-traits/
+:
+location: libboost-units/
+:
+location: libboost-unordered/
+:
+location: libboost-utility/
+:
+location: libboost-uuid/
+:
+location: libboost-variant/
 :
 location: libboost-variant2/
 :
@@ -31,238 +267,6 @@ location: libboost-vmd/
 :
 location: libboost-winapi/
 :
-location: libboost-core/
-:
-location: libboost-stl-interfaces/
-:
-location: libboost-system/
-:
-location: libboost-throw-exception/
-:
-location: libboost-type-traits/
-:
-location: libboost-align/
-:
-location: libboost-array/
-:
-location: libboost-bind/
-:
-location: libboost-concept-check/
-:
-location: libboost-detail/
-:
-location: libboost-endian/
-:
-location: libboost-integer/
-:
-location: libboost-logic/
-:
-location: libboost-move/
-:
-location: libboost-tuple/
-:
-location: libboost-typeof/
-:
-location: libboost-atomic/
-:
-location: libboost-circular-buffer/
-:
-location: libboost-container-hash/
-:
-location: libboost-crc/
-:
-location: libboost-numeric-interval/
-:
-location: libboost-pool/
-:
-location: libboost-safe-numerics/
-:
-location: libboost-smart-ptr/
-:
-location: libboost-conversion/
-:
-location: libboost-dynamic-bitset/
-:
-location: libboost-exception/
-:
-location: libboost-intrusive/
-:
-location: libboost-stacktrace/
-:
-location: libboost-type-index/
-:
-location: libboost-utility/
-:
-location: libboost-any/
-:
-location: libboost-container/
-:
-location: libboost-function/
-:
-location: libboost-mpl/
-:
-location: libboost-optional/
-:
-location: libboost-outcome/
-:
-location: libboost-rational/
-:
-location: libboost-static-string/
-:
-location: libboost-format/
-:
-location: libboost-function-types/
-:
-location: libboost-json/
-:
-location: libboost-metaparse/
-:
-location: libboost-numeric-conversion/
-:
-location: libboost-ratio/
-:
-location: libboost-scope-exit/
-:
-location: libboost-unordered/
-:
-location: libboost-variant/
-:
-location: libboost-chrono/
-:
-location: libboost-functional/
-:
-location: libboost-fusion/
-:
-location: libboost-local-function/
-:
-location: libboost-tti/
-:
-location: libboost-hana/
-:
-location: libboost-iterator/
-:
-location: libboost-parameter/
-:
-location: libboost-timer/
-:
-location: libboost-filesystem/
-:
-location: libboost-heap/
-:
-location: libboost-lambda/
-:
-location: libboost-lockfree/
-:
-location: libboost-multi-array/
-:
-location: libboost-regex/
-:
-location: libboost-signals2/
-:
-location: libboost-tokenizer/
-:
-location: libboost-yap/
-:
-location: libboost-gil/
-:
-location: libboost-nowide/
-:
-location: libboost-range/
-:
-location: libboost-algorithm/
-:
-location: libboost-foreach/
-:
-location: libboost-lexical-cast/
-:
-location: libboost-proto/
-:
-location: libboost-random/
-:
-location: libboost-sort/
-:
-location: libboost-date-time/
-:
-location: libboost-iostreams/
-:
-location: libboost-math/
-:
-location: libboost-phoenix/
-:
-location: libboost-program-options/
-:
-location: libboost-test/
-:
 location: libboost-xpressive/
 :
-location: libboost-icl/
-:
-location: libboost-interprocess/
-:
-location: libboost-multiprecision/
-:
-location: libboost-thread/
-:
-location: libboost-context/
-:
-location: libboost-contract/
-:
-location: libboost-locale/
-:
-location: libboost-spirit/
-:
-location: libboost-statechart/
-:
-location: libboost-type-erasure/
-:
-location: libboost-convert/
-:
-location: libboost-coroutine2/
-:
-location: libboost-dll/
-:
-location: libboost-fiber/
-:
-location: libboost-poly-collection/
-:
-location: libboost-serialization/
-:
-location: libboost-asio/
-:
-location: libboost-geometry/
-:
-location: libboost-histogram/
-:
-location: libboost-msm/
-:
-location: libboost-multi-index/
-:
-location: libboost-ptr-container/
-:
-location: libboost-units/
-:
-location: libboost-uuid/
-:
-location: libboost-assign/
-:
-location: libboost-beast/
-:
-location: libboost-flyweight/
-:
-location: libboost-process/
-:
-location: libboost-property-tree/
-:
-location: libboost-bimap/
-:
-location: libboost-graph/
-:
-location: libboost-log/
-:
-location: libboost-property-map/
-:
-location: libboost-numeric-ublas/
-:
-location: libboost-accumulators/
-:
-location: libboost-numeric-odeint/
+location: libboost-yap/

@@ -28,6 +28,17 @@ src_pfx_src = [dir_path] $src_root/src/
 cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
                 "-I$out_pfx_inc" "-I$src_pfx_inc"
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Enable use of `__attribute__((init_priority(N)))`.
+#
+if ($cxx.class == 'gcc')
+  cxx.poptions += -DBOOST_NOWIDE_HAS_INIT_PRIORITY
+
+#
+# END MANUAL CUSTOMIZATION
+
 {hbmia obja}{*}: cxx.poptions += -DBOOST_NOWIDE_STATIC_LINK
 {hbmis objs}{*}: cxx.poptions += -DBOOST_NOWIDE_DYN_LINK
 

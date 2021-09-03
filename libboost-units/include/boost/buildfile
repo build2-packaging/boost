@@ -7,7 +7,6 @@ import intf_libs += libboost-lambda%lib{boost_lambda}
 import intf_libs += libboost-math%lib{boost_math}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
-import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-typeof%lib{boost_typeof}

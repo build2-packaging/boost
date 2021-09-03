@@ -1,0 +1,7 @@
+project = libboost-lambda2
+
+using version
+using config
+using test
+using install
+using dist

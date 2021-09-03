@@ -1,13 +1,13 @@
 : 1
 name: libboost-rational
-version: 1.76.0
+version: 1.77.0-a.0.z
 project: boost
 summary: boost-rational C++ library
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/rational
-doc-url: https://www.boost.org/doc/libs/1_76_0/libs/rational
+doc-url: https://www.boost.org/doc/libs/1_77_0/libs/rational
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

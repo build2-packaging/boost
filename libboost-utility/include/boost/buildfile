@@ -1,5 +1,4 @@
 import intf_libs  = libboost-config%lib{boost_config}
-import intf_libs += libboost-container-hash%lib{boost_container_hash}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-io%lib{boost_io}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
