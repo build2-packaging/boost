@@ -1,6 +1,7 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-mp11%lib{boost_mp11}
 import intf_libs += libboost-pool%lib{boost_pool}
 import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}

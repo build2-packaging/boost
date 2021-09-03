@@ -7,7 +7,6 @@ import intf_libs += libboost-lambda%lib{boost_lambda}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-multi-index%lib{boost_multi_index}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
-import intf_libs += libboost-property-map%lib{boost_property_map}
 import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}

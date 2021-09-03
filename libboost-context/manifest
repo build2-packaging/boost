@@ -1,13 +1,13 @@
 : 1
 name: libboost-context
-version: 1.76.0
+version: 1.77.0-a.0.z
 project: boost
 summary: boost-context C++ library
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/context
-doc-url: https://www.boost.org/doc/libs/1_76_0/libs/context
+doc-url: https://www.boost.org/doc/libs/1_77_0/libs/context
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -19,6 +19,7 @@ depends: * bpkg >= 0.13.0
 depends: libboost-assert == $
 depends: libboost-config == $
 depends: libboost-core == $
+depends: libboost-mp11 == $
 depends: libboost-pool == $
 depends: libboost-predef == $
 depends: libboost-smart-ptr == $

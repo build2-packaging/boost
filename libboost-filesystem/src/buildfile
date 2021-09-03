@@ -8,7 +8,8 @@ import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
-import impl_libs  = libboost-predef%lib{boost_predef}
+import impl_libs  = libboost-atomic%lib{boost_atomic}
+import impl_libs += libboost-predef%lib{boost_predef}
 import impl_libs += libboost-winapi%lib{boost_winapi}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
@@ -47,11 +48,30 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 tclass  = $cxx.target.class
 tsys    = $cxx.target.system
 
+# Unless BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF is defined, Boost.Filesystem
+# uses std::atomic_ref which is currently not well supported by standard
+# libraries.
+#
+# @@ TODO Check whether this is still required whenever upstream is
+#    upgraded. See https://en.cppreference.com/w/cpp/compiler_support/20 for
+#    the latest support status.
+#
+# @@ TODO Boost.Filesystem only depends on Boost.Atomic as a fallback in case
+#    std::atomic_ref does not exist so break that dependency in `override`
+#    when this definition is finally removed.
+#
+cxx.poptions += -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF
+
+# Enable use of `__attribute__((init_priority(N)))`.
+#
+if ($cxx.class == 'gcc')
+  cxx.poptions += -DBOOST_FILESYSTEM_HAS_INIT_PRIORITY
+
 # Define various BOOST_FILESYSTEM_* macros as appropriate for each OS and use
 # the appropriate compiler option to link to the bcrypt library on Windows.
-# The BOOST_FILESYSTEM_HAS_STAT_* macros pertain to the mtime- and
-# birthtime-related fields of `struct stat`. Although these stat macros are
-# only used in operations.cpp the upstream build defines it globally so copy
+# The BOOST_FILESYSTEM_HAS_STAT_* macros pertain to the mtime-, birthtime-,
+# and blksize- related fields of `struct stat`. Although these stat macros are
+# only used in operations.cpp, the upstream build defines it globally so copy
 # them.
 #
 switch $tclass, $tsys
@@ -59,26 +79,25 @@ switch $tclass, $tsys
   # The statx(2) syscall was added in Linux 4.11 in 2017 and statx() was added
   # to glibc 2.28 in 2018.
   #
-  # @@ So should we assume it is too recent to exist? Probably yes. While we
-  #    can get the standard library id via $cc.stdlib, we unable to get its
-  #    version.  Perhaps the right way would be to extract the libc version
-  #    and make it available in buildfiles.
-  #
   case 'linux'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
                     # -DBOOST_FILESYSTEM_HAS_STATX_SYSCALL \
                     # -DBOOST_FILESYSTEM_HAS_STATX
 
   case 'bsd', 'freebsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM     \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
 
   case 'bsd', 'openbsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
 
   case 'bsd', 'netbsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC     \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
 
   # The `st_birthtimespec` field is only present if inode_t is 64 bits in size
   # (_DARWIN_FEATURE_64_BIT_INODE is defined). Given that 64-bit (by-default;
@@ -86,17 +105,24 @@ switch $tclass, $tsys
   # 2009 with Mac OSX 10.6 Snow Leopard, assume `st_birthtimespec` is present.
   #
   case 'macos'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC     \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
 
   case 'windows', 'mingw32'
   {
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT \
+                    -DBOOST_USE_WINDOWS_H         \
+                    -DWIN32_LEAN_AND_MEAN         \
+                    -DNOMINMAX
     cxx.libs     += -lbcrypt
   }
   case 'windows'
   {
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT \
+                    -DBOOST_USE_WINDOWS_H         \
+                    -DWIN32_LEAN_AND_MEAN         \
+                    -DNOMINMAX
     cxx.libs     += bcrypt.lib
   }
 }

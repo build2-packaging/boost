@@ -12,7 +12,6 @@ import intf_libs += libboost-fusion%lib{boost_fusion}
 import intf_libs += libboost-intrusive%lib{boost_intrusive}
 import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
-import intf_libs += libboost-locale%lib{boost_locale}
 import intf_libs += libboost-move%lib{boost_move}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-optional%lib{boost_optional}
@@ -159,17 +158,6 @@ setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 #
 if ($cxx.class == 'gcc')
   {hbmi obj}{dump_ssse3}: cxx.coptions += -msse -msse2 -msse3 -mssse3
-
-# Disable MSVC warning C4005 (macro redefinition) because some of the source
-# files include <boost/regex.hpp> which defines WIN32_LEAN_AND_MEAN
-# unconditionally (a bug which will be fixed in Boost 1.77; see
-# https://github.com/boostorg/regex/issues/127) resulting in this compiler
-# warning about the redefinition (we also define it above).
-#
-# @@ TODO Remove this once we've upgraded to Boost 1.77.
-#
-if ($cxx.class == 'msvc')
-  cxx.coptions += /wd4005
 
 switch $cxx.target.class, $cxx.target.system
 {

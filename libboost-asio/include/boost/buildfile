@@ -1,4 +1,5 @@
-import intf_libs  = libboost-array%lib{boost_array}
+import intf_libs  = libboost-align%lib{boost_align}
+import intf_libs += libboost-array%lib{boost_array}
 import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-bind%lib{boost_bind}
 import intf_libs += libboost-chrono%lib{boost_chrono}

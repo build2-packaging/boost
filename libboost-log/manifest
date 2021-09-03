@@ -1,13 +1,13 @@
 : 1
 name: libboost-log
-version: 1.76.0
+version: 1.77.0-a.0.z
 project: boost
 summary: boost-log C++ library
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/log
-doc-url: https://www.boost.org/doc/libs/1_76_0/libs/log
+doc-url: https://www.boost.org/doc/libs/1_77_0/libs/log
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -36,7 +36,6 @@ depends: libboost-fusion == $
 depends: libboost-intrusive == $
 depends: libboost-iterator == $
 depends: libboost-lexical-cast == $
-depends: libboost-locale == $
 depends: libboost-move == $
 depends: libboost-mpl == $
 depends: libboost-optional == $

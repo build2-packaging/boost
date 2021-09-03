@@ -1,4 +1,4 @@
-#include <boost/spirit.hpp>
+#include <boost/spirit/include/classic.hpp>
 
 int
 main ()
