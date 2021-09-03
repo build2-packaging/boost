@@ -933,6 +933,22 @@ package-url: https://github.com/build2-packaging/boost"
             -e "/^email:/a\\
 package-email: packaging@build2.org ; Mailing list.")
 
+  # Extract the description from the library's meta/libraries.json into the
+  # package manifest's summary field.
+  #
+  # The following `jq` expression first assumes that the input is a JSON
+  # object but, if it is not, it assumes that it is an array of objects, and
+  # looks only at the first one. The ? suppresses errors and `A // B` runs
+  # filter B only if filter A does not match anything. The -e option causes jq
+  # to fail in case of non-existent fields (the "null" value).
+  #
+  # The sed script removes the quotes and fullstop if they exist.
+  #
+  r="$(jq -e '.description? // .[0].description' \
+             "upstream/libs/$udn/meta/libraries.json")"
+  r="$(sed -Ee 's%(^"|\.?"?$)%%g' <<<"$r")"
+  ised_ops+=(-e "s%^(summary:).*%\1 $r%")
+
   # The `builds` package manifest value. Set to the default value unless
   # overridden for this library (see the override file).
   #
