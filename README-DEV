@@ -1194,6 +1194,8 @@ examples link statically by default).
 
 An issue has been logged here: https://github.com/boostorg/context/issues/184.
 
+libboost-fiber is also affected by this bug.
+
 2.3 libboost-multiprecision
 
 CI fails under Clang 11 on Windows.
@@ -1221,6 +1223,17 @@ it before too long.
 The combination of Clang and libstdc++ on Linux somehow causes
 __cpp_impl_coroutine (C++20) to be undefined, resulting in `#error "the
 coroutine header requires -fcoroutines"` in /usr/include/c++/10/coroutine.
+
+Coroutine support detection is also broken on Windows. We see the exact same
+error messages as
+https://github.com/ned14/outcome/issues/240#issuecomment-744206633 (the
+maintainer develops on his own private repositorty) which looks like it might
+have been fixed in
+https://github.com/ned14/quickcpplib/commit/327e2d69cac275f9f785a69e74121b316a0857f4
+but it's not clear how that file maps to the Boost.Outcome
+repository. Regardless, it's not been released yet because
+https://github.com/boostorg/outcome/blob/boost-1.77.0/CMakeLists.txt does not
+contain anything similar.
 
 2.5 libboost-sort
 
@@ -1267,6 +1280,11 @@ https://github.com/boostorg/process/issues/96 which was fixed in the commit at
 https://github.com/boostorg/process/pull/171 but which has not yet been
 released (as of Boost 1.77).
 
+Our builds are also failing due to the bug at
+https://github.com/boostorg/process/issues/213 fixed in the commit at
+https://github.com/boostorg/process/commit/7d7476343a331617a6047e8981f7c673c5ba2de0
+but which has not yet been released either (as of Boost 1.77).
+
 2.7 libboost-property-tree
 
 Our builds are failing due to the bug at
@@ -1280,7 +1298,12 @@ The Cmake build, added in Boost 1.77, supports only the header-only
 library. That is, it does not build the C99 and TR1 shared libraries as its
 Jamfile and our build currently do.
 
-2.9 Various
+2.9 libboost-stl-interfaces
+
+Missing `typename` before `C::const_iterator`. Reported at
+https://github.com/boostorg/stl_interfaces/issues/53.
+
+2.10 Various
 
 Bug #1
 

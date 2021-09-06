@@ -1,9 +1,1 @@
 On the release:
-
-- To be decided: how to upgrade upstream/ to the next Boost release. This will
-  probably involve cloning the Boost superproject at
-  https://github.com/boostorg/boost into upstream/ and removing upstream/.git,
-  upstream/.gitmodules, and .git from all of the subprojects (for example
-  those under upstream/libs/ and upstream/tools/).
-
-  Once the process has been fleshed out, record the details in README-DEV.
