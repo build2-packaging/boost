@@ -58,9 +58,9 @@ libs{boost-coroutine}: cxx.export.poptions += -DBOOST_SHARED
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost-coroutine}: bin.lib.version = @"-$version.project_id"
+  lib{boost-coroutine}: bin.lib.version = "-$version.project_id"
 else
-  lib{boost-coroutine}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost-coroutine}: bin.lib.version = "-$version.major.$version.minor"
 
 # Don't install private headers.
 #

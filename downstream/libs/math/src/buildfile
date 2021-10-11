@@ -182,9 +182,9 @@ libs{$compiled_libs}: cxx.export.poptions += -DBOOST_MATH_TR1_DYN_LINK
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{$compiled_libs}: bin.lib.version = @"-$version.project_id"
+  lib{$compiled_libs}: bin.lib.version = "-$version.project_id"
 else
-  lib{$compiled_libs}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{$compiled_libs}: bin.lib.version = "-$version.major.$version.minor"
 
 #
 # END MANUAL CUSTOMIZATION
