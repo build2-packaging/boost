@@ -67,9 +67,9 @@ libs{boost_container}: cc.export.poptions += -DBOOST_CONTAINER_DYN_LINK
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost_container}: bin.lib.version = @"-$version.project_id"
+  lib{boost_container}: bin.lib.version = "-$version.project_id"
 else
-  lib{boost_container}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost_container}: bin.lib.version = "-$version.major.$version.minor"
 
 # Don't install private headers.
 #
