@@ -10,11 +10,11 @@ doc-url: https://www.boost.org/doc/libs/1_77_0/libs/algorithm
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
-build-error-email: builds@build2.org
+#build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.13.0
-depends: * bpkg >= 0.13.0
+depends: * build2 >= 0.14.0-
+depends: * bpkg >= 0.14.0-
 depends: libboost-array == $
 depends: libboost-assert == $
 depends: libboost-bind == $
