@@ -1,6 +1,6 @@
 : 1
 name: libboost-metaparse
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: A library for generating compile time parsers parsing embedded DSL code as part of the C++ compilation process
 license: BSL-1.0 ; Boost Software License 1.0.

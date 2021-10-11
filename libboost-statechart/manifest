@@ -1,6 +1,6 @@
 : 1
 name: libboost-statechart
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Boost.Statechart - Arbitrarily complex finite state machines can be implemented in easily readable and maintainable C++ code
 license: BSL-1.0 ; Boost Software License 1.0.

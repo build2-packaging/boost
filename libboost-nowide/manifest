@@ -1,6 +1,6 @@
 : 1
 name: libboost-nowide
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Standard library functions with UTF-8 API on Windows
 license: BSL-1.0 ; Boost Software License 1.0.

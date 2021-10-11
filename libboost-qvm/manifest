@@ -1,6 +1,6 @@
 : 1
 name: libboost-qvm
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Generic {CPP} library for working with Quaternions Vectors and Matrices
 license: BSL-1.0 ; Boost Software License 1.0.

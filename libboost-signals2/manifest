@@ -1,6 +1,6 @@
 : 1
 name: libboost-signals2
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Managed signals summary: boost-signals2 C++ library slots callback implementation (thread-safe version 2)
 license: BSL-1.0 ; Boost Software License 1.0.

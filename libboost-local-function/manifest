@@ -1,6 +1,6 @@
 : 1
 name: libboost-local-function
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Program functions locally, within other functions, directly within the scope where they are needed
 license: BSL-1.0 ; Boost Software License 1.0.
