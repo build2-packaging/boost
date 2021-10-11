@@ -1,3 +1,7 @@
+# Uncomment to suppress warnings coming from external libraries.
+#
+#cc.internal.scope = current
+
 cxx.std = latest
 
 using cxx

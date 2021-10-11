@@ -62,9 +62,9 @@ libs{boost_contract}: cxx.export.poptions += -DBOOST_CONTRACT_DYN_LINK
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost_contract}: bin.lib.version = @"-$version.project_id"
+  lib{boost_contract}: bin.lib.version = "-$version.project_id"
 else
-  lib{boost_contract}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost_contract}: bin.lib.version = "-$version.major.$version.minor"
 
 # Don't install private headers.
 #

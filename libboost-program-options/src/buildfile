@@ -58,9 +58,9 @@ libs{boost_program_options}: cxx.export.poptions += -DBOOST_PROGRAM_OPTIONS_DYN_
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost_program_options}: bin.lib.version = @"-$version.project_id"
+  lib{boost_program_options}: bin.lib.version = "-$version.project_id"
 else
-  lib{boost_program_options}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost_program_options}: bin.lib.version = "-$version.major.$version.minor"
 
 # Don't install private headers.
 #
