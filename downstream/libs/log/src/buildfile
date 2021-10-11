@@ -155,9 +155,9 @@ libs{boost_log_setup}: cxx.export.poptions += -DBOOST_LOG_SETUP_DYN_LINK=1
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{$libs}: bin.lib.version = @"-$version.project_id"
+  lib{$libs}: bin.lib.version = "-$version.project_id"
 else
-  lib{$libs}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{$libs}: bin.lib.version = "-$version.major.$version.minor"
 
 #
 # END MANUAL CUSTOMIZATION

@@ -61,9 +61,9 @@ libs{boost-iostreams}: cxx.export.poptions += -DBOOST_SHARED
 # for details on the version.* variable values.
 #
 if $version.pre_release
-  lib{boost-iostreams}: bin.lib.version = @"-$version.project_id"
+  lib{boost-iostreams}: bin.lib.version = "-$version.project_id"
 else
-  lib{boost-iostreams}: bin.lib.version = @"-$version.major.$version.minor"
+  lib{boost-iostreams}: bin.lib.version = "-$version.major.$version.minor"
 
 # Don't install private headers.
 #
