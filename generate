@@ -924,7 +924,7 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
             -e "/^url:/a\\
 doc-url: $doc_url"
             -e "s%^(email:).+%\1 boost-users@lists.boost.org  ; Mailing list.%"
-            -e "s%^#(build-error-email:).+%\1 builds@build2.org%"
+            -e "s%^#(build-error-email:).+%#\1 builds@build2.org%"
             -e "/^#depends:/d"
             -e "/^license:/a\\
 topics: C++, Boost"
