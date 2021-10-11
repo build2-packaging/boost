@@ -1,6 +1,6 @@
 : 1
 name: libboost-multiprecision
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Extended precision arithmetic types for floating point, integer andrational arithmetic
 license: BSL-1.0 ; Boost Software License 1.0.

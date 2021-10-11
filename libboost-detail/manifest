@@ -1,6 +1,6 @@
 : 1
 name: libboost-detail
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: This library contains a set of header only utilities used internally by Boost C++ Libraries to facilitate their implementation
 license: BSL-1.0 ; Boost Software License 1.0.

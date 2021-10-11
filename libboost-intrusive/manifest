@@ -1,6 +1,6 @@
 : 1
 name: libboost-intrusive
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: Intrusive containers and algorithms
 license: BSL-1.0 ; Boost Software License 1.0.

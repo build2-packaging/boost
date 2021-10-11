@@ -1,6 +1,6 @@
 : 1
 name: libboost-context
-version: 1.77.0-a.0.z
+version: 1.77.0
 project: boost
 summary: (C++11) Context switching library
 license: BSL-1.0 ; Boost Software License 1.0.
