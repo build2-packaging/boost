@@ -1,6 +1,6 @@
 : 1
 name: libboost-units
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Zero-overhead dimensional analysis and unit/quantity manipulation and conversion
 license: BSL-1.0 ; Boost Software License 1.0.

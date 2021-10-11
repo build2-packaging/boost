@@ -1,6 +1,6 @@
 : 1
 name: libboost-format
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: The format library provides a type-safe mechanism for formatting arguments according to a printf-like format-string
 license: BSL-1.0 ; Boost Software License 1.0.

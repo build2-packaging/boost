@@ -1,6 +1,6 @@
 : 1
 name: libboost-flyweight
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Design pattern to manage large quantities of highly redundant objects
 license: BSL-1.0 ; Boost Software License 1.0.
