@@ -1,6 +1,6 @@
 : 1
 name: libboost-preprocessor
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Preprocessor metaprogramming tools including repetition and recursion
 license: BSL-1.0 ; Boost Software License 1.0.

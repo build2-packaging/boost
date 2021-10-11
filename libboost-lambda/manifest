@@ -1,6 +1,6 @@
 : 1
 name: libboost-lambda
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Define small unnamed function objects at the actual call site, and more
 license: BSL-1.0 ; Boost Software License 1.0.

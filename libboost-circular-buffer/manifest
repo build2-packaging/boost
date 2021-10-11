@@ -1,6 +1,6 @@
 : 1
 name: libboost-circular-buffer
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: A STL compliant container also known as ring or cyclic buffer
 license: BSL-1.0 ; Boost Software License 1.0.

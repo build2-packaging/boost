@@ -1,6 +1,6 @@
 : 1
 name: libboost-type-index
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Runtime/Compile time copyable type info
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -1,6 +1,6 @@
 : 1
 name: libboost-numeric-odeint
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: Solving ordinary differential equations
 license: BSL-1.0 ; Boost Software License 1.0.

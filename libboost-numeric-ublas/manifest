@@ -1,6 +1,6 @@
 : 1
 name: libboost-numeric-ublas
-version: 1.77.0
+version: 1.77.0+1
 project: boost
 summary: uBLAS provides tensor, matrix, and vector classes as well as basic linear algebra routines. Several dense, packed and sparse storage schemes are supported
 license: BSL-1.0 ; Boost Software License 1.0.
