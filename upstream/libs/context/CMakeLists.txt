@@ -25,8 +25,18 @@ unset(_default_binfmt)
 
 ## ABI
 
+math(EXPR _bits "${CMAKE_SIZEOF_VOID_P}*8")
+
 if(WIN32)
   set(_default_abi ms)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  set(_default_abi aapcs)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+  if(_bits EQUAL 32)
+    set(_default_abi o32)
+  else()
+    set(_default_abi n64)
+  endif()
 else()
   set(_default_abi sysv)
 endif()
@@ -38,17 +48,34 @@ unset(_default_abi)
 
 ## Arch-and-model
 
-math(EXPR _bits "${CMAKE_SIZEOF_VOID_P}*8")
+set(_all_archs arm arm64 mips32 mips64 ppc32 ppc64 riscv64 s390x i386 x86_64 combined)
 
-if(_bits EQUAL 32)
-  set(_default_arch i386)
+# Try at start to auto determine arch from CMake.
+if(CMAKE_SYSTEM_PROCESSOR IN_LIST _all_archs)
+  set(_default_arch ${CMAKE_SYSTEM_PROCESSOR})
+elseif(_bits EQUAL 32)
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+    set(_default_arch arm)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+    set(_default_arch mips32)
+  else()
+    set(_default_arch i386)
+  endif()
 else()
-  set(_default_arch x86_64)
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^arm") # armv8
+    set(_default_arch arm64)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+    set(_default_arch mips64)
+  else()
+    set(_default_arch x86_64)
+  endif()
 endif()
 
 set(BOOST_CONTEXT_ARCHITECTURE "${_default_arch}" CACHE STRING "Boost.Context architecture (arm, arm64, mips32, mips64, ppc32, ppc64, riscv64, s390x, i386, x86_64, combined)")
-set_property(CACHE BOOST_CONTEXT_ARCHITECTURE PROPERTY STRINGS arm arm64 mips32 mips64 ppc32 ppc64 riscv64 s390x i386 x86_64 combined)
+set_property(CACHE BOOST_CONTEXT_ARCHITECTURE PROPERTY STRINGS ${_all_archs})
 
+unset(_all_archs)
 unset(_bits)
 unset(_default_arch)
 
@@ -139,6 +166,9 @@ if(BOOST_CONTEXT_IMPLEMENTATION STREQUAL "fcontext")
       set_source_files_properties(${ASM_SOURCES} PROPERTIES COMPILE_FLAGS "/safeseh")
   endif()
 
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_property(SOURCE ${ASM_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "-x" "assembler-with-cpp")
+  endif()
 else()
   set(IMPL_SOURCES
     src/continuation.cpp
