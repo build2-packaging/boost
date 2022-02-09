@@ -3,7 +3,6 @@ import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-endian%lib{boost_endian}
-import intf_libs += libboost-foreach%lib{boost_foreach}
 import intf_libs += libboost-function%lib{boost_function}
 import intf_libs += libboost-function-types%lib{boost_function_types}
 import intf_libs += libboost-fusion%lib{boost_fusion}

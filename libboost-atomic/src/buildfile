@@ -83,7 +83,7 @@ if ($cxx.target.cpu == 'x86_64' || $cxx.target.cpu == 'i686')
 # Initially exclude Windows-specific source files and source files dependent
 # on SSE support in the CPU (but they may be added back later; see below).
 #
-lib{boost_atomic}: {hxx ixx txx cxx}{** -wait_ops_windows -find_address_sse*} \
+lib{boost_atomic}: {hxx ixx txx cxx}{** -wait_on_address -find_address_sse*} \
                    $impl_libs $intf_libs
 
 # If SSE is enabled, add the SSE4.1 find_address() implementation to the
@@ -103,11 +103,11 @@ lib{boost_atomic}: cxx{find_address_sse41}: include = $sse
 # with the Windows SDK (according to
 # https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitonaddress).
 #
-# If on Windows (all versions), the upstream build adds `wait_ops_windows.cpp`
+# If on Windows (all versions), the upstream build adds `wait_on_address.cpp`
 # to the library's sources and detects the presence of `synchronization.lib`
 # by trying to build a program which is linked to it and uses its API. If the
 # program builds successfully, Boost.Atomic is linked against
-# `synchronization.lib`. In `wait_ops_windows.cpp`, if it finds that Windows
+# `synchronization.lib`. In `wait_on_address.cpp`, if it finds that Windows
 # is at least at version 8 (using Boost.WinAPI macros), it expects
 # `synchronization.lib` and `api-ms-win-core-synch-l1-2-0.dll` to have been
 # loaded by the system loader, otherwise it loads
@@ -117,7 +117,7 @@ lib{boost_atomic}: cxx{find_address_sse41}: include = $sse
 # used. On FreeBSD and DragonFlyBSD the umtx system calls are used. On older
 # versions of these OSs a generic (lock-based) backend is used as fallback.
 #
-lib{boost_atomic}: cxx{wait_ops_windows}: include = $windows
+lib{boost_atomic}: cxx{wait_on_address}: include = $windows
 
 #
 # END MANUAL CUSTOMIZATION
@@ -156,13 +156,16 @@ if $sse
 switch $tclass, $tsys
 {
   case 'windows', 'mingw32'
+  {
     cxx.libs += -lsynchronization
+    lib{boost_atomic}: cxx.export.libs = -lsynchronization
+  }
   case 'windows'
+  {
     cxx.libs += synchronization.lib
+    lib{boost_atomic}: cxx.export.libs = synchronization.lib
+  }
 }
-
-#
-# END MANUAL CUSTOMIZATION
 
 # Export options.
 #
@@ -170,8 +173,11 @@ lib{boost_atomic}:
 {
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
                          -DBOOST_ATOMIC_NO_LIB
-  cxx.export.libs = $intf_libs
+  cxx.export.libs += $intf_libs
 }
+
+#
+# END MANUAL CUSTOMIZATION
 
 liba{boost_atomic}: cxx.export.poptions += -DBOOST_ATOMIC_STATIC_LINK
 libs{boost_atomic}: cxx.export.poptions += -DBOOST_ATOMIC_DYN_LINK

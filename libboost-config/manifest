@@ -1,17 +1,17 @@
 : 1
 name: libboost-config
-version: 1.77.0+1
+version: 1.78.0-a.0.z
 project: boost
 summary: Helps Boost library developers adapt to compiler idiosyncrasies; not intended for library users
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/config
-doc-url: https://www.boost.org/doc/libs/1_77_0/libs/config
+doc-url: https://www.boost.org/doc/libs/1_78_0/libs/config
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default ; Performs platform sanity checks.
-depends: * build2 >= 0.14.0-
-depends: * bpkg >= 0.14.0-
+depends: * build2 >= 0.14.0
+depends: * bpkg >= 0.14.0

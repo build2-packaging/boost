@@ -1,4 +1,5 @@
-import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-mp11%lib{boost_mp11}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
