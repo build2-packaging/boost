@@ -25,8 +25,10 @@
 #include <boost/core/quick_exit.hpp>
 #include <boost/core/ref.hpp>
 #include <boost/core/scoped_enum.hpp>
+#include <boost/core/span.hpp>
 #include <boost/core/swap.hpp>
 #include <boost/core/typeinfo.hpp>
+#include <boost/core/type_name.hpp>
 #include <boost/core/uncaught_exceptions.hpp>
 #include <boost/core/underlying_type.hpp>
 #include <boost/core/use_default.hpp>

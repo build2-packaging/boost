@@ -7,7 +7,6 @@ import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
 import intf_libs += libboost-math%lib{boost_math}
 import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-random%lib{boost_random}
-import intf_libs += libboost-rational%lib{boost_rational}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

@@ -1,4 +1,4 @@
-#include <boost/variant2/variant.hpp>
+#include <boost/variant2.hpp>
 
 int
 main ()
