@@ -884,9 +884,45 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
 
   # Create symlinks to the upstream headers inside the new project directory.
   #
-  for f in "$udp/include/boost/"*; do
-    ln -s "../../../$f" "$pn/include/boost/"
-  done
+  # Headers under downstream/ are patched versions of the ones under
+  # upstream/. In these cases symlink to the downstream and upstream versions
+  # but append `.orig` to the latter's filename.
+  #
+  # If this library has any patched headers then symlink to each individual
+  # header, otherwise symlink only to headers and directories directly under
+  # upstream/.../include/boost/ (so there should only be a few symlinks).
+  #
+  # There are patched headers if either downstream/.../include/boost/<lib>/
+  # (which can only contain headers) or downstream/.../include/boost/<lib>.hpp
+  # (the super-header) exist.
+  #
+  if [[ -d "downstream/libs/$un/include/boost/$un" ||
+        -f "downstream/libs/$un/include/boost/$un.$he" ]]; then
+    # There are patched headers.
+    #
+    find "$udp/include/boost/" -type f -name "*.$he" | while read f; do
+      dp="${f/upstream/downstream}"                 # Downstream path.
+      pp="$pn/$(dirname "${f#upstream/libs/$un/}")" # Package-relative path.
+      rp="$(sed -Ee 's%[^/]+%..%g' <<<"$pp")"       # Path from pp to root.
+
+      # Create any missing directories in the package-relative path.
+      #
+      if [[ ! -d "$pp" ]]; then
+        mkdir -p "$pp"
+      fi
+
+      if [[ -f "$dp" ]]; then # There is a downstream version of this header.
+        ln -s "$rp/$f" "$pp/$(basename "$f").orig" # Original.
+        ln -s "$rp/$dp" "$pp"                      # Patched version.
+      else
+        ln -s "$rp/$f" "$pp"
+      fi
+    done
+  else
+    for f in "$udp/include/boost/"*; do
+      ln -s "../../../$f" "$pn/include/boost/"
+    done
+  fi
 
   # If this is a binful library, remove the `bdep-new`-generated source file
   # and export header and create symlinks to the upstream source files.

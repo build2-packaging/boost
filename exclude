@@ -21,6 +21,13 @@ libboost-compatibility
 # the path of the header it includes being `boost/context/detail/fcontext.hpp`
 # seems to confirm it.
 #
+# From the Boost mailing lists: "Boost.Coroutine depends on Boost.Context,
+# which is C++11. However, in order to not break C++03, Coroutine doesn't use
+# the public API of Context, but the private "fcontext" parts that are kept
+# C++03 compatible only because of that. This incidentally means that if you
+# compile Context with the `ucontext` backend instead of the `fcontext` one,
+# Coroutine breaks. So it's basically a mess and needs to be cleaned up."
+#
 # We may want to consider not even packaging this library because, in addition
 # to the above problem, it's also been deprecated in favour of coroutine2. The
 # only Boost library that depends on it is Boost.Asio and this is an optional
