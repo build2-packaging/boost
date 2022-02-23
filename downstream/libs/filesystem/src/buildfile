@@ -51,7 +51,7 @@ cxx.poptions += -DBOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF
 
 # Enable use of `__attribute__((init_priority(N)))`.
 #
-if ($cxx.class == 'gcc')
+if ($cxx.class == 'gcc' && $tclass != 'macos')
   cxx.poptions += -DBOOST_FILESYSTEM_HAS_INIT_PRIORITY
 
 # Define various BOOST_FILESYSTEM_* macros as appropriate for each OS and use

@@ -1,1 +1,6 @@
 On the release:
+
+  Remove
+  downstream/libs/multiprecision/include/boost/multiprecision/cpp_int/cpp_int_config.hpp
+  once the following GCC bug has been resolved:
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84583.

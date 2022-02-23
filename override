@@ -289,21 +289,11 @@ system/windows_error.hpp            \
 ## For each library, a space-separated list of Boost dependencies, in
 ## `boostdep` format, to exclude.
 
-# Break Boost.Property_Map's dependency on Boost.MPI because it is part of a
-# cycle with Boost.Graph (and we're also not packaging Boost.MPI).
-#
-# It's safe to break this dependency because it is very weak: MPI headers are
-# only included from the `include/boost/property_map/parallel/` directory, and
-# headers from that directory are only included if the BOOST_GRAPH_USE_MPI
-# macro is defined (which it is not by default, upstream).
-#
-exclude_dependencies["libboost-property-map"]="mpi"
-
 # This dependency is not detected by `boostdep` because Boost.Graph uses its
-# own macro to include Boost.Graph_Parallel's headers (conditionally, based on
-# whether the BOOST_GRAPH_USE_MPI macro is defined). However, if, for example,
-# Boost.Graph ever switches to a direct #include, it will be detected so
-# preempt that here.
+# own macro to include Boost.Graph_Parallel's headers
+# (BOOST_GRAPH_MPI_INCLUDE(), defined in detail/mpi_include.hpp). However, if,
+# for example, Boost.Graph ever switches to a direct #include, it will be
+# detected so preempt that here.
 #
 exclude_dependencies["libboost-graph"]="graph_parallel"
 

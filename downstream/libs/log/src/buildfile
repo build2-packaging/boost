@@ -110,10 +110,12 @@ setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 {hbmi  obj }{$setup_objn}: cxx.poptions += -DBOOST_LOG_SETUP_BUILDING_THE_LIB=1
 {hbmis objs}{$setup_objn}: cxx.poptions += -DBOOST_LOG_SETUP_DLL
 
-# SSE3 compiler options.
+# SSE compiler options.
 #
 # Do not pass any SSE compiler options to MSVC because on x86 it's enabled by
-# default (`/arch:SSE2`) and on x86_64 it is always enabled.
+# default (`/arch:SSE2`) and on x86_64 it is always enabled. Note that, to get
+# SSE3 and SSSE3, we'd need to pass /arch:AVX which we've decided not to do
+# (see above).
 #
 if ($cxx.class == 'gcc')
   {hbmi obj}{dump_ssse3}: cxx.coptions += -msse -msse2 -msse3 -mssse3
