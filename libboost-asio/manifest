@@ -1,6 +1,6 @@
 : 1
 name: libboost-asio
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: Portable networking and other low-level I/O, including sockets, timers, hostname resolution, socket iostreams, serial ports, file descriptors and Windows HANDLEs
 license: BSL-1.0 ; Boost Software License 1.0.

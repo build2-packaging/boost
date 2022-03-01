@@ -1,6 +1,6 @@
 : 1
 name: libboost-predef
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: This library defines a set of compiler, architecture, operating system, library, and other version numbers from the information it can gather of C, C++, Objective C, and Objective C++ predefined macros or those defined in generally available headers
 license: BSL-1.0 ; Boost Software License 1.0.

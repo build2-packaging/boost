@@ -1,6 +1,6 @@
 : 1
 name: libboost-variant
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: Safe, generic, stack-based discriminated union container
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -1,6 +1,6 @@
 : 1
 name: libboost-functional
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: The Boost.Function library contains a family of class templates that are function object wrappers
 license: BSL-1.0 ; Boost Software License 1.0.

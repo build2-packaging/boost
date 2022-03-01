@@ -1,6 +1,6 @@
 : 1
 name: libboost-lambda2
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: A C++14 lambda library
 license: BSL-1.0 ; Boost Software License 1.0.
