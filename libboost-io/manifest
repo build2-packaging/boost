@@ -1,6 +1,6 @@
 : 1
 name: libboost-io
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: Utilities for the standard I/O library
 license: BSL-1.0 ; Boost Software License 1.0.

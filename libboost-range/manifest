@@ -1,6 +1,6 @@
 : 1
 name: libboost-range
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: A new infrastructure for generic algorithms that builds on top of the new iterator concepts
 license: BSL-1.0 ; Boost Software License 1.0.

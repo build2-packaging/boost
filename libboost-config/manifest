@@ -1,6 +1,6 @@
 : 1
 name: libboost-config
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: Helps Boost library developers adapt to compiler idiosyncrasies; not intended for library users
 license: BSL-1.0 ; Boost Software License 1.0.

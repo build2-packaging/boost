@@ -1,6 +1,6 @@
 : 1
 name: libboost-stacktrace
-version: 1.78.0-a.0.z
+version: 1.78.0
 project: boost
 summary: Gather, store, copy and print backtraces
 license: BSL-1.0 ; Boost Software License 1.0.
