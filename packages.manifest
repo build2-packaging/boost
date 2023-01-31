@@ -255,6 +255,8 @@ location: libboost-units/
 :
 location: libboost-unordered/
 :
+location: libboost-url/
+:
 location: libboost-utility/
 :
 location: libboost-uuid/
