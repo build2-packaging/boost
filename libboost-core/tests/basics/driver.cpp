@@ -1,6 +1,7 @@
 #include <boost/checked_delete.hpp>
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
+#include <boost/core/allocator_traits.hpp>
 #include <boost/core/alloc_construct.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/checked_delete.hpp>
@@ -11,6 +12,7 @@
 #include <boost/core/enable_if.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/core/explicit_operator_bool.hpp>
+#include <boost/core/fclose_deleter.hpp>
 #include <boost/core/first_scalar.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/core/is_same.hpp>
@@ -32,6 +34,7 @@
 #include <boost/core/uncaught_exceptions.hpp>
 #include <boost/core/underlying_type.hpp>
 #include <boost/core/use_default.hpp>
+#include <boost/core/verbose_terminate_handler.hpp>
 #include <boost/get_pointer.hpp>
 #include <boost/iterator.hpp>
 #include <boost/noncopyable.hpp>

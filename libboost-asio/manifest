@@ -1,28 +1,30 @@
 : 1
 name: libboost-asio
-version: 1.78.0
+version: 1.81.0-a.0.z
 project: boost
 summary: Portable networking and other low-level I/O, including sockets, timers, hostname resolution, socket iostreams, serial ports, file descriptors and Windows HANDLEs
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/asio
-doc-url: https://www.boost.org/doc/libs/1_78_0/libs/asio
+doc-url: https://www.boost.org/doc/libs/1_81_0/libs/asio
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.14.0
-depends: * bpkg >= 0.14.0
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
 depends: libboost-align == $
 depends: libboost-array == $
 depends: libboost-assert == $
 depends: libboost-bind == $
 depends: libboost-chrono == $
 depends: libboost-config == $
+depends: libboost-context == $
 depends: libboost-core == $
 depends: libboost-date-time == $
+depends: libboost-exception == $
 depends: libboost-function == $
 depends: libboost-regex == $
 depends: libboost-smart-ptr == $

@@ -2,7 +2,6 @@ import intf_libs  = libboost-array%lib{boost_array}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-move%lib{boost_move}
-import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-ptr-container%lib{boost_ptr_container}
 import intf_libs += libboost-range%lib{boost_range}

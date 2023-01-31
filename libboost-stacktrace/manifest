@@ -1,21 +1,21 @@
 : 1
 name: libboost-stacktrace
-version: 1.78.0
+version: 1.81.0-a.0.z
 project: boost
 summary: Gather, store, copy and print backtraces
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/stacktrace
-doc-url: https://www.boost.org/doc/libs/1_78_0/libs/stacktrace
+doc-url: https://www.boost.org/doc/libs/1_81_0/libs/stacktrace
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.14.0
-depends: * bpkg >= 0.14.0
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
 depends: libboost-array == $
 depends: libboost-config == $
 depends: libboost-container-hash == $
