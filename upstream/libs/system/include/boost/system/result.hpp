@@ -1,7 +1,7 @@
 #ifndef BOOST_SYSTEM_RESULT_HPP_INCLUDED
 #define BOOST_SYSTEM_RESULT_HPP_INCLUDED
 
-// Copyright 2017, 2021 Peter Dimov.
+// Copyright 2017, 2021, 2022 Peter Dimov.
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -11,11 +11,14 @@
 #include <boost/system/detail/error_category_impl.hpp>
 #include <boost/variant2/variant.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/assert/source_location.hpp>
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <type_traits>
 #include <utility>
 #include <iosfwd>
+#include <system_error>
+#include <exception>
 
 //
 
@@ -26,10 +29,46 @@ namespace system
 
 // throw_exception_from_error
 
-BOOST_NORETURN inline void throw_exception_from_error( error_code const & e )
+#if defined(__GNUC__) && __GNUC__ >= 7 && __GNUC__ <= 8
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
+BOOST_NORETURN BOOST_NOINLINE inline void throw_exception_from_error( error_code const & e, boost::source_location const& loc )
 {
-    boost::throw_exception( system_error( e ) );
+    boost::throw_with_location( system_error( e ), loc );
 }
+
+BOOST_NORETURN BOOST_NOINLINE inline void throw_exception_from_error( errc::errc_t const & e, boost::source_location const& loc )
+{
+    boost::throw_with_location( system_error( make_error_code( e ) ), loc );
+}
+
+BOOST_NORETURN BOOST_NOINLINE inline void throw_exception_from_error( std::error_code const & e, boost::source_location const& loc )
+{
+    boost::throw_with_location( std::system_error( e ), loc );
+}
+
+BOOST_NORETURN BOOST_NOINLINE inline void throw_exception_from_error( std::errc const & e, boost::source_location const& loc )
+{
+    boost::throw_with_location( std::system_error( make_error_code( e ) ), loc );
+}
+
+BOOST_NORETURN BOOST_NOINLINE inline void throw_exception_from_error( std::exception_ptr const & p, boost::source_location const& loc )
+{
+    if( p )
+    {
+        std::rethrow_exception( p );
+    }
+    else
+    {
+        boost::throw_with_location( std::bad_exception(), loc );
+    }
+}
+
+#if defined(__GNUC__) && __GNUC__ >= 7 && __GNUC__ <= 8
+# pragma GCC diagnostic pop
+#endif
 
 // in_place_*
 
@@ -39,6 +78,15 @@ constexpr in_place_value_t in_place_value{};
 using in_place_error_t = variant2::in_place_index_t<1>;
 constexpr in_place_error_t in_place_error{};
 
+namespace detail
+{
+
+template<class T> using remove_cvref = typename std::remove_cv< typename std::remove_reference<T>::type >::type;
+
+template<class... T> using is_errc_t = std::is_same<mp11::mp_list<remove_cvref<T>...>, mp11::mp_list<errc::errc_t>>;
+
+} // namespace detail
+
 // result
 
 template<class T, class E = error_code> class result
@@ -46,6 +94,14 @@ template<class T, class E = error_code> class result
 private:
 
     variant2::variant<T, E> v_;
+
+public:
+
+    using value_type = T;
+    using error_type = E;
+
+    static constexpr in_place_value_t in_place_value{};
+    static constexpr in_place_error_t in_place_error{};
 
 public:
 
@@ -65,6 +121,7 @@ public:
     // implicit, value
     template<class A = T, typename std::enable_if<
         std::is_convertible<A, T>::value &&
+        !(detail::is_errc_t<A>::value && std::is_arithmetic<T>::value) &&
         !std::is_constructible<E, A>::value, int>::type = 0>
     constexpr result( A&& a )
         noexcept( std::is_nothrow_constructible<T, A>::value )
@@ -85,7 +142,9 @@ public:
     // explicit, value
     template<class... A, class En = typename std::enable_if<
         std::is_constructible<T, A...>::value &&
-        !std::is_constructible<E, A...>::value
+        !(detail::is_errc_t<A...>::value && std::is_arithmetic<T>::value) &&
+        !std::is_constructible<E, A...>::value &&
+        sizeof...(A) >= 1
         >::type>
     explicit constexpr result( A&&... a )
         noexcept( std::is_nothrow_constructible<T, A...>::value )
@@ -96,7 +155,8 @@ public:
     // explicit, error
     template<class... A, class En2 = void, class En = typename std::enable_if<
         !std::is_constructible<T, A...>::value &&
-        std::is_constructible<E, A...>::value
+        std::is_constructible<E, A...>::value &&
+        sizeof...(A) >= 1
         >::type>
     explicit constexpr result( A&&... a )
         noexcept( std::is_nothrow_constructible<E, A...>::value )
@@ -124,6 +184,43 @@ public:
     {
     }
 
+    // converting
+    template<class T2, class E2, class En = typename std::enable_if<
+        std::is_convertible<T2, T>::value &&
+        std::is_convertible<E2, E>::value
+        >::type>
+    BOOST_CXX14_CONSTEXPR result( result<T2, E2> const& r2 )
+        noexcept(
+            std::is_nothrow_constructible<T, T2 const&>::value &&
+            std::is_nothrow_constructible<E, E2>::value &&
+            std::is_nothrow_default_constructible<E2>::value &&
+            std::is_nothrow_copy_constructible<E2>::value )
+        : v_( in_place_error, r2.error() )
+    {
+        if( r2 )
+        {
+            v_.template emplace<0>( *r2 );
+        }
+    }
+
+    template<class T2, class E2, class En = typename std::enable_if<
+        std::is_convertible<T2, T>::value &&
+        std::is_convertible<E2, E>::value
+        >::type>
+    BOOST_CXX14_CONSTEXPR result( result<T2, E2>&& r2 )
+        noexcept(
+            std::is_nothrow_constructible<T, T2&&>::value &&
+            std::is_nothrow_constructible<E, E2>::value &&
+            std::is_nothrow_default_constructible<E2>::value &&
+            std::is_nothrow_copy_constructible<E2>::value )
+        : v_( in_place_error, r2.error() )
+    {
+        if( r2 )
+        {
+            v_.template emplace<0>( std::move( *r2 ) );
+        }
+    }
+
     // queries
 
     constexpr bool has_value() const noexcept
@@ -133,7 +230,7 @@ public:
 
     constexpr bool has_error() const noexcept
     {
-        return v_.index() != 0;
+        return v_.index() == 1;
     }
 
     constexpr explicit operator bool() const noexcept
@@ -144,7 +241,7 @@ public:
     // checked value access
 #if defined( BOOST_NO_CXX11_REF_QUALIFIERS )
 
-    BOOST_CXX14_CONSTEXPR T value() const
+    BOOST_CXX14_CONSTEXPR T value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) const
     {
         if( has_value() )
         {
@@ -152,13 +249,13 @@ public:
         }
         else
         {
-            throw_exception_from_error( variant2::unsafe_get<1>( v_ ) );
+            throw_exception_from_error( variant2::unsafe_get<1>( v_ ), loc );
         }
     }
 
 #else
 
-    BOOST_CXX14_CONSTEXPR T& value() &
+    BOOST_CXX14_CONSTEXPR T& value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) &
     {
         if( has_value() )
         {
@@ -166,11 +263,11 @@ public:
         }
         else
         {
-            throw_exception_from_error( variant2::unsafe_get<1>( v_ ) );
+            throw_exception_from_error( variant2::unsafe_get<1>( v_ ), loc );
         }
     }
 
-    BOOST_CXX14_CONSTEXPR T const& value() const&
+    BOOST_CXX14_CONSTEXPR T const& value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) const&
     {
         if( has_value() )
         {
@@ -178,24 +275,24 @@ public:
         }
         else
         {
-            throw_exception_from_error( variant2::unsafe_get<1>( v_ ) );
+            throw_exception_from_error( variant2::unsafe_get<1>( v_ ), loc );
         }
     }
 
     template<class U = T>
         BOOST_CXX14_CONSTEXPR
         typename std::enable_if<std::is_move_constructible<U>::value, T>::type
-        value() &&
+        value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) &&
     {
-        return std::move( value() );
+        return std::move( value( loc ) );
     }
 
     template<class U = T>
         BOOST_CXX14_CONSTEXPR
         typename std::enable_if<!std::is_move_constructible<U>::value, T&&>::type
-        value() &&
+        value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) &&
     {
-        return std::move( value() );
+        return std::move( value( loc ) );
     }
 
     template<class U = T>
@@ -206,9 +303,9 @@ public:
     template<class U = T>
         BOOST_CXX14_CONSTEXPR
         typename std::enable_if<!std::is_move_constructible<U>::value, T const&&>::type
-        value() const &&
+        value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) const &&
     {
-        return std::move( value() );
+        return std::move( value( loc ) );
     }
 
 #endif
@@ -304,6 +401,14 @@ public:
         return has_error()? variant2::unsafe_get<1>( v_ ): E();
     }
 
+    // emplace
+
+    template<class... A>
+    BOOST_CXX14_CONSTEXPR T& emplace( A&&... a )
+    {
+        return v_.template emplace<0>( std::forward<A>(a)... );
+    }
+
     // swap
 
     BOOST_CXX14_CONSTEXPR void swap( result& r )
@@ -354,6 +459,14 @@ template<class E> class result<void, E>
 private:
 
     variant2::variant<variant2::monostate, E> v_;
+
+public:
+
+    using value_type = void;
+    using error_type = E;
+
+    static constexpr in_place_value_t in_place_value{};
+    static constexpr in_place_error_t in_place_error{};
 
 public:
 
@@ -422,7 +535,7 @@ public:
 
     constexpr bool has_error() const noexcept
     {
-        return v_.index() != 0;
+        return v_.index() == 1;
     }
 
     constexpr explicit operator bool() const noexcept
@@ -432,14 +545,14 @@ public:
 
     // checked value access
 
-    BOOST_CXX14_CONSTEXPR void value() const
+    BOOST_CXX14_CONSTEXPR void value( boost::source_location const& loc = BOOST_CURRENT_LOCATION ) const
     {
         if( has_value() )
         {
         }
         else
         {
-            throw_exception_from_error( variant2::unsafe_get<1>( v_ ) );
+            throw_exception_from_error( variant2::unsafe_get<1>( v_ ), loc );
         }
     }
 
@@ -466,6 +579,13 @@ public:
         noexcept( std::is_nothrow_default_constructible<E>::value && std::is_nothrow_copy_constructible<E>::value )
     {
         return has_error()? variant2::unsafe_get<1>( v_ ): E();
+    }
+
+    // emplace
+
+    BOOST_CXX14_CONSTEXPR void emplace()
+    {
+        v_.template emplace<0>();
     }
 
     // swap

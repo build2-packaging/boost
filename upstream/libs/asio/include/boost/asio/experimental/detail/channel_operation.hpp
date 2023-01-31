@@ -2,7 +2,7 @@
 // experimental/detail/channel_operation.hpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2021 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2022 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -94,11 +94,18 @@ public:
     typename associated_allocator<Handler>::type allocator =
       (get_associated_allocator)(handler);
 
+#if defined(BOOST_ASIO_NO_DEPRECATED)
+    boost::asio::prefer(
+        boost::asio::require(executor_, execution::blocking.never),
+        execution::allocator(allocator)
+      ).execute(BOOST_ASIO_MOVE_CAST(Function)(function));
+#else // defined(BOOST_ASIO_NO_DEPRECATED)
     execution::execute(
         boost::asio::prefer(
           boost::asio::require(executor_, execution::blocking.never),
           execution::allocator(allocator)),
         BOOST_ASIO_MOVE_CAST(Function)(function));
+#endif // defined(BOOST_ASIO_NO_DEPRECATED)
   }
 
 private:

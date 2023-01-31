@@ -41,7 +41,7 @@ allocate(
     if(capacity > array::max_size())
         detail::throw_length_error(
             "array too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     auto p = reinterpret_cast<
         table*>(sp->allocate(
             sizeof(table) +
@@ -101,7 +101,7 @@ revert_insert(
     if(n_ > max_size() - arr_->size())
         detail::throw_length_error(
             "array too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     auto t = table::allocate(
         arr_->growth(arr_->size() + n_),
             arr_->sp_);
@@ -488,12 +488,7 @@ erase(
     BOOST_ASSERT(
         pos >= begin() &&
         pos <= end());
-    auto const p = &(*t_)[0] +
-        (pos - &(*t_)[0]);
-    destroy(p, p + 1);
-    relocate(p, p + 1, 1);
-    --t_->size;
-    return p;
+    return erase(pos, pos + 1);
 }
 
 auto
@@ -503,6 +498,10 @@ erase(
     const_iterator last) noexcept ->
         iterator
 {
+    BOOST_ASSERT(
+        first >= begin() &&
+        last >= first &&
+        last <= end());
     std::size_t const n =
         last - first;
     auto const p = &(*t_)[0] +
@@ -594,7 +593,6 @@ void
 array::
 swap(array& other)
 {
-    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         t_ = detail::exchange(
@@ -629,7 +627,7 @@ growth(
     if(new_size > max_size())
         detail::throw_length_error(
             "array too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     std::size_t const old = capacity();
     if(old > max_size() - old / 2)
         return new_size;
