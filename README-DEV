@@ -1167,72 +1167,29 @@ allocation; see
 https://mail.mozilla.org/pipermail/rust-dev/2013-November/006314.html for the
 Rust motivation).
 
-Bug #1
+Bug #1: Segfault on macOS
 
-The test driver (the code of which was taken from the upstream
-examples/fiber/fibonacci.cpp) segfaults on Mac OS 10.15 and 11 with Clang 11
-and 12 but succeeds (that is, produces the right output) on all other
-platforms. This program does nothing but use the most fundamental
-functionality of the Boost.Context API: it does little more than call
-boost::context::fiber::resume()) a few times.
-
-The key to triggering the segfault is to select the C++ implementation
-(ucontext) instead of the ASM one (fcontext) on Mac OS.
-
-The segfault can be reproduced with the upstream build by running the
-following commands on Mac OS:
-
-  b2 toolset=clang cxxflags='-std=c++11' --with-context context-impl=ucontext stage
-  cd libs/context/examples/fiber
-  b2 toolset=clang cxxflags='-std=c++11' context-impl=ucontext
-  [Note the output path of the example programs in the output]
-  .../bin.v2/libs/context/example/fiber/.../fibonacci
-  segmentation fault
-
-The segfault occurs with the shared and static versions of the library (the
-examples link statically by default).
-
-An issue has been logged here: https://github.com/boostorg/context/issues/184.
+An issue has been logged here:
+https://github.com/boostorg/context/issues/184. Although this has been fixed
+it has not yet been included in the latest release (v1.81.0).
 
 libboost-fiber is also affected by this bug.
 
-2.3 libboost-multiprecision
-
-CI fails under Clang 11+ and the newer MSVCs on Windows, and Clang 13 with
-libc++ on Linux due to Eigen, a dependency, using std::result_of which was
-deprecated in C++17 and removed from C++20.
-
-Microsoft STL removed std::result_of from its C++20 mode at the end of 2019
-(https://github.com/microsoft/STL/pull/380). The version running on our
-Windows VMs includes this update. Currently libboost-multiprecision passes all
-CI configs except for the Clang 11+ on Windows and newer MSVC ones. Clang 11
-gets `-std=c++2a` from `cxx.std = latest` while the older Clang versions get
-`-std=c++17`, and the older MSVC configs get `/std:c++17` but the newer ones
-`/std:c++20` which explains why only the Clang 11 configs fail.
-
-An issue has been filed for Eigen upstream but it does not look like it's been
-resolved yet: https://gitlab.com/libeigen/eigen/-/issues/1894. Therefore we
-decided not to do anything with the expectation that Eigen upstream will fix
-it before too long.
-
-2.4 libboost-outcome
+2.3 libboost-outcome
 
 Under Clang 12,13 on Linux with libstdc++ (libc++ has no problems)
 __cpp_impl_coroutine (C++20) is undefined, resulting in `#error "the coroutine
 header requires -fcoroutines"` in /usr/include/c++/10/coroutine.
 
 Coroutine support detection is also broken on Windows (all clang configs). We
-see the exact same error messages as
+see more or less the same error messages as
 https://github.com/ned14/outcome/issues/240#issuecomment-744206633 (the
 maintainer develops on his own private repository) which looks like it might
 have been fixed in
 https://github.com/ned14/quickcpplib/commit/327e2d69cac275f9f785a69e74121b316a0857f4
-but it's not clear how that file maps to the Boost.Outcome
-repository. Regardless, it's not been released yet because
-https://github.com/boostorg/outcome/blob/boost-1.77.0/CMakeLists.txt does not
-contain anything similar.
+but it's not clear how that file maps to the Boost.Outcome repository.
 
-2.5 libboost-sort
+2.4 libboost-sort
 
 This library gets the following error under MSVC:
 
@@ -1270,84 +1227,51 @@ An issue was logged upstream at https://github.com/boostorg/sort/issues/43
 about this almost a year ago but the upstream maintainer blames Microsoft and
 no fix appears to be forthcoming.
 
-Note that this bug is now masked by a variant of the `std::result_of` problem
-many of the libraries suffer from (see description under
-libboost-multiprecision), except in this case it's
-`std::get_temporary_buffer`.
+Note that this bug is now masked by failures due to the MS STL commit
+https://github.com/microsoft/STL/pull/380/commits/6efd1dda9892ad5a4e2bee9346c36c58a7816f5c
+which removes support for std::get_temporary_buffer() (deprecated in C++17 and
+removed in C++20) among other things.
 
-2.6 libboost-process
-
-As of 2022-02-23 (Boost 1.78), CI fails under clang (all platforms but
-Windows) due to the open issue at
-https://github.com/boostorg/process/issues/235.
-
-2.7 libboost-property-tree
+2.5 libboost-property-tree
 
 Our builds are failing due to the bug at
 https://github.com/boostorg/property_tree/pull/62 fixed in the commit at
 https://github.com/boostorg/property_tree/commit/532853791b650c0fe2c301e1f72e4b064e1506cf
-but which has not yet been released (as of Boost 1.77).
+but which has not yet been released (as of Boost 1.81).
 
-2.8 libboost-math
+2.6 libboost-math
 
 The Cmake build, added in Boost 1.77, supports only the header-only
 library. That is, it does not build the C99 and TR1 shared libraries as its
 Jamfile and our build currently do.
 
-2.9 libboost-stl-interfaces
-
-Missing `typename` before `C::const_iterator`. Reported at
-https://github.com/boostorg/stl_interfaces/issues/53.
-
-2.10 liboost-numeric-ublas
+2.7 liboost-numeric-ublas
 
 Our builds fail due to the bug reported at
 https://github.com/boostorg/ublas/issues/82 (Error when compiling tensor with
 NDEBUG) in May 2020 and still not fixed 1.5 years later.
 
-2.11 libboost-regex
+2.8 libboost-pool
 
 Bug #1
 
-Our builds fail on Homebrew because this library puts itself into
-CXX03-compatibility mode due to https://github.com/boostorg/config/issues/399:
-Boost.Config defines BOOST_NO_CXX11_HDR_MUTEX and as a result the macros at
-include/boost/regex/config.hpp:100 define BOOST_REGEX_CXX03 which switches
-into CXX03-compatibility mode, requiring src/static_mutex.cpp to be compiled
-(also see the various definitions of class static_mutex in
-regex/pending/static_mutex.hpp). However we override this library to be
-binless and as a result symbols like
-__ZN5boost24scoped_static_mutex_lockC1ERNS_12static_mutexEb end up being
-undefined.
+Issue https://github.com/boostorg/pool/issues/49 causes libboost-fiber to fail
+in CI on Windows (all configs but mingw).
 
-This causes libboost-log to also fail on Homebrew configs.
-
-2.12 libboost-log
-
-Our builds fail due to various errors under Clang 13 on Linux due to what
-looks like upstream code issues so best to wait until this configuration is
-better supported upstream.
-
-Homebrew configs fail due to the libboost-regex issue (see above).
-
-2.13 libboost-nowide
-
-Our builds fail on MinGW due to what looks like an upstream code problem. See
-the issue reported at https://github.com/boostorg/nowide/issues/146.
-
-2.13 Various
+2.9 libboost-url
 
 Bug #1
 
-Multiple libraries are affected by the issue described under
-libboost-multiprecision above which results from the use of constructs (such
-as std::result_of) removed from C++20.
+CI fails on mingw targets with "error: function
+'boost::urls::decode_view::decode_view(boost::urls::pct_string_view,
+boost::urls::encoding_opts)' definition is marked dllimport".
 
-Bug #2
+Apparently mingw g++ simply does not accept dllimport on inline functions.
 
-Overaggressive definition of BOOST_NO_CXX11_HDR_MUTEX under libstdc++ on Mac
-OS. The problem is in Boost.Config but it affects multiple libraries. An issue
-has been logged at https://github.com/boostorg/config/issues/399.
+I found multiple instances online where this was resolved by removing the
+dllimport or making the function non-inline. Here is a relatively recent
+instance in another boost library:
+https://lists.boost.org/Archives/boost/2017/08/238303.php
 
 3. Boost upstream upgrade procedure
 
@@ -1368,41 +1292,46 @@ layout is different from ours (all of the headers are under
 
 3.2 Examine the changes in the latest release
 
+  - Check that compiled libraries' downstream buildfiles account for added or
+    removed source files.
+
   - Read the release notes:
     https://www.boost.org/users/history/version_1_77_0.html.
 
   - Look for changes in upstream builds (both CMakeLists.txt and Jamfile*)
     for libraries for which we provide custom buildfiles.
 
+    Things to look out for:
+
+      - New or deleted source files
+      - New macro definitions
+
+    To find changed build files:
+
+      git show --name-only <upstream-upgrade-commit-id> | grep CMakeLists
+      git show --name-only <upstream-upgrade-commit-id> | grep Jamfile
+
+    To show a build file's changes:
+
+      git show <upstream-upgrade-commit-id> upstream/libs/foo/CMakeLists.txt
+
   - Look `generate`, `override`, `exclude`, and downstream/* over for anything
     that may be affected by the latest upstream changes, paying special
     attention to @@ comments and TODOs.
 
-  - Check for new Boost libraries and add the necessary support.
-
   - Check the `TODO` file for anything that may have been resolved by the
     upgrade.
 
-  - Test/CI
-    - New libraries
+  - Check for new Boost libraries and add the necessary support.
 
-    - Libraries with lots of coverage in the release notes
+  - Pay extra attention to libraries to which lots of significant code changes
+    have been made that are also binful or are ones we've had problems with in
+    the past. Although code changes by themselves are unlikely to cause
+    problems we might flush out upstream bugs (such as having forgotten to
+    update the build with feature-check macros newly added to the code).
 
-    - Libraries with build changes or new/deleted files
-
-    - Libraries whose dependencies have changed
-
-    - Libraries with custom tests
-
-    - Pay extra attention to libraries to which lots of significant code
-      changes have been made that are also binful or are ones we've had
-      problems with in the past. Although code changes by themselves are
-      unlikely to cause problems we might flush out upstream bugs (such as
-      having forgotten to update the build with feature-check macros newly
-      added to the code).
-
-    - Look for bugs in section 2 of this file that may have been resolved and
-      also record new ones there.
+  - Look for bugs in section 2 of this file that may have been resolved and
+    also record new ones there.
 
 3.3 Regenerate
 
@@ -1412,3 +1341,14 @@ Regenerate the packages by running `generate`.
 
 - Check that changes in `dependencies` look reasonable (the generation of this
   file might break due to changes in the `boostdep` tool, for example).
+
+3.4 Test/CI
+  - New libraries
+
+  - Libraries with lots of coverage in the release notes
+
+  - Libraries with build changes or new/deleted files
+
+  - Libraries whose dependencies have changed
+
+  - Libraries with custom tests
