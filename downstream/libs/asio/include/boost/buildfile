@@ -12,24 +12,27 @@ src_pfx = [dir_path] $src_root/include/
 #
 
 lib{boost-asio}: cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
-
-if ($cxx.target.class == 'windows')
-  lib{boost-asio}: cxx.export.poptions += -DBOOST_ASIO_NO_DEFAULT_LINKED_LIBS
-
 lib{boost-asio}: cxx.export.libs = $intf_libs
 
-switch $cxx.target.class, $cxx.target.system
+if ($cxx.target.class == 'windows')
 {
-  case 'windows', 'mingw32'
+  lib{boost-asio}: cxx.export.poptions += -DBOOST_ASIO_NO_DEFAULT_LINKED_LIBS
+
+  if ($cxx.target.system == 'mingw32')
   {
     lib{boost-asio}: cxx.libs += -lws2_32 -lmswsock
     lib{boost-asio}: cxx.export.libs += -lws2_32 -lmswsock
   }
-  case 'windows'
+  else
   {
     lib{boost-asio}: cxx.libs += ws2_32.lib mswsock.lib
     lib{boost-asio}: cxx.export.libs += ws2_32.lib mswsock.lib
   }
+}
+else
+{
+  lib{boost-asio}: cxx.libs += -pthread
+  lib{boost-asio}: cxx.export.libs += -pthread
 }
 
 #
