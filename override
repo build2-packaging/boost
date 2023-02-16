@@ -161,6 +161,7 @@ include_headers["libboost-spirit"]="spirit/include/classic.hpp"
 include_headers["libboost-stacktrace"]="stacktrace.hpp"
 include_headers["libboost-static-string"]="static_string/static_string.hpp"
 include_headers["libboost-test"]="test/unit_test.hpp"
+include_headers["libboost-url"]="url.hpp"
 include_headers["libboost-thread"]="thread.hpp"
 include_headers["libboost-variant"]="variant.hpp"
 

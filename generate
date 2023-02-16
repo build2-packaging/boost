@@ -1099,11 +1099,16 @@ intf_libs = $cxx.deduplicate_export_libs($intf_libs)'
       *)             mod="c"   ;;
     esac
 
-    # BOOST_<lib>_NO_LIB:      Disable auto-linking of this library.
-    #                          Naturally this macro is for export only.
+    # BOOST_<lib>_NO_LIB:      Disable auto-linking of this library. Naturally
+    #                          this macro is for export only. (Note, however,
+    #                          that the upstream cmake builds do not use
+    #                          auto-linking so they have started to resort to
+    #                          defining this macro during compilation across
+    #                          the board.)
     #
     #                          See https://en.wikipedia.org/wiki/Auto-linking,
     #                          https://www.boost.org/doc/libs/1_75_0/libs/config/doc/html/boost_config/boost_macro_reference.html,
+    #                          `upstream/libs/config/include/boost/config/user.hpp`,
     #                          and
     #                          `upstream/libs/config/include/boost/config/auto_link.hpp`
     #                          for more information.
