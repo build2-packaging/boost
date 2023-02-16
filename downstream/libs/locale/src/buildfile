@@ -19,12 +19,12 @@ windows = ($cxx.target.class == 'windows')
 
 # Private headers and sources as well as dependencies.
 #
-lib{boost_locale}: {hxx ixx txx}{**}           \
-                   cxx{** -posix/** -win32/**} \
+lib{boost_locale}: {hxx ixx txx}{**}                                            \
+                   cxx{** -boost/locale/posix/** -boost/locale/win32/**}        \
                    $impl_libs $intf_libs
 
-lib{boost_locale}: win32/cxx{**}: include = $windows
-lib{boost_locale}: posix/cxx{**}: include = (! $windows)
+lib{boost_locale}: boost/locale/win32/cxx{**}: include = $windows
+lib{boost_locale}: boost/locale/posix/cxx{**}: include = (! $windows)
 
 #
 # END MANUAL CUSTOMIZATION
@@ -44,15 +44,25 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
                 -DBOOST_LOCALE_WITH_ICU=1
 
 if $windows
-  cxx.poptions += -DBOOST_LOCALE_NO_POSIX_BACKEND
+  cxx.poptions += -DBOOST_LOCALE_NO_POSIX_BACKEND       \
+                  -D_CRT_SECURE_NO_WARNINGS             \
+                  -D_SCL_SECURE_NO_WARNINGS
 else
   cxx.poptions += -DBOOST_LOCALE_NO_WINAPI_BACKEND
 
-#
-# END MANUAL CUSTOMIZATION
-
 {hbmia obja}{*}: cxx.poptions += -DBOOST_STATIC_BUILD
 {hbmis objs}{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# These two source files don't define BOOST_LOCALE_SOURCE.
+#
+# @@ TODO Remove this when the fix for
+#    https://github.com/boostorg/locale/issues/145 is released.
+#
+obj{boost/locale/shared/mo_lambda boost/locale/icu/formatters_cache}: \
+  cxx.poptions += -DBOOST_LOCALE_SOURCE
+
+#
+# END MANUAL CUSTOMIZATION
 
 # Export options.
 #

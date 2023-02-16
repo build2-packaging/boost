@@ -44,8 +44,7 @@ if ($cxx.class == 'gcc')
 #
 lib{boost_nowide}:
 {
-  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
-                         -DBOOST_NOWIDE_NO_LIB
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs = $intf_libs
 }
 
