@@ -1,6 +1,7 @@
 : 1
 name: libboost-graph
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: The BGL graph interface and graph components are generic, in the same sense as the Standard Template Library (STL)
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -16,7 +17,7 @@ builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
-depends: libboost-regex == $
+depends: libboost-regex == $ ? ($config.libboost_graph.graphviz)
 depends: libboost-algorithm == $
 depends: libboost-any == $
 depends: libboost-array == $
@@ -47,7 +48,7 @@ depends: libboost-random == $
 depends: libboost-range == $
 depends: libboost-serialization == $
 depends: libboost-smart-ptr == $
-depends: libboost-spirit == $
+depends: libboost-spirit == $ ? ($config.libboost_graph.graphviz)
 depends: libboost-static-assert == $
 depends: libboost-throw-exception == $
 depends: libboost-tti == $

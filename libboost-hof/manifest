@@ -1,6 +1,7 @@
 : 1
 name: libboost-hof
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Higher-order functions for C++
 license: BSL-1.0 ; Boost Software License 1.0.

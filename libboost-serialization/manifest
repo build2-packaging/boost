@@ -1,6 +1,7 @@
 : 1
 name: libboost-serialization
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Serialization for persistence and marshalling
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -30,7 +31,16 @@ depends: libboost-optional == $
 depends: libboost-predef == $
 depends: libboost-preprocessor == $
 depends: libboost-smart-ptr == $
-depends: libboost-spirit == $
+depends:
+\
+libboost-spirit == $
+{
+  require
+  {
+    config.libboost_spirit.classic = true
+  }
+}
+\
 depends: libboost-static-assert == $
 depends: libboost-type-traits == $
 depends: libboost-unordered == $

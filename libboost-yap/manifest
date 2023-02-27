@@ -1,6 +1,7 @@
 : 1
 name: libboost-yap
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: An expression template library for C++14 and later
 license: BSL-1.0 ; Boost Software License 1.0.

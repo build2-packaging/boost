@@ -1,6 +1,7 @@
 : 1
 name: libboost-spirit
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: LL parser framework represents parsers directly as EBNF grammars in inlined C++
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -35,7 +36,7 @@ depends: libboost-pool == $
 depends: libboost-preprocessor == $
 depends: libboost-proto == $
 depends: libboost-range == $
-depends: libboost-regex == $
+depends: libboost-regex == $ ? ($config.libboost_spirit.classic_regex || $config.libboost_spirit.x2 || $config.libboost_spirit.x3)
 depends: libboost-smart-ptr == $
 depends: libboost-static-assert == $
 depends: libboost-thread == $

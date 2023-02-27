@@ -1,6 +1,7 @@
 : 1
 name: libboost-convert
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: An extendible and configurable type-conversion framework
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -25,5 +26,14 @@ depends: libboost-mpl == $
 depends: libboost-optional == $
 depends: libboost-parameter == $
 depends: libboost-range == $
-depends: libboost-spirit == $
+depends:
+\
+libboost-spirit == $
+{
+  require
+  {
+    config.libboost_spirit.x2 = true
+  }
+}
+\
 depends: libboost-type-traits == $

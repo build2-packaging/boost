@@ -1,6 +1,7 @@
 : 1
 name: libboost-fiber
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: (C++11) Userland threads library
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -1,6 +1,7 @@
 : 1
 name: libboost-tuple
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Ease definition of functions returning multiple values, and more
 license: BSL-1.0 ; Boost Software License 1.0.

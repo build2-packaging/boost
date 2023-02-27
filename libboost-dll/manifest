@@ -1,6 +1,7 @@
 : 1
 name: libboost-dll
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Library for comfortable work with DLL and DSO
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -24,7 +25,16 @@ depends: libboost-function == $
 depends: libboost-move == $
 depends: libboost-predef == $
 depends: libboost-smart-ptr == $
-depends: libboost-spirit == $
+depends:
+\
+libboost-spirit == $
+{
+  require
+  {
+    config.libboost_spirit.x3 = true
+  }
+}
+\
 depends: libboost-static-assert == $
 depends: libboost-system == $
 depends: libboost-throw-exception == $

@@ -1,6 +1,7 @@
 : 1
 name: libboost-throw-exception
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: A common infrastructure for throwing exceptions from Boost libraries
 license: BSL-1.0 ; Boost Software License 1.0.

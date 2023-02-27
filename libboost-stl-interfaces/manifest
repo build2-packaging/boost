@@ -1,6 +1,7 @@
 : 1
 name: libboost-stl-interfaces
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: C++14 and later CRTP templates for defining iterators, views, and containers
 license: BSL-1.0 ; Boost Software License 1.0.

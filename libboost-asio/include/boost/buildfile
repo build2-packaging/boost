@@ -9,12 +9,14 @@ import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-date-time%lib{boost_date_time}
 import intf_libs += libboost-exception%lib{boost_exception}
 import intf_libs += libboost-function%lib{boost_function}
-import intf_libs += libboost-regex%lib{boost_regex}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
+
+if $config.libboost_asio.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 
@@ -29,6 +31,10 @@ src_pfx = [dir_path] $src_root/include/
 #
 
 lib{boost_asio}: cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+
+if! $config.libboost_asio.regex
+  lib{boost_asio}: cxx.export.poptions += -DBOOST_ASIO_DISABLE_BOOST_REGEX
+
 lib{boost_asio}: cxx.export.libs = $intf_libs
 
 if ($cxx.target.class == 'windows')

@@ -1,6 +1,7 @@
 : 1
 name: libboost-asio
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Portable networking and other low-level I/O, including sockets, timers, hostname resolution, socket iostreams, serial ports, file descriptors and Windows HANDLEs
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -26,7 +27,7 @@ depends: libboost-core == $
 depends: libboost-date-time == $
 depends: libboost-exception == $
 depends: libboost-function == $
-depends: libboost-regex == $
+depends: libboost-regex == $ ? ($config.libboost_asio.regex)
 depends: libboost-smart-ptr == $
 depends: libboost-system == $
 depends: libboost-throw-exception == $

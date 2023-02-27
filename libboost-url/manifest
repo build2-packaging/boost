@@ -1,6 +1,7 @@
 : 1
 name: libboost-url
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: URL parsing in C++11
 license: BSL-1.0 ; Boost Software License 1.0.

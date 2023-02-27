@@ -1,6 +1,7 @@
 : 1
 name: libboost-function
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Function object wrappers for deferred calls or callbacks
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -1,6 +1,7 @@
 : 1
 name: libboost-property-map
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Concepts defining interfaces which map key objects to value objects
 license: BSL-1.0 ; Boost Software License 1.0.

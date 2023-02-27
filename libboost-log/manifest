@@ -1,6 +1,7 @@
 : 1
 name: libboost-log
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Logging library
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -48,7 +49,17 @@ depends: libboost-proto == $
 depends: libboost-range == $
 depends: libboost-regex == $
 depends: libboost-smart-ptr == $
-depends: libboost-spirit == $
+depends:
+\
+libboost-spirit == $
+{
+  require
+  {
+    config.libboost_spirit.classic = true
+    config.libboost_spirit.x2 = true
+  }
+}
+\
 depends: libboost-static-assert == $
 depends: libboost-system == $
 depends: libboost-thread == $

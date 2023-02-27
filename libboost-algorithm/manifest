@@ -1,6 +1,7 @@
 : 1
 name: libboost-algorithm
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: A collection of useful generic algorithms
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -27,7 +28,7 @@ depends: libboost-function == $
 depends: libboost-iterator == $
 depends: libboost-mpl == $
 depends: libboost-range == $
-depends: libboost-regex == $
+depends: libboost-regex == $ ? ($config.libboost_algorithm.regex)
 depends: libboost-static-assert == $
 depends: libboost-throw-exception == $
 depends: libboost-tuple == $

@@ -1,6 +1,7 @@
 : 1
 name: libboost-proto
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Expression template library and compiler construction toolkit for domain-specific embedded languages
 license: BSL-1.0 ; Boost Software License 1.0.

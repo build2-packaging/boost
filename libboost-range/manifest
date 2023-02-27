@@ -1,6 +1,7 @@
 : 1
 name: libboost-range
 version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: A new infrastructure for generic algorithms that builds on top of the new iterator concepts
 license: BSL-1.0 ; Boost Software License 1.0.
@@ -27,7 +28,7 @@ depends: libboost-iterator == $
 depends: libboost-mpl == $
 depends: libboost-optional == $
 depends: libboost-preprocessor == $
-depends: libboost-regex == $
+depends: libboost-regex == $ ? ($config.libboost_range.regex)
 depends: libboost-static-assert == $
 depends: libboost-tuple == $
 depends: libboost-type-traits == $

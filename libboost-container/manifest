@@ -1,6 +1,8 @@
 : 1
 name: libboost-container
 version: 1.81.0-a.0.z
+#language: c++
+#language: c
 project: boost
 summary: Standard library containers and extensions
 license: BSL-1.0 ; Boost Software License 1.0.
