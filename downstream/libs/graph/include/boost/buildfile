@@ -1,0 +1,23 @@
+# BEGIN MANUAL CUSTOMIZATION
+#
+graphviz_hdr = graph/detail/read_graphviz_spirit        \
+               graph/detail/read_graphviz_new           \
+               graph/graphviz
+
+pub_hdrs = hxx{** -{$graphviz_hdr}}
+
+if $config.libboost_graph.graphviz
+  pub_hdrs += hxx{$graphviz_hdr}
+#
+# END MANUAL CUSTOMIZATION
+
+./: $pub_hdrs
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

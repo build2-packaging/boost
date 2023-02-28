@@ -382,8 +382,10 @@ function ised () # <file-path> <sed-option>...
 # Load various overrides from the override file. See this file for the
 # overrides semantics.
 #
+declare -A config_vars=()
 declare -A manifest_url=()
 declare -A manifest_builds=()
+declare -A manifest_depends=()
 declare -A binless_libs=()
 declare -A cxx_only=()
 declare -A source_macro=()
@@ -636,6 +638,39 @@ function difference () # <A> <B>
   fi
 done
 
+# Return the `depends` manifest value for a dependency. Use overridden values
+# if defined (see `manifest_depends` in the `override` file).
+#
+# <pkg-name> is the build2 package name of the dependant.
+#
+# <dep-pkg-name> is the build2 package name of the dependency.
+#
+# <version-constraint> is the package version constraint.
+#
+function manifest_depends () # <pkg-name> <dep-pkg-name> <version-constraint>
+{
+  local pn="$1" # Package name.
+  local dn="$2" # Dependency package name.
+  local vc="$3" # Version constraint.
+
+  if [[ ! -v "manifest_depends[$pn:$dn]" ]]; then
+    # No overridden `depends` value.
+    #
+    echo " $dn$vc"
+  else
+    # We have an overridden `depends` value.
+    #
+    local depends="${manifest_depends[$pn:$dn]}"
+
+    if [[ "$depends" =~ .+$'\n'.+$'\n' ]]; then # Multi-line value.
+      depends="${depends//$'\n'/$'\\\n'}" # Precede each \n with a \ for sed.
+      echo '\n\\\n'"$dn$vc"'\n'"$depends"'\n\\'
+    else
+      echo " $dn$vc $depends"
+    fi
+  fi
+}
+
 # Add dependencies to a library's package manifest and buildfiles.
 #
 # The <manifest> and <buildfile> arguments are the paths to the files to
@@ -652,6 +687,11 @@ done
 #   libicuuc%lib{icuuc}^65.1.0
 #   libicuuc%lib{icudata}
 #   libicui18n%lib{icui18n}==65.1.0
+#
+# Note that dependencies in project-qualified format are library targets
+# within a project and thus there may be more than one per project. On the
+# other hand there can be only a single item per project in `boostdep` name
+# format.
 #
 # See the `override` file for more information.
 #
@@ -691,6 +731,8 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
         # comparison operator, also after it. (Ranges are not supported.)
         #
         dvc=" $(sed -Ee "s%(==|<|<=|>|>=)%\1 %" <<<"${BASH_REMATCH[3]}")"
+      elif [[ "$dpn" == libboost-* ]]; then
+        dvc=" == $"
       fi
     else
       # Dependency is in `boostdep` name format.
@@ -700,19 +742,23 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
       dvc=" == $"
     fi
 
-    # Append the current dependency to the package manifest in a new line
-    # unless it's already been added (in which case <deps> contains multiple
-    # targets from the same project/package).
+    # Append the current dependency to the package manifest unless it's
+    # already been added (in which case <deps> contains multiple targets from
+    # the same project/package).
     #
     if [[ ! "${mdeps[$dpn]}" ]]; then
+      local pn="${mf%/manifest}" # Derive package name from manifest path.
       mscr+=(-e "/^depends: \* bpkg/a\\
-depends: $dpn$dvc")
-
+depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
       mdeps["$dpn"]=true
     fi
 
     # Update the "(intf|impl)_libs = ..." Buildfile variable with the current
     # dependency.
+    #
+    # Skip conditional dependencies because their importation will be
+    # customized in the downstream buildfile. (Conditional dependencies will
+    # be overridden in `manifest_depends` with a value beginning with a `?`.)
     #
     # @@ TODO: make this conditional if the dependency is only required under
     #    some circumstances. For example, if a library only builds on Windows
@@ -729,16 +775,18 @@ depends: $dpn$dvc")
     #    Therefore we're deferring dealing with conditional dependencies until
     #    another, more pressing case arises.
     #
-    local dt="$dpn%lib\{$dln\}" # Dependency text.
-    if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
-      local a=" = " # The formatted assignment operator.
-      if [[ "${#deps[@]}" -gt 1 ]]; then
-        a="  = " # More deps coming, so adjust to align with " += "
-      fi
-      bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
-    else # Subsequent dependencies: update/append to variable.
-      bscr+=(-e "/^import $vn.*/a\\
+    if [[ "${manifest_depends[$pn:$dpn]}" != \?* ]]; then
+      local dt="$dpn%lib\{$dln\}" # Dependency text.
+      if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
+        local a=" = " # The formatted assignment operator.
+        if [[ "${#deps[@]}" -gt 1 ]]; then
+          a="  = " # More deps coming, so adjust to align with " += "
+        fi
+        bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
+      else # Subsequent dependencies: update/append to variable.
+        bscr+=(-e "/^import $vn.*/a\\
 import $vn += $dt")
+      fi
     fi
   done
 
@@ -746,7 +794,9 @@ import $vn += $dt")
   #
   if [[ "${#deps[@]}" -ne 0 ]]; then
     ised "$mf" "${mscr[@]}"
-    ised "$bf" "${bscr[@]}"
+    if [[ "${#bscr[@]}" -gt 0 ]]; then
+      ised "$bf" "${bscr[@]}"
+    fi
   fi
 }
 
@@ -878,6 +928,12 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
     ln -sf "../$udp/README.md" "$pn"
   fi
 
+  # Symlink the library's downstream PACKAGE-README.md if it exists.
+  #
+  if [[ -f "downstream/libs/$udn/PACKAGE-README.md" ]]; then
+    ln -sf "../downstream/libs/$udn/PACKAGE-README.md" "$pn"
+  fi
+
   # Remove the bdep-generated header.
   #
   rm "$pn/include/boost/${pn#lib}.$he"
@@ -896,8 +952,8 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
   # (which can only contain headers) or downstream/.../include/boost/<lib>.hpp
   # (the super-header) exist.
   #
-  if [[ -d "downstream/libs/$un/include/boost/$un" ||
-        -f "downstream/libs/$un/include/boost/$un.$he" ]]; then
+  if [[ -d "downstream/libs/$udn/include/boost/$udn" ||
+        -f "downstream/libs/$udn/include/boost/$un.$he" ]]; then
     # There are patched headers.
     #
     find "$udp/include/boost/" -type f -name "*.$he" | while read f; do
@@ -997,9 +1053,24 @@ builds: default\
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
   fi
 
+  # Comment out the `language` manifest value because it is not supported by
+  # the latest toolchain release.
+  #
+  # @@ TODO Remove this once the 0.16.0 toolchain has been released.
+  #
+  ised_ops+=(-e 's%(^language:)%#\1%')
+
   # Fix up the package manifest.
   #
   ised "$pn/manifest" "${ised_ops[@]}"
+
+  # Fix up the package's root buildfile.
+  #
+  # Add doc{PACKAGE-README.md} to the package's root buildfile if it exists.
+  #
+  if [[ -e "$pn/PACKAGE-README.md" ]]; then
+    ised "$pn/buildfile" -e 's%(./:.*manifest.*)%\1 doc{PACKAGE-README.md}%'
+  fi
 
   # If this library has any custom buildfiles, copy them over the
   # bdep-generated ones (before we modify them).
@@ -1073,6 +1144,30 @@ intf_libs = $cxx.deduplicate_export_libs($intf_libs)'
   add_deps "$pn/manifest" "$lib_bfile" \
            "${nonboost_impl_deps[$pn]} ${impl_deps[$pn]}" \
            "impl_libs"
+
+  # Add project configuration variables to root.build.
+  #
+  # The value for each library is a space-separated set of `<name>=<value>`
+  # pairs. For each pair, append `config [bool] config.libboost_foo.<name> ?=
+  # <value>` to root.build.
+  #
+  if [[ -v "config_vars[$pn]" ]]; then
+    vars=(${config_vars["$pn"]})
+
+    f="$pn/build/root.build" # Path to root.build.
+
+    echo >> "$f"
+    for var in "${vars[@]}"; do
+      if [[ "$var" =~ (.+)=(.+) ]]; then
+        vn="${BASH_REMATCH[1]}" # Variable name.
+        vv="${BASH_REMATCH[2]}" # Variable value.
+
+        echo "config [bool] config.${pn/-/_}.$vn ?= $vv" >> "$f"
+      else
+        error "invalid project configuration variable/value: '$var'"
+      fi
+    done
+  fi
 
   # Make a number of changes to the library buildfile in a batch.
   #
