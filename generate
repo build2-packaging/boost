@@ -382,8 +382,10 @@ function ised () # <file-path> <sed-option>...
 # Load various overrides from the override file. See this file for the
 # overrides semantics.
 #
+declare -A config_vars=()
 declare -A manifest_url=()
 declare -A manifest_builds=()
+declare -A manifest_depends=()
 declare -A binless_libs=()
 declare -A cxx_only=()
 declare -A source_macro=()
@@ -653,6 +655,11 @@ done
 #   libicuuc%lib{icudata}
 #   libicui18n%lib{icui18n}==65.1.0
 #
+# Note that dependencies in project-qualified format are library targets
+# within a project and thus there may be more than one per project. On the
+# other hand there can be only a single item per project in `boostdep` name
+# format.
+#
 # See the `override` file for more information.
 #
 # The <bf-var> argument is the name of the buildfile variable to modify:
@@ -691,6 +698,8 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
         # comparison operator, also after it. (Ranges are not supported.)
         #
         dvc=" $(sed -Ee "s%(==|<|<=|>|>=)%\1 %" <<<"${BASH_REMATCH[3]}")"
+      elif [[ "$dpn" == libboost-* ]]; then
+        dvc=" == $"
       fi
     else
       # Dependency is in `boostdep` name format.
@@ -997,6 +1006,13 @@ builds: default\
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
   fi
 
+  # Comment out the `language` manifest value because it is not supported by
+  # the latest toolchain release.
+  #
+  # @@ TODO Remove this once the 0.16.0 toolchain has been released.
+  #
+  ised_ops+=(-e 's%(^language:)%#\1%')
+
   # Fix up the package manifest.
   #
   ised "$pn/manifest" "${ised_ops[@]}"
@@ -1073,6 +1089,86 @@ intf_libs = $cxx.deduplicate_export_libs($intf_libs)'
   add_deps "$pn/manifest" "$lib_bfile" \
            "${nonboost_impl_deps[$pn]} ${impl_deps[$pn]}" \
            "impl_libs"
+
+  # Add project configuration variables to root.build.
+  #
+  # The value for each library is a space-separated set of `<name>=<value>`
+  # pairs. For each pair, append `config [bool] config.libboost_foo.<name> ?=
+  # <value>` to root.build.
+  #
+  if [[ -v "config_vars[$pn]" ]]; then
+    vars=(${config_vars["$pn"]})
+
+    f="$pn/build/root.build" # Path to root.build.
+
+    echo >> "$f"
+    for var in "${vars[@]}"; do
+      if [[ "$var" =~ (.+)=(.+) ]]; then
+        vn="${BASH_REMATCH[1]}" # Variable name.
+        vv="${BASH_REMATCH[2]}" # Variable value.
+
+        echo "config [bool] config.${pn/-/_}.$vn ?= $vv" >> "$f"
+      else
+        error "invalid project configuration variable/value: '$var'"
+      fi
+    done
+  fi
+
+  # Update the manifest with overridden `depends` manifest values and, for
+  # conditional dependencies, remove their importation from the buildfile
+  # (inserted by add_deps() above, originating from `boostdep`) because their
+  # importation will be customized in the downstream buildfile.
+  #
+  # @@ It would have been cleaner to not generate the import in the first
+  #    place. This way we won't have to make assumptions like them not being
+  #    indented, etc.
+  #
+  man_ised_ops=() # Sed scripts with which to edit the manifest.
+  bf_ised_ops=()  # Sed scripts with which to edit the buildfile.
+
+  # The keys are of the form `<dependant>:<dependency>`.
+  #
+  for k in "${!manifest_depends[@]}"; do
+    # Skip other libraries (dependants).
+    #
+    if [[ ! "$k" =~ "$pn":(.+) ]]; then
+      continue
+    fi
+
+    depname="${BASH_REMATCH[1]}"      # Dependency name.
+    depends="${manifest_depends[$k]}" # Text of the `depends` manifest value.
+
+    if [[ "$depends" == \?* ]]; then
+      # Conditional dependency so remove from the buildfile the instance
+      # inserted by add_deps(). Assume all custom import instances will be
+      # indented (because they are conditional) and thus they will be skipped.
+      #
+      bf_ised_ops+=(-e /"^import.+$depname.+"/d)
+    fi
+
+    repl= # Replacement portion of the `s%%%` sed command.
+    if [[ "$depends" =~ .+$'\n'.+$'\n' ]]; then
+      # Multi-line `depends` value.
+      #
+      depends="${depends//$'\n'/$'\\\n'}" # Precede each \n with a \ for sed.
+      repl='depends:\n\\\n\1\n'"$depends"'\n\\'
+    else
+      # Single-line `depends` value.
+      #
+      repl="depends: \1 $depends"
+    fi
+
+    man_ised_ops+=(-e s%"depends: ($depname == .+)"%"$repl"%)
+  done
+
+  # Edit the manifest and buildfile.
+  #
+  if [[ "${#man_ised_ops[@]}" -gt 0 ]]; then
+    ised "$pn/manifest" "${man_ised_ops[@]}"
+  fi
+  if [[ "${#bf_ised_ops[@]}" -gt 0 ]]; then
+    ised "$lib_bfile" "${bf_ised_ops[@]}"
+  fi
 
   # Make a number of changes to the library buildfile in a batch.
   #
