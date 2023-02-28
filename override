@@ -1,3 +1,22 @@
+## config_vars
+##
+## Project configuration variables.
+##
+## Each value is a space-separated list of <variable-name>=<default-value>
+## pairs.
+
+config_vars["libboost-algorithm"]="regex=false"
+config_vars["libboost-asio"]="regex=false"
+config_vars["libboost-graph"]="graphviz=false"
+config_vars["libboost-iostreams"]="regex=false"
+config_vars["libboost-range"]="regex=false"
+config_vars["libboost-spirit"]="\
+classic=false                   \
+classic_regex=false             \
+x2=false                        \
+x3=false                        \
+"
+
 ## manifest_url
 ##
 ## The url package manifest value overrides.
@@ -23,6 +42,70 @@ manifest_builds["libboost-winapi"]=\
 
 manifest_builds["libboost-config"]=\
 "default ; Performs platform sanity checks."
+
+## manifest_depends
+##
+## Overrides for one or more dependencies' `depends` manifest values.
+##
+## The keys are of the form `<dependant>:<dependency>`.
+##
+## Each value will be inserted unmodified into the `depends` value. The
+## existing version constraints will be preserved.
+##
+
+manifest_depends["libboost-algorithm:libboost-regex"]=\
+'? ($config.libboost_algorithm.regex)'
+
+manifest_depends["libboost-asio:libboost-regex"]=\
+'? ($config.libboost_asio.regex)'
+
+manifest_depends["libboost-convert:libboost-spirit"]=\
+'{
+  require
+  {
+    config.libboost_spirit.x2 = true
+  }
+}'
+
+manifest_depends["libboost-dll:libboost-spirit"]=\
+'{
+  require
+  {
+    config.libboost_spirit.x3 = true
+  }
+}'
+
+manifest_depends["libboost-graph:libboost-regex"]=\
+'? ($config.libboost_graph.graphviz)'
+
+manifest_depends["libboost-graph:libboost-spirit"]=\
+'? ($config.libboost_graph.graphviz)'
+
+manifest_depends["libboost-log:libboost-spirit"]=\
+'{
+  require
+  {
+    config.libboost_spirit.classic = true
+    config.libboost_spirit.x2 = true
+  }
+}'
+
+manifest_depends["libboost-iostreams:libboost-regex"]=\
+'? ($config.libboost_iostreams.regex)'
+
+manifest_depends["libboost-range:libboost-regex"]=\
+'? ($config.libboost_range.regex)'
+
+manifest_depends["libboost-serialization:libboost-spirit"]=\
+'{
+  require
+  {
+    config.libboost_spirit.classic = true
+  }
+}'
+
+manifest_depends["libboost-spirit:libboost-regex"]=\
+'? ($config.libboost_spirit.classic_regex || $config.libboost_spirit.x2 || $config.libboost_spirit.x3)'
 
 ## binless_libs
 ##
@@ -157,7 +240,13 @@ include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 include_headers["libboost-outcome"]="outcome.hpp"
 
 include_headers["libboost-ratio"]="ratio.hpp"
-include_headers["libboost-spirit"]="spirit/include/classic.hpp"
+
+# One day we can handle this by exporting metadata about which components
+# are enabled (like we do in libevent). Currently this is tested indirectly
+# by other libraries that depend on spirit.
+#
+#include_headers["libboost-spirit"]="spirit/include/classic.hpp"
+
 include_headers["libboost-stacktrace"]="stacktrace.hpp"
 include_headers["libboost-static-string"]="static_string/static_string.hpp"
 include_headers["libboost-test"]="test/unit_test.hpp"

@@ -1,5 +1,12 @@
 intf_libs = # Interface dependencies.
 impl_libs = # Implementation dependencies.
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_iostreams.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
+#
+# END MANUAL CUSTOMIZATION
 #import xxxx_libs += libhello%lib{hello}
 
 # Public headers.

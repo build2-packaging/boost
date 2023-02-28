@@ -1,0 +1,72 @@
+intf_libs = # Interface dependencies.
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_graph.graphviz
+{
+  import intf_libs += libboost-spirit%lib{boost_spirit}
+  import impl_libs  = libboost-regex%lib{boost_regex}
+}
+#
+# END MANUAL CUSTOMIZATION
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_graph}: $pub/{$pub_hdrs}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+# Private headers and sources as well as dependencies.
+#
+lib{boost_graph}: {hxx ixx txx cxx}{** -read_graphviz_new} \
+  $impl_libs $intf_libs
+
+lib{boost_graph}: cxx{read_graphviz_new}: \
+  include = $config.libboost_graph.graphviz
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_GRAPH_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_GRAPH_DYN_LINK
+
+# Export options.
+#
+lib{boost_graph}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_GRAPH_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_graph}: cxx.export.poptions += -DBOOST_GRAPH_STATIC_LINK
+libs{boost_graph}: cxx.export.poptions += -DBOOST_GRAPH_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_graph}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost_graph}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

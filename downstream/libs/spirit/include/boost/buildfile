@@ -1,0 +1,73 @@
+intf_libs = # Interface dependencies.
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if ($config.libboost_spirit.classic_regex || \
+    $config.libboost_spirit.x2            || \
+    $config.libboost_spirit.x3)
+  import intf_libs = libboost-regex%lib{boost_regex}
+#
+# END MANUAL CUSTOMIZATION
+#import xxxx_libs += libhello%lib{hello}
+
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Spirit Classic headers.
+#
+lib{boost_spirit}: spirit/home/hxx{classic}                             \
+                   spirit/home/classic/{hxx ixx}{** -utility/regex}     \
+                   spirit/include/hxx{classic* -classic_regex}:         \
+  include = $config.libboost_spirit.classic
+
+# Spirit Classic: regex-specific headers.
+#
+lib{boost_spirit}: spirit/home/classic/utility/hxx{regex}       \
+                   spirit/include/hxx{classic_regex} :          \
+  include = $config.libboost_spirit.classic_regex
+
+# Support headers.
+#
+lib{boost_spirit}: spirit/home/hxx{support}                     \
+                   spirit/home/support/hxx{**}                  \
+                   spirit/include/hxx{support support_*} :      \
+  include = ($config.libboost_spirit.x2 || $config.libboost_spirit.x3)
+
+# Spirit V2 headers.
+#
+lib{boost_spirit}: spirit/hxx{version include/version}                  \
+                   spirit/home/hxx{karma lex qi}                        \
+                   spirit/home/hxx{karma/** lex/** qi/**}               \
+                   spirit/include/hxx{karma* lex* phoenix* qi*}:        \
+  include = $config.libboost_spirit.x2
+
+# Spirit X3 headers.
+#
+lib{boost_spirit}: spirit/home/hxx{x3 x3/**}: \
+  include = $config.libboost_spirit.x3
+
+lib{boost_spirit}: $intf_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_spirit}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
