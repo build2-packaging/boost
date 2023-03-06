@@ -887,6 +887,12 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
     ln -sf "../$udp/README.md" "$pn"
   fi
 
+  # Symlink the library's downstream PACKAGE-README.md if it exists.
+  #
+  if [[ -f "downstream/libs/$udn/PACKAGE-README.md" ]]; then
+    ln -sf "../downstream/libs/$udn/PACKAGE-README.md" "$pn"
+  fi
+
   # Remove the bdep-generated header.
   #
   rm "$pn/include/boost/${pn#lib}.$he"
@@ -905,8 +911,8 @@ for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
   # (which can only contain headers) or downstream/.../include/boost/<lib>.hpp
   # (the super-header) exist.
   #
-  if [[ -d "downstream/libs/$un/include/boost/$un" ||
-        -f "downstream/libs/$un/include/boost/$un.$he" ]]; then
+  if [[ -d "downstream/libs/$udn/include/boost/$udn" ||
+        -f "downstream/libs/$udn/include/boost/$un.$he" ]]; then
     # There are patched headers.
     #
     find "$udp/include/boost/" -type f -name "*.$he" | while read f; do
