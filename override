@@ -204,6 +204,41 @@ source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
 source_macro["libboost-stacktrace"]=true
 
+## boost_intf_deps
+##
+## Boost interface dependencies.
+##
+## Override the default/computed name of the library target to import from a
+## Boost interface dependency. (The default target for project libboost-foo
+## would be lib{foo}.).
+##
+## Each value is a space-separated list of dependencies in the Buildfile
+## project-qualified target format, optionally with a package version
+## constraint appended (a default of ` == $` will be appended if absent). More
+## than one library target can be specified per project.
+##
+boost_intf_deps["libboost-serialization"]=" \
+libboost-spirit%lib{boost_spirit_classic}   \
+"
+
+boost_intf_deps["libboost-convert"]=" \
+libboost-spirit%lib{boost_spirit_x2}  \
+"
+
+boost_intf_deps["libboost-dll"]="    \
+libboost-spirit%lib{boost_spirit_x3} \
+"
+
+boost_intf_deps["libboost-log"]="         \
+libboost-spirit%lib{boost_spirit_classic} \
+libboost-spirit%lib{boost_spirit_x2}      \
+"
+
+## boost_impl_deps
+##
+## Boost implementation dependencies.
+##
+
 ## nonboost_intf_deps
 ##
 ## Non-Boost interface dependencies.

@@ -389,6 +389,8 @@ declare -A manifest_depends=()
 declare -A binless_libs=()
 declare -A cxx_only=()
 declare -A source_macro=()
+declare -A boost_intf_deps=()
+declare -A boost_impl_deps=()
 declare -A nonboost_intf_deps=()
 declare -A nonboost_impl_deps=()
 declare -A include_headers=()
@@ -678,6 +680,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
   local mscr=()     # Sed scripts for the package manifest.
   local bscr=()     # Sed scripts for the library buildfile.
   local -A mdeps=() # Dependency project names already added to the manifest.
+  local -A bdeps=() # Dependency project names already added to the buildfile.
 
   local i
   for i in "${!deps[@]}"; do
@@ -686,6 +689,8 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
     local dpn= # Dependency package name.
     local dln= # Dependency library name.
     local dvc= # Dependency version constraint.
+
+    local boostdep= # True if this dependency is in `boostdep` name format.
 
     if [[ "$d" =~ ^(.+)'%lib{'(.+)'}'(.+)?$ ]]; then
       # Dependency is in project-qualified target format.
@@ -698,10 +703,13 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
         # comparison operator, also after it. (Ranges are not supported.)
         #
         dvc=" $(sed -Ee "s%(==|<|<=|>|>=)%\1 %" <<<"${BASH_REMATCH[3]}")"
+      elif [[ "$dpn" == libboost-* ]]; then
+        dvc=" == $"
       fi
     else
       # Dependency is in `boostdep` name format.
       #
+      boostdep=true
       dpn="$(pkg_name "$d")"
       dln="boost_$(upstream_name "$d")"
       dvc=" == $"
@@ -721,6 +729,10 @@ depends: $dpn$dvc")
     # Update the "(intf|impl)_libs = ..." Buildfile variable with the current
     # dependency.
     #
+    # Don't add it if it's in `boostdep` name format and has already been seen
+    # (which would be the case if the library target to import has been
+    # overridden, for example).
+    #
     # @@ TODO: make this conditional if the dependency is only required under
     #    some circumstances. For example, if a library only builds on Windows
     #    then do not depend on it if on Linux. Maybe we can reuse the
@@ -736,16 +748,20 @@ depends: $dpn$dvc")
     #    Therefore we're deferring dealing with conditional dependencies until
     #    another, more pressing case arises.
     #
-    local dt="$dpn%lib\{$dln\}" # Dependency text.
-    if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
-      local a=" = " # The formatted assignment operator.
-      if [[ "${#deps[@]}" -gt 1 ]]; then
-        a="  = " # More deps coming, so adjust to align with " += "
-      fi
-      bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
-    else # Subsequent dependencies: update/append to variable.
-      bscr+=(-e "/^import $vn.*/a\\
+    if [[ ! "$boostdep" || ! "${bdeps[$dpn]}" ]]; then
+      local dt="$dpn%lib\{$dln\}" # Dependency text.
+      if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
+        local a=" = " # The formatted assignment operator.
+        if [[ "${#deps[@]}" -gt 1 ]]; then
+          a="  = " # More deps coming, so adjust to align with " += "
+        fi
+        bscr+=(-e "s/^$vn = #.*/import $vn$a$dt/")
+      else # Subsequent dependencies: update/append to variable.
+        bscr+=(-e "/^import $vn.*/a\\
 import $vn += $dt")
+      fi
+
+      bdeps["$dpn"]=true
     fi
   done
 
@@ -1081,11 +1097,14 @@ intf_libs = $cxx.deduplicate_export_libs($intf_libs)'
 
   # Add dependencies to the package manifest and the library buildfile.
   #
+  # Note: put `boost_{intf,impl}_deps` before `{intf,impl}_deps` to ensure
+  # they override the boostdep dependencies.
+  #
   add_deps "$pn/manifest" "$lib_bfile" \
-           "${nonboost_intf_deps[$pn]} ${intf_deps[$pn]}" \
+           "${nonboost_intf_deps[$pn]} ${boost_intf_deps[$pn]} ${intf_deps[$pn]}" \
            "intf_libs"
   add_deps "$pn/manifest" "$lib_bfile" \
-           "${nonboost_impl_deps[$pn]} ${impl_deps[$pn]}" \
+           "${nonboost_impl_deps[$pn]} ${boost_impl_deps[$pn]} ${impl_deps[$pn]}" \
            "impl_libs"
 
   # Add project configuration variables to root.build.
