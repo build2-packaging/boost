@@ -1,4 +1,7 @@
 intf_libs = # Interface dependencies.
+
+if $config.libboost_asio.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
 #import xxxx_libs += libhello%lib{hello}
 
 lib{boost-asio}: {hxx ixx txx}{**} $intf_libs
@@ -12,6 +15,10 @@ src_pfx = [dir_path] $src_root/include/
 #
 
 lib{boost-asio}: cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+
+if! $config.libboost_asio.regex
+  lib{boost_asio}: cxx.export.poptions += -DBOOST_ASIO_DISABLE_BOOST_REGEX
+
 lib{boost-asio}: cxx.export.libs = $intf_libs
 
 if ($cxx.target.class == 'windows')

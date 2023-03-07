@@ -1,0 +1,4 @@
+# No libraries because all libboost-spirit libraries are disabled by default.
+#
+
+exe{driver}: cxx{driver}

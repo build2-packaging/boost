@@ -1,0 +1,36 @@
+intf_libs = # Interface dependencies.
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_range.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
+#
+# END MANUAL CUSTOMIZATION
+#import xxxx_libs += libhello%lib{hello}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+lib{boost_range}: {hxx}{** -range/adaptor/tokenized} $intf_libs
+lib{boost_range}: {hxx}{range/adaptor/tokenized}: include = $config.libboost_range.regex
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_range}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

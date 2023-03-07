@@ -1,0 +1,19 @@
+# BEGIN MANUAL CUSTOMIZATION
+#
+pub_hdrs = {hxx ixx txx}{** -{iostreams/filter/grep iostreams/filter/regex}}
+
+if $config.libboost_iostreams.regex
+  pub_hdrs += iostreams/filter/hxx{grep regex}
+#
+# END MANUAL CUSTOMIZATION
+
+./: $pub_hdrs
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
