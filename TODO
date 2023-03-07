@@ -1,3 +1,7 @@
+Once build2 0.16.0 is out with package-description manifest value support:
+
+  Add this value for packages with PACKAGE-README.md in downstream/.
+
 On the release:
 
   Remove
