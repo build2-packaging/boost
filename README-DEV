@@ -1268,10 +1268,8 @@ boost::urls::encoding_opts)' definition is marked dllimport".
 
 Apparently mingw g++ simply does not accept dllimport on inline functions.
 
-I found multiple instances online where this was resolved by removing the
-dllimport or making the function non-inline. Here is a relatively recent
-instance in another boost library:
-https://lists.boost.org/Archives/boost/2017/08/238303.php
+This has been fixed in the following as-of-yet unreleased commit:
+https://github.com/boostorg/url/commit/c3a70873d63affc5735f918dfbf94416799d7399
 
 3. Boost upstream upgrade procedure
 
