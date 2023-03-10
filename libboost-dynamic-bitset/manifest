@@ -1,21 +1,22 @@
 : 1
 name: libboost-dynamic-bitset
-version: 1.78.0
+version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: The dynamic_bitset class represents a set of bits. It provides accesses to the value of individual bits via an operator[] and provides all of the bitwise operators that one can apply to builtin integers, such as operatorsummary: boost-dynamic-bitset C++ library and operator<<. The number of bits in the set is specified at runtime via a parameter to the constructor of the dynamic_bitset
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/dynamic_bitset
-doc-url: https://www.boost.org/doc/libs/1_78_0/libs/dynamic_bitset
+doc-url: https://www.boost.org/doc/libs/1_81_0/libs/dynamic_bitset
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.14.0
-depends: * bpkg >= 0.14.0
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
 depends: libboost-assert == $
 depends: libboost-config == $
 depends: libboost-container-hash == $

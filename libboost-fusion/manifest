@@ -1,24 +1,26 @@
 : 1
 name: libboost-fusion
-version: 1.78.0
+version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Library for working with tuples, including various containers, algorithms, etc
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/fusion
-doc-url: https://www.boost.org/doc/libs/1_78_0/libs/fusion
+doc-url: https://www.boost.org/doc/libs/1_81_0/libs/fusion
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.14.0
-depends: * bpkg >= 0.14.0
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
 depends: libboost-config == $
 depends: libboost-container-hash == $
 depends: libboost-core == $
 depends: libboost-function-types == $
+depends: libboost-functional == $
 depends: libboost-mpl == $
 depends: libboost-preprocessor == $
 depends: libboost-static-assert == $

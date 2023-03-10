@@ -1,19 +1,20 @@
 : 1
 name: libboost-winapi
-version: 1.78.0
+version: 1.81.0-a.0.z
+#language: c++
 project: boost
 summary: Windows API abstraction layer
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/winapi
-doc-url: https://www.boost.org/doc/libs/1_78_0/libs/winapi
+doc-url: https://www.boost.org/doc/libs/1_81_0/libs/winapi
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: &windows ; Provides Windows API declarations.
-depends: * build2 >= 0.14.0
-depends: * bpkg >= 0.14.0
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
 depends: libboost-config == $
 depends: libboost-predef == $

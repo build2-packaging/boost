@@ -10,6 +10,7 @@ import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import impl_libs  = libboost-atomic%lib{boost_atomic}
 import impl_libs += libboost-predef%lib{boost_predef}
+import impl_libs += libboost-throw-exception%lib{boost_throw_exception}
 import impl_libs += libboost-winapi%lib{boost_winapi}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
@@ -24,9 +25,22 @@ pub_hdrs = $($pub/ pub_hdrs)
 
 lib{boost_filesystem}: $pub/{$pub_hdrs}
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+tclass  = $cxx.target.class
+tsys    = $cxx.target.system
+
 # Private headers and sources as well as dependencies.
 #
-lib{boost_filesystem}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+lib{boost_filesystem}: {hxx ixx txx cxx}{** -windows_file_codecvt} \
+                       $impl_libs $intf_libs
+
+lib{boost_filesystem}: {hxx cxx}{windows_file_codecvt}: \
+  include = ($tclass == 'windows')
+
+#
+# END MANUAL CUSTOMIZATION
 
 # Build options.
 #
@@ -44,9 +58,6 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 # BEGIN MANUAL CUSTOMIZATION
 #
-
-tclass  = $cxx.target.class
-tsys    = $cxx.target.system
 
 # Unless BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF is defined, Boost.Filesystem
 # uses std::atomic_ref which is currently not well supported by standard
@@ -74,30 +85,40 @@ if ($cxx.class == 'gcc' && $tclass != 'macos')
 # only used in operations.cpp, the upstream build defines it globally so copy
 # them.
 #
+# BOOST_FILESYSTEM_HAS_POSIX_AT_APIS: Define if the system supports functions
+# like openat, unlinkat, renameat, etc. (see
+# config/has_posix_at_apis.cpp). Note that although the BSDs and macOS have
+# these functions they do not support the AT_NO_AUTOMOUNT flag.
+#
 switch $tclass, $tsys
 {
   # The statx(2) syscall was added in Linux 4.11 in 2017 and statx() was added
   # to glibc 2.28 in 2018.
   #
   case 'linux'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW   \
+                    -DBOOST_FILESYSTEM_HAS_POSIX_AT_APIS        \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE      \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
                     # -DBOOST_FILESYSTEM_HAS_STATX_SYSCALL \
                     # -DBOOST_FILESYSTEM_HAS_STATX
 
   case 'bsd', 'freebsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM     \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW   \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM     \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE      \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
 
   case 'bsd', 'openbsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW   \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE      \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIM
 
   case 'bsd', 'netbsd'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC     \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW           \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC        \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE              \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC
 
   # The `st_birthtimespec` field is only present if inode_t is 64 bits in size
   # (_DARWIN_FEATURE_64_BIT_INODE is defined). Given that 64-bit (by-default;
@@ -105,9 +126,10 @@ switch $tclass, $tsys
   # 2009 with Mac OSX 10.6 Snow Leopard, assume `st_birthtimespec` is present.
   #
   case 'macos'
-    cxx.poptions += -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC     \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC \
-                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE
+    cxx.poptions += -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW           \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC        \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE              \
+                    -DBOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC
 
   case 'windows', 'mingw32'
   {

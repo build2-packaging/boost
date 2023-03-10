@@ -10,15 +10,26 @@ import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
-import intf_libs += libboost-regex%lib{boost_regex}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-tuple%lib{boost_tuple}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_range.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
+#
+# END MANUAL CUSTOMIZATION
+
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 
-lib{boost_range}: {hxx ixx txx}{**} $intf_libs
+# BEGIN MANUAL CUSTOMIZATION
+#
+lib{boost_range}: {hxx}{** -range/adaptor/tokenized} $intf_libs
+lib{boost_range}: {hxx}{range/adaptor/tokenized}: include = $config.libboost_range.regex
+#
+# END MANUAL CUSTOMIZATION
 
 # Export options.
 #

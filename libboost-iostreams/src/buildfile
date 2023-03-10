@@ -9,7 +9,6 @@ import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-random%lib{boost_random}
 import intf_libs += libboost-range%lib{boost_range}
-import intf_libs += libboost-regex%lib{boost_regex}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
@@ -18,6 +17,13 @@ import intf_libs += libboost-utility%lib{boost_utility}
 import impl_libs  = libz%lib{z}
 import impl_libs += libbzip2%lib{bzip2}
 import impl_libs += libboost-numeric-conversion%lib{boost_numeric_conversion}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_iostreams.regex
+  import intf_libs += libboost-regex%lib{boost_regex}
+#
+# END MANUAL CUSTOMIZATION
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

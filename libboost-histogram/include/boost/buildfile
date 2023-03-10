@@ -1,5 +1,6 @@
 import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-math%lib{boost_math}
 import intf_libs += libboost-mp11%lib{boost_mp11}
 import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}

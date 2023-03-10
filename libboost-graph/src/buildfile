@@ -28,7 +28,6 @@ import intf_libs += libboost-random%lib{boost_random}
 import intf_libs += libboost-range%lib{boost_range}
 import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
-import intf_libs += libboost-spirit%lib{boost_spirit}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-tti%lib{boost_tti}
@@ -38,7 +37,16 @@ import intf_libs += libboost-typeof%lib{boost_typeof}
 import intf_libs += libboost-unordered%lib{boost_unordered}
 import intf_libs += libboost-utility%lib{boost_utility}
 import intf_libs += libboost-xpressive%lib{boost_xpressive}
-import impl_libs = libboost-regex%lib{boost_regex}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_graph.graphviz
+{
+  import intf_libs += libboost-spirit%lib{boost_spirit}
+  import impl_libs  = libboost-regex%lib{boost_regex}
+}
+#
+# END MANUAL CUSTOMIZATION
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 
@@ -52,9 +60,17 @@ pub_hdrs = $($pub/ pub_hdrs)
 
 lib{boost_graph}: $pub/{$pub_hdrs}
 
+# BEGIN MANUAL CUSTOMIZATION
+#
 # Private headers and sources as well as dependencies.
 #
-lib{boost_graph}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+lib{boost_graph}: {hxx ixx txx cxx}{** -read_graphviz_new} \
+  $impl_libs $intf_libs
+
+lib{boost_graph}: cxx{read_graphviz_new}: \
+  include = $config.libboost_graph.graphviz
+#
+# END MANUAL CUSTOMIZATION
 
 # Build options.
 #

@@ -1,3 +1,4 @@
-import libs = libboost-spirit%lib{boost_spirit}
+# No libraries because all libboost-spirit libraries are disabled by default.
+#
 
-exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
+exe{driver}: cxx{driver}

@@ -1,0 +1,66 @@
+import intf_libs  = libboost-align%lib{boost_align}
+import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-mp11%lib{boost_mp11}
+import intf_libs += libboost-optional%lib{boost_optional}
+import intf_libs += libboost-static-assert%lib{boost_static_assert}
+import intf_libs += libboost-system%lib{boost_system}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
+import intf_libs += libboost-variant2%lib{boost_variant2}
+impl_libs = # Implementation dependencies.
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_url}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_url}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+{hbmia obja}{*}: cxx.poptions += -DBOOST_URL_STATIC_LINK
+{hbmis objs}{*}: cxx.poptions += -DBOOST_URL_DYN_LINK
+
+# Export options.
+#
+lib{boost_url}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_URL_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_url}: cxx.export.poptions += -DBOOST_URL_STATIC_LINK
+libs{boost_url}: cxx.export.poptions += -DBOOST_URL_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_url}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost_url}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false
