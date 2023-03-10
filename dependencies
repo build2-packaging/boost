@@ -8,15 +8,15 @@ any: assert config core static_assert throw_exception type_index type_traits
 any:
 array: assert config core static_assert throw_exception
 array:
-asio: align array assert bind chrono config core coroutine date_time function regex smart_ptr system throw_exception type_traits utility
+asio: align array assert bind chrono config context core coroutine date_time exception function regex smart_ptr system throw_exception type_traits utility
 asio:
 assert: config
 assert:
-assign: array config core move mpl preprocessor ptr_container range static_assert throw_exception tuple type_traits
+assign: array config core move preprocessor ptr_container range static_assert throw_exception tuple type_traits
 assign:
-atomic: assert config static_assert type_traits winapi
-atomic: align predef preprocessor
-beast: asio assert bind config container container_hash core endian intrusive logic mp11 optional smart_ptr static_assert system throw_exception type_index type_traits utility winapi
+atomic: assert config predef static_assert type_traits winapi
+atomic: align preprocessor
+beast: asio assert bind config container container_hash core endian intrusive logic mp11 optional preprocessor smart_ptr static_assert static_string system throw_exception type_index type_traits winapi
 beast:
 bimap: concept_check config container_hash core iterator lambda mpl multi_index preprocessor serialization static_assert throw_exception type_traits utility
 bimap:
@@ -38,7 +38,7 @@ config:
 config:
 container: assert config core intrusive move static_assert type_traits winapi
 container:
-container_hash: assert config core detail integer static_assert type_traits
+container_hash: config describe mp11 type_traits
 container_hash:
 context: assert config core mp11 pool predef smart_ptr
 context:
@@ -73,7 +73,7 @@ exception:
 fiber: assert config context core intrusive predef smart_ptr
 fiber: algorithm filesystem format
 filesystem: assert config container_hash core detail io iterator smart_ptr system type_traits
-filesystem: atomic predef winapi
+filesystem: atomic predef throw_exception winapi
 flyweight: assert config container_hash core detail interprocess mpl multi_index parameter preprocessor serialization smart_ptr throw_exception type_traits
 flyweight:
 foreach: config core iterator mpl range type_traits
@@ -86,11 +86,11 @@ function_types: config core detail mpl preprocessor type_traits
 function_types:
 functional: config core function function_types mpl preprocessor type_traits typeof utility
 functional:
-fusion: config container_hash core function_types mpl preprocessor static_assert tuple type_traits typeof utility
+fusion: config container_hash core function_types functional mpl preprocessor static_assert tuple type_traits typeof utility
 fusion:
 geometry: algorithm any array assert concept_check config container core function_types fusion integer iterator lexical_cast math move mpl multiprecision numeric~conversion polygon qvm range rational serialization smart_ptr static_assert thread throw_exception tokenizer tuple type_traits utility variant variant2
 geometry:
-gil: assert concept_check config core filesystem integer iterator mp11 numeric~conversion preprocessor variant2
+gil: assert concept_check config container_hash core filesystem integer iterator mp11 preprocessor type_traits variant2
 gil:
 graph: algorithm any array assert bimap bind concept_check config container_hash conversion core detail foreach function integer iterator lexical_cast math move mpl multi_index optional parameter preprocessor property_map property_tree random range serialization smart_ptr spirit static_assert throw_exception tti tuple type_traits typeof unordered utility xpressive
 graph: regex
@@ -100,13 +100,13 @@ hana: config core fusion mpl tuple
 hana:
 heap: array assert bind concept_check config core intrusive iterator parameter static_assert throw_exception type_traits
 heap:
-histogram: config core mp11 serialization throw_exception variant2
+histogram: config core math mp11 serialization throw_exception variant2
 histogram:
 hof:
 hof:
 icl: assert concept_check config container core date_time detail iterator move mpl range rational static_assert type_traits utility
 icl:
-integer: assert config core static_assert throw_exception
+integer: assert config core static_assert throw_exception type_traits
 integer:
 interprocess: assert config container core integer intrusive move static_assert type_traits unordered winapi
 interprocess:
@@ -118,7 +118,7 @@ iostreams: assert config core detail function integer iterator mpl preprocessor 
 iostreams: numeric~conversion
 iterator: assert concept_check config conversion core detail function_types fusion mpl optional smart_ptr static_assert type_traits utility
 iterator:
-json: align assert config container exception mp11 system throw_exception utility
+json: align assert config container core describe mp11 system throw_exception
 json:
 lambda: bind config core detail iterator mpl preprocessor tuple type_traits utility
 lambda:
@@ -130,8 +130,8 @@ lexical_cast: array assert config container core integer numeric~conversion rang
 lexical_cast:
 local_function: config mpl preprocessor scope_exit type_traits typeof utility
 local_function:
-locale: assert config function iterator smart_ptr static_assert type_traits
-locale: thread unordered
+locale: assert config iterator
+locale: core predef thread
 lockfree: align array assert atomic config core integer iterator mpl parameter predef static_assert tuple type_traits utility
 lockfree:
 log: array assert atomic config container core date_time exception filesystem function_types fusion intrusive iterator lexical_cast move mpl optional parameter phoenix predef preprocessor property_tree proto range regex smart_ptr spirit static_assert system thread throw_exception type_index type_traits utility winapi xpressive
@@ -156,7 +156,7 @@ multi_array: array assert concept_check config core functional iterator mpl stat
 multi_array:
 multi_index: assert bind config container_hash core foreach integer iterator move mpl preprocessor serialization smart_ptr static_assert throw_exception tuple type_traits utility
 multi_index:
-multiprecision: assert config core integer lexical_cast math predef random
+multiprecision: assert config core integer lexical_cast math predef random throw_exception
 multiprecision:
 nowide: config filesystem
 nowide:
@@ -190,13 +190,13 @@ predef:
 predef:
 preprocessor:
 preprocessor:
-process: algorithm asio config core filesystem fusion iterator move optional system tokenizer type_index winapi
+process: algorithm asio config core filesystem fusion io iterator move optional system throw_exception tokenizer type_index utility winapi
 process:
 program_options: any config core detail function iterator lexical_cast smart_ptr static_assert throw_exception type_traits
 program_options: bind tokenizer
-property_map: any assert concept_check config core function iterator lexical_cast mpl smart_ptr static_assert throw_exception type_traits utility
+property_map: any assert concept_check config core function iterator lexical_cast mpl smart_ptr static_assert throw_exception type_index type_traits utility
 property_map:
-property_map_parallel: assert bind concept_check config function mpi mpl multi_index optional property_map serialization smart_ptr static_assert type_traits
+property_map_parallel: assert concept_check config function mpi mpl multi_index optional property_map serialization smart_ptr static_assert type_traits
 property_map_parallel:
 property_tree: any assert bind config core format iterator mpl multi_index optional range serialization static_assert throw_exception type_traits
 property_tree:
@@ -240,7 +240,7 @@ static_assert: config
 static_assert:
 static_string: assert container_hash static_assert throw_exception utility
 static_string:
-stl_interfaces: assert config
+stl_interfaces: assert config type_traits
 stl_interfaces:
 system: assert config throw_exception variant2 winapi
 system:
@@ -252,7 +252,7 @@ throw_exception: assert config
 throw_exception:
 timer: config core system
 timer: chrono io predef throw_exception
-tokenizer: assert config iterator mpl throw_exception type_traits
+tokenizer: assert config iterator throw_exception type_traits
 tokenizer:
 tti: config function_types mpl preprocessor type_traits
 tti:
@@ -268,9 +268,11 @@ typeof: config preprocessor type_traits
 typeof:
 units: assert config core integer io lambda math mpl preprocessor static_assert type_traits typeof
 units:
-unordered: assert config container container_hash core detail move predef preprocessor smart_ptr throw_exception tuple type_traits
+unordered: assert config container_hash core move mp11 predef preprocessor throw_exception tuple type_traits
 unordered:
-utility: config core io preprocessor throw_exception type_traits
+url: align assert config core mp11 optional static_assert system throw_exception type_traits variant2
+url:
+utility: assert config core io preprocessor throw_exception type_traits
 utility:
 uuid: assert config container_hash core io move numeric~conversion predef random serialization static_assert throw_exception tti type_traits winapi
 uuid:
@@ -280,7 +282,7 @@ variant2: assert config mp11
 variant2:
 vmd: preprocessor
 vmd:
-wave: assert concept_check config core filesystem iterator lexical_cast mpl multi_index optional pool preprocessor serialization smart_ptr spirit static_assert throw_exception type_traits
+wave: assert concept_check config core filesystem format iterator lexical_cast mpl multi_index optional pool preprocessor serialization smart_ptr spirit static_assert throw_exception type_traits
 wave:
 winapi: config predef
 winapi:
