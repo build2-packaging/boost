@@ -1,6 +1,6 @@
 : 1
 name: libboost-function-types
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Boost.FunctionTypes provides functionality to classify, decompose and synthesize function, function pointer, function reference and pointer to member types

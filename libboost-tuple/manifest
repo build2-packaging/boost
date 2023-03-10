@@ -1,6 +1,6 @@
 : 1
 name: libboost-tuple
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Ease definition of functions returning multiple values, and more

@@ -1,6 +1,6 @@
 : 1
 name: libboost-range
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: A new infrastructure for generic algorithms that builds on top of the new iterator concepts

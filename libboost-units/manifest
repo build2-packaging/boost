@@ -1,6 +1,6 @@
 : 1
 name: libboost-units
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Zero-overhead dimensional analysis and unit/quantity manipulation and conversion

@@ -1,6 +1,6 @@
 : 1
 name: libboost-gil
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: (C++14) Generic Image Library

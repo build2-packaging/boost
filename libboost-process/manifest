@@ -1,6 +1,6 @@
 : 1
 name: libboost-process
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Library to create processes in a portable way

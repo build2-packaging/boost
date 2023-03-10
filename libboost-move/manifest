@@ -1,6 +1,6 @@
 : 1
 name: libboost-move
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Portable move semantics for C++03 and C++11 compilers

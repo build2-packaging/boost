@@ -1,6 +1,6 @@
 : 1
 name: libboost-hof
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Higher-order functions for C++
