@@ -17,7 +17,21 @@
 #include <boost/any.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/graph/dll_import_export.hpp>
-#include <boost/graph/graphviz.hpp> // for exceptions
+
+// @@ Replace the inclusion of graphviz.hpp (an entire submodule) with the
+//    inclusion of a few lower-level headers (the required exceptions have
+//    been moved from graphviz.hpp to (the pre-existing) exception.hpp).
+//
+//    According to
+//    https://www.boost.org/doc/libs/1_81_0/libs/graph/doc/read_graphml.html
+//    these exceptions are defined in graphml.hpp so they were probably moved
+//    to graphviz.hpp at some point without updating the docs.
+//
+#include <boost/graph/exception.hpp>
+#include <boost/property_map/dynamic_property_map.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/find.hpp>
