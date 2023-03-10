@@ -2,11 +2,11 @@ import intf_libs  = libboost-align%lib{boost_align}
 import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container%lib{boost_container}
-import intf_libs += libboost-exception%lib{boost_exception}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-describe%lib{boost_describe}
 import intf_libs += libboost-mp11%lib{boost_mp11}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
-import intf_libs += libboost-utility%lib{boost_utility}
 impl_libs = # Implementation dependencies.
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)

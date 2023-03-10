@@ -1,4 +1,5 @@
-import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-io%lib{boost_io}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}

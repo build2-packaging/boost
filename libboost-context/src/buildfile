@@ -71,9 +71,12 @@ lib{boost_context}:
 {
 # BEGIN MANUAL CUSTOMIZATION
 #
+  # Note: Add custom options on a separate line otherwise the generate script
+  #       will not add any export poptions.
+  #
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
-                        -DBOOST_CONTEXT_NO_LIB            \
-                        ($windows ? -DBOOST_USE_WINFIB : -DBOOST_USE_UCONTEXT)
+                         -DBOOST_CONTEXT_NO_LIB
+  cxx.export.poptions += ($windows ? -DBOOST_USE_WINFIB : -DBOOST_USE_UCONTEXT)
 #
 # END MANUAL CUSTOMIZATION
 

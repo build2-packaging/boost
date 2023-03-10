@@ -1,10 +1,10 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-winapi%lib{boost_winapi}
 import impl_libs  = libboost-align%lib{boost_align}
-import impl_libs += libboost-predef%lib{boost_predef}
 import impl_libs += libboost-preprocessor%lib{boost_preprocessor}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)

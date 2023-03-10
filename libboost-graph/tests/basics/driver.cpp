@@ -58,7 +58,6 @@
 #include <boost/graph/graph_stats.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/graph_utility.hpp>
-#include <boost/graph/graphviz.hpp>
 #include <boost/graph/grid_graph.hpp>
 #include <boost/graph/gursoy_atun_layout.hpp>
 #include <boost/graph/hawick_circuits.hpp>
@@ -163,52 +162,30 @@ using namespace boost;
 int
 main ()
 {
-  // This code uses the graphviz parser which is one of the few compiled parts
+  // This code uses the graphml parser which is one of the few compiled parts
   // of Boost.Graph.
   //
 
-  // Vertex properties.
-  //
-  typedef property<vertex_name_t, string, property<vertex_color_t, float>>
-      vertex_p;
-
-  // Edge properties.
-  //
-  typedef property<edge_weight_t, double> edge_p;
-
-  // Graph properties.
-  //
-  typedef property<graph_name_t, string> graph_p;
-
-  // adjacency_list-based type.
-  //
-  typedef adjacency_list<vecS, vecS, directedS, vertex_p, edge_p, graph_p>
-      graph_t;
-
-  // Construct an empty graph and prepare the dynamic_property_maps.
-  //
-  graph_t graph (0);
-  dynamic_properties dp;
-
-  property_map<graph_t, vertex_name_t>::type name (get (vertex_name, graph));
-  dp.property ("node_id", name);
-
-  property_map<graph_t, vertex_color_t>::type mass (get (vertex_color, graph));
-  dp.property ("mass", mass);
-
-  property_map<graph_t, edge_weight_t>::type weight (get (edge_weight, graph));
-  dp.property ("weight", weight);
-
-  // Use ref_property_map to turn a graph property into a property map.
-  //
-  boost::ref_property_map<graph_t*, string> gname (
-      get_property (graph, graph_name));
-  dp.property ("name", gname);
-
   // Sample graph as an istream.
   //
-  istringstream gvgraph (
-      "digraph { graph [name=\"graphname\"]  a  c e [mass = 6.66] }");
+  istringstream gmlgraph ("<graphml>"
+                          "<graph edgedefault=\"undirected\">"
+                          "<node id=\"n0\"/>"
+                          "<node id=\"n1\"/>"
+                          "<edge id=\"e1\" source=\"n0\" target=\"n1\"/>"
+                          "</graph>"
+                          "</graphml>");
 
-  return read_graphviz (gvgraph, graph, dp, "node_id") ? 0 : 1;
+  adjacency_list<vecS, vecS, undirectedS> graph (0);
+  dynamic_properties dp;
+
+  try
+  {
+    read_graphml (gmlgraph, graph, dp);
+    return num_vertices (graph) == 2 ? 0 : 1;
+  }
+  catch (...)
+  {
+    return 1;
+  }
 }
