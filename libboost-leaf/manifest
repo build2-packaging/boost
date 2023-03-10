@@ -1,6 +1,6 @@
 : 1
 name: libboost-leaf
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: A lightweight error handling library for C++11

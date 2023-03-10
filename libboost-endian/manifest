@@ -1,6 +1,6 @@
 : 1
 name: libboost-endian
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Types and conversion functions for correct byte ordering and more regardless of processor endianness

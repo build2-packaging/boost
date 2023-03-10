@@ -1,6 +1,6 @@
 : 1
 name: libboost-format
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: The format library provides a type-safe mechanism for formatting arguments according to a printf-like format-string

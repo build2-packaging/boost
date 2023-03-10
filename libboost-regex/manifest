@@ -1,6 +1,6 @@
 : 1
 name: libboost-regex
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 #language: c
 project: boost

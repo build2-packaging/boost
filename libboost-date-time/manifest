@@ -1,6 +1,6 @@
 : 1
 name: libboost-date-time
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: A set of date-time libraries based on generic programming concepts

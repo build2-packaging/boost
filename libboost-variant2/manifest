@@ -1,6 +1,6 @@
 : 1
 name: libboost-variant2
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: A never-valueless, strong guarantee implementation of std::variant

@@ -1,6 +1,6 @@
 : 1
 name: libboost-numeric-conversion
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Optimized Policy-based Numeric Conversions

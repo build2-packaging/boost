@@ -1,6 +1,6 @@
 : 1
 name: libboost-multi-array
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Boost.MultiArray provides a generic N-dimensional array concept definition and common implementations of that interface

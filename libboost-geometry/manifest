@@ -1,6 +1,6 @@
 : 1
 name: libboost-geometry
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: The Boost.Geometry library provides geometric algorithms, primitives and spatial index

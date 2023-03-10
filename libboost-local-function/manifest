@@ -1,6 +1,6 @@
 : 1
 name: libboost-local-function
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: Program functions locally, within other functions, directly within the scope where they are needed

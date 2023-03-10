@@ -1,6 +1,6 @@
 : 1
 name: libboost-core
-version: 1.81.0-a.0.z
+version: 1.81.0
 #language: c++
 project: boost
 summary: A collection of simple core utilities with minimal dependencies
