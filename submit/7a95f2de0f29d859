@@ -1,0 +1,7 @@
+: 1
+name: libboost-spirit
+version: 1.81.0
+project: boost
+summary: LL parser framework represents parsers directly as EBNF grammars in\
+ inlined C++
+license: BSL-1.0; Boost Software License 1.0.

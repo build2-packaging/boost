@@ -1,0 +1,6 @@
+: 1
+name: libboost-move
+version: 1.81.0
+project: boost
+summary: Portable move semantics for C++03 and C++11 compilers
+license: BSL-1.0; Boost Software License 1.0.

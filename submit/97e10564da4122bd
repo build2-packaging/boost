@@ -1,0 +1,6 @@
+: 1
+name: libboost-heap
+version: 1.81.0
+project: boost
+summary: Priority queue data structures
+license: BSL-1.0; Boost Software License 1.0.

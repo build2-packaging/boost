@@ -1,0 +1,7 @@
+: 1
+name: libboost-lexical-cast
+version: 1.81.0
+project: boost
+summary: General literal text conversions, such as an int represented a\
+ string, or vice-versa
+license: BSL-1.0; Boost Software License 1.0.

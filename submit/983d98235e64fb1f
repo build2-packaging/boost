@@ -1,0 +1,6 @@
+: 1
+name: libboost-smart-ptr
+version: 1.81.0
+project: boost
+summary: Smart pointer class templates
+license: BSL-1.0; Boost Software License 1.0.

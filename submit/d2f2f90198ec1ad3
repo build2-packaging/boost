@@ -1,0 +1,6 @@
+: 1
+name: libboost-ratio
+version: 1.81.0
+project: boost
+summary: Compile time rational arithmetic. C++11
+license: BSL-1.0; Boost Software License 1.0.

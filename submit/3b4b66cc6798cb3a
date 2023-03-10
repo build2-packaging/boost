@@ -1,0 +1,6 @@
+: 1
+name: libboost-timer
+version: 1.81.0
+project: boost
+summary: Event timer, progress timer, and progress display classes
+license: BSL-1.0; Boost Software License 1.0.

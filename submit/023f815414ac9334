@@ -1,0 +1,6 @@
+: 1
+name: libboost-dll
+version: 1.81.0
+project: boost
+summary: Library for comfortable work with DLL and DSO
+license: BSL-1.0; Boost Software License 1.0.

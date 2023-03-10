@@ -1,0 +1,7 @@
+: 1
+name: libboost-accumulators
+version: 1.81.0
+project: boost
+summary: Framework for incremental calculation, and collection of statistical\
+ accumulators
+license: BSL-1.0; Boost Software License 1.0.

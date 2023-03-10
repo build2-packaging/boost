@@ -1,0 +1,7 @@
+: 1
+name: libboost-container-hash
+version: 1.81.0
+project: boost
+summary: An STL-compatible hash function object that can be extended to hash\
+ user defined types
+license: BSL-1.0; Boost Software License 1.0.

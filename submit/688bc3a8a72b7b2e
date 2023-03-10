@@ -1,0 +1,6 @@
+: 1
+name: libboost-conversion
+version: 1.81.0
+project: boost
+summary: Polymorphic casts
+license: BSL-1.0; Boost Software License 1.0.

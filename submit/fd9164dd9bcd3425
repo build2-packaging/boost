@@ -1,0 +1,7 @@
+: 1
+name: libboost-endian
+version: 1.81.0
+project: boost
+summary: Types and conversion functions for correct byte ordering and more\
+ regardless of processor endianness
+license: BSL-1.0; Boost Software License 1.0.

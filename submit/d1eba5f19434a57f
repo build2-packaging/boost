@@ -1,0 +1,7 @@
+: 1
+name: libboost-beast
+version: 1.81.0
+project: boost
+summary: Portable HTTP, WebSocket, and network operations using only C++11\
+ and Boost.Asio
+license: BSL-1.0; Boost Software License 1.0.
