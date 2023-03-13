@@ -758,7 +758,8 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
     #
     # Skip conditional dependencies because their importation will be
     # customized in the downstream buildfile. (Conditional dependencies will
-    # be overridden in `manifest_depends` with a value beginning with a `?`.)
+    # be overridden in `manifest_depends` with a value beginning with a `?` or
+    # containing an `enable` clause.)
     #
     # @@ TODO: make this conditional if the dependency is only required under
     #    some circumstances. For example, if a library only builds on Windows
@@ -775,7 +776,12 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
     #    Therefore we're deferring dealing with conditional dependencies until
     #    another, more pressing case arises.
     #
-    if [[ "${manifest_depends[$pn:$dpn]}" != \?* ]]; then
+
+    # Overridden manifest `depends` value (if any).
+    #
+    local depends="${manifest_depends[$pn:$dpn]}"
+
+    if [[ "$depends" != '?'* && ! "$depends" =~ 'enable ('.+')' ]]; then
       local dt="$dpn%lib\{$dln\}" # Dependency text.
       if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
         local a=" = " # The formatted assignment operator.
