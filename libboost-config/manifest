@@ -1,6 +1,6 @@
 : 1
 name: libboost-config
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: Helps Boost library developers adapt to compiler idiosyncrasies; not intended for library users

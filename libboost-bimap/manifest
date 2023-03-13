@@ -1,6 +1,6 @@
 : 1
 name: libboost-bimap
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: Bidirectional maps library for C++. With Boost.Bimap you can create associative containers in which both types can be used as key

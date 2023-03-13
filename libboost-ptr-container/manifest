@@ -1,6 +1,6 @@
 : 1
 name: libboost-ptr-container
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: Containers for storing heap-allocated polymorphic objects to ease OO-programming

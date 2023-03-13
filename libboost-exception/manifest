@@ -1,6 +1,6 @@
 : 1
 name: libboost-exception
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: The Boost Exception library supports transporting of arbitrary data in exception objects, and transporting of exceptions between threads

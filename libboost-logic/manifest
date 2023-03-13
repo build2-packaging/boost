@@ -1,6 +1,6 @@
 : 1
 name: libboost-logic
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: 3-state boolean type library
