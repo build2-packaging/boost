@@ -1,6 +1,6 @@
 : 1
 name: libboost-optional
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: A value-semantic, type-safe wrapper for representing 'optional' (or 'nullable') objects of a given type. An optional object may or may not contain a value of the underlying type

@@ -1,6 +1,6 @@
 : 1
 name: libboost-property-tree
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: A tree data structure especially suited to storing configuration data

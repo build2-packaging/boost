@@ -1,6 +1,6 @@
 : 1
 name: libboost-crc
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: The Boost CRC Library provides two implementations of CRC (cyclic redundancy code) computation objects and two implementations of CRC computation functions. The implementations are template-based

@@ -1,6 +1,6 @@
 : 1
 name: libboost-static-string
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: A fixed capacity dynamically sized string

@@ -1,6 +1,6 @@
 : 1
 name: libboost-lambda
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: Define small unnamed function objects at the actual call site, and more

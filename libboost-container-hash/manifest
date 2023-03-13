@@ -1,6 +1,6 @@
 : 1
 name: libboost-container-hash
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: An STL-compatible hash function object that can be extended to hash user defined types

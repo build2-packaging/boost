@@ -1,6 +1,6 @@
 : 1
 name: libboost-dll
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: Library for comfortable work with DLL and DSO

@@ -1,6 +1,6 @@
 : 1
 name: libboost-functional
-version: 1.81.0
+version: 1.81.0+1
 #language: c++
 project: boost
 summary: The Boost.Function library contains a family of class templates that are function object wrappers
