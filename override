@@ -81,6 +81,17 @@ manifest_depends["libboost-graph:libboost-regex"]=\
 manifest_depends["libboost-graph:libboost-spirit"]=\
 '? ($config.libboost_graph.graphviz)'
 
+manifest_depends["libboost-graph:libboost-spirit"]=\
+'{
+  enable ($config.libboost_graph.graphviz)
+
+  require
+  {
+    config.libboost_spirit.classic = true
+    config.libboost_spirit.x2 = true
+  }
+}'
+
 manifest_depends["libboost-log:libboost-spirit"]=\
 '{
   require
