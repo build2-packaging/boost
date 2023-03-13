@@ -1,0 +1,8 @@
+: 1
+name: libboost-multi-index
+version: 1.81.0+1
+project: boost
+summary: The Boost Multi-index Containers Library provides a class template\
+ named multi_index_container which enables the construction of containers\
+ maintaining one or more indices with different sorting and access semantics
+license: BSL-1.0; Boost Software License 1.0.

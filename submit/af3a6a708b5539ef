@@ -1,0 +1,6 @@
+: 1
+name: libboost-numeric-conversion
+version: 1.81.0+1
+project: boost
+summary: Optimized Policy-based Numeric Conversions
+license: BSL-1.0; Boost Software License 1.0.

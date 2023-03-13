@@ -1,0 +1,6 @@
+: 1
+name: libboost-date-time
+version: 1.81.0+1
+project: boost
+summary: A set of date-time libraries based on generic programming concepts
+license: BSL-1.0; Boost Software License 1.0.

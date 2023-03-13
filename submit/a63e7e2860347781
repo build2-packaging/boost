@@ -1,0 +1,6 @@
+: 1
+name: libboost-process
+version: 1.81.0+1
+project: boost
+summary: Library to create processes in a portable way
+license: BSL-1.0; Boost Software License 1.0.

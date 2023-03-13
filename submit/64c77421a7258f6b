@@ -1,0 +1,6 @@
+: 1
+name: libboost-vmd
+version: 1.81.0+1
+project: boost
+summary: Variadic Macro Data library
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,8 @@
+: 1
+name: libboost-function-types
+version: 1.81.0+1
+project: boost
+summary: Boost.FunctionTypes provides functionality to classify, decompose\
+ and synthesize function, function pointer, function reference and pointer to\
+ member types
+license: BSL-1.0; Boost Software License 1.0.

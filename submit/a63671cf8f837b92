@@ -1,0 +1,6 @@
+: 1
+name: libboost-scope-exit
+version: 1.81.0+1
+project: boost
+summary: Execute arbitrary code at scope exit
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,6 @@
+: 1
+name: libboost-concept-check
+version: 1.81.0+1
+project: boost
+summary: Tools for generic programming
+license: BSL-1.0; Boost Software License 1.0.

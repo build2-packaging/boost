@@ -1,0 +1,7 @@
+: 1
+name: libboost-interprocess
+version: 1.81.0+1
+project: boost
+summary: Shared memory, memory mapped files, process-shared mutexes,\
+ condition variables, containers and allocators
+license: BSL-1.0; Boost Software License 1.0.

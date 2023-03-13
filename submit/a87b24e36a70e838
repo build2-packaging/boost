@@ -1,0 +1,6 @@
+: 1
+name: libboost-array
+version: 1.81.0+1
+project: boost
+summary: STL compliant container wrapper for arrays of constant size
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,6 @@
+: 1
+name: libboost-lockfree
+version: 1.81.0+1
+project: boost
+summary: Lockfree data structures
+license: BSL-1.0; Boost Software License 1.0.

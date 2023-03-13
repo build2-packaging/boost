@@ -1,0 +1,7 @@
+: 1
+name: libboost-assign
+version: 1.81.0+1
+project: boost
+summary: Filling containers with constant or generated data has never been\
+ easier
+license: BSL-1.0; Boost Software License 1.0.

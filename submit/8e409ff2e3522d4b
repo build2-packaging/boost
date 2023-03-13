@@ -1,0 +1,6 @@
+: 1
+name: libboost-static-string
+version: 1.81.0+1
+project: boost
+summary: A fixed capacity dynamically sized string
+license: BSL-1.0; Boost Software License 1.0.

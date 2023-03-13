@@ -1,0 +1,6 @@
+: 1
+name: libboost-unordered
+version: 1.81.0+1
+project: boost
+summary: Unordered associative containers
+license: BSL-1.0; Boost Software License 1.0.

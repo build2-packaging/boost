@@ -1,0 +1,7 @@
+: 1
+name: libboost-polygon
+version: 1.81.0+1
+project: boost
+summary: Voronoi diagram construction and booleans/clipping,\
+ resizing/offsetting and more for planar polygons with integral coordinates
+license: BSL-1.0; Boost Software License 1.0.

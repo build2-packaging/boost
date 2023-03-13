@@ -1,0 +1,6 @@
+: 1
+name: libboost-winapi
+version: 1.81.0+1
+project: boost
+summary: Windows API abstraction layer
+license: BSL-1.0; Boost Software License 1.0.

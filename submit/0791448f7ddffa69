@@ -1,0 +1,6 @@
+: 1
+name: libboost-tokenizer
+version: 1.81.0+1
+project: boost
+summary: Break of a string or other character sequence into a series of tokens
+license: BSL-1.0; Boost Software License 1.0.

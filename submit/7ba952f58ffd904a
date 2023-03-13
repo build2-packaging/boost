@@ -1,0 +1,6 @@
+: 1
+name: libboost-safe-numerics
+version: 1.81.0+1
+project: boost
+summary: Guaranteed Correct Integer Arithmetic
+license: BSL-1.0; Boost Software License 1.0.

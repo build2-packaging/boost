@@ -1,0 +1,6 @@
+: 1
+name: libboost-mp11
+version: 1.81.0+1
+project: boost
+summary: A C++11 metaprogramming library
+license: BSL-1.0; Boost Software License 1.0.
