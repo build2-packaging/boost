@@ -10,6 +10,7 @@ config_vars["libboost-asio"]="regex=false"
 config_vars["libboost-graph"]="graphviz=false"
 config_vars["libboost-iostreams"]="regex=false"
 config_vars["libboost-range"]="regex=false"
+config_vars["libboost-regex"]="icu=false"
 config_vars["libboost-spirit"]="\
 classic=false                   \
 classic_regex=false             \
@@ -64,6 +65,10 @@ manifest_builds["libboost-config"]=\
 ##   bar-build-config: config.libboost_foo.bar=true
 ##   baz-build-config: config.libboost_foo.baz=true
 ##
+## @@ TMP Could perhaps have a flag instead which, if true, causes a build
+##        config to be generated for each config var defined above?
+##
+manifest_build_config["libboost-regex"]="icu:config.libboost_regex.icu=true"
 
 ## manifest_depends
 ##
@@ -128,6 +133,12 @@ manifest_depends["libboost-iostreams:libboost-regex"]=\
 
 manifest_depends["libboost-range:libboost-regex"]=\
 '? ($config.libboost_range.regex)'
+
+manifest_depends["libboost-regex:libicuuc"]=\
+'? ($config.libboost_regex.icu)'
+
+manifest_depends["libboost-regex:libicui18n"]=\
+'? ($config.libboost_regex.icu)'
 
 manifest_depends["libboost-serialization:libboost-spirit"]=\
 '{
