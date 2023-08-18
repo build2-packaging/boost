@@ -35,3 +35,7 @@ libboost-compatibility
 # entry in the `override` file).
 #
 libboost-coroutine
+
+# A "fake" library used only by the upstream build system.
+#
+libboost-headers

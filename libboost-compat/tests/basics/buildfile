@@ -1,0 +1,3 @@
+import libs = libboost-compat%lib{boost_compat}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

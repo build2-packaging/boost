@@ -5,6 +5,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/debug_adaptor.hpp>
 #include <boost/multiprecision/eigen.hpp>
+#include <boost/multiprecision/fwd.hpp>
 #include <boost/multiprecision/integer.hpp>
 #include <boost/multiprecision/logged_adaptor.hpp>
 #include <boost/multiprecision/miller_rabin.hpp>

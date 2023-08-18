@@ -1,6 +1,6 @@
 : 1
 name: libboost-local-function
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 type: lib,binless
 #language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: Program functions locally, within other functions, directly within the 
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/local_function
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/local_function
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/local_function
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

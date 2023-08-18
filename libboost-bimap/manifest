@@ -1,6 +1,6 @@
 : 1
 name: libboost-bimap
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 type: lib,binless
 #language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: Bidirectional maps library for C++. With Boost.Bimap you can create ass
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/bimap
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/bimap
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/bimap
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -26,7 +26,6 @@ depends: libboost-lambda == $
 depends: libboost-mpl == $
 depends: libboost-multi-index == $
 depends: libboost-preprocessor == $
-depends: libboost-serialization == $
 depends: libboost-static-assert == $
 depends: libboost-throw-exception == $
 depends: libboost-type-traits == $

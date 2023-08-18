@@ -1,0 +1,9 @@
+if ($regex.search($name($import.target), '-'))
+  fail "unknown imported target $import.target, did you mean $regex.replace($string($import.target), '-', '_')?"
+
+$out_root/
+{
+  include include/boost/
+}
+
+export $out_root/include/boost/$import.target

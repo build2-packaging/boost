@@ -1,6 +1,6 @@
 : 1
 name: libboost-url
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 #language: c++
 project: boost
 summary: URL parsing in C++11
@@ -8,7 +8,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/url
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/url
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/url
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -17,6 +17,7 @@ builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
+depends: libboost-throw-exception == $
 depends: libboost-align == $
 depends: libboost-assert == $
 depends: libboost-config == $
@@ -25,6 +26,5 @@ depends: libboost-mp11 == $
 depends: libboost-optional == $
 depends: libboost-static-assert == $
 depends: libboost-system == $
-depends: libboost-throw-exception == $
 depends: libboost-type-traits == $
 depends: libboost-variant2 == $

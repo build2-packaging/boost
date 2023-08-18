@@ -1,0 +1,3 @@
+import libs = libboost-mysql%lib{boost_mysql}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

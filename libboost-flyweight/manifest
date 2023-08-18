@@ -1,6 +1,6 @@
 : 1
 name: libboost-flyweight
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 type: lib,binless
 #language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: Design pattern to manage large quantities of highly redundant objects
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/flyweight
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/flyweight
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/flyweight
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -27,7 +27,6 @@ depends: libboost-mpl == $
 depends: libboost-multi-index == $
 depends: libboost-parameter == $
 depends: libboost-preprocessor == $
-depends: libboost-serialization == $
 depends: libboost-smart-ptr == $
 depends: libboost-throw-exception == $
 depends: libboost-type-traits == $

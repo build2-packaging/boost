@@ -9,6 +9,7 @@
 #include <boost/iterator/function_output_iterator.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/iterator/interoperable.hpp>
+#include <boost/iterator/is_iterator.hpp>
 #include <boost/iterator/is_lvalue_iterator.hpp>
 #include <boost/iterator/is_readable_iterator.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
