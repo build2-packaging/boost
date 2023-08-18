@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+# Copyright (c) 2022 Alan de Freitas (alandefreitas@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,18 +11,18 @@
 project boost/url
     : requirements
       $(c11-requires)
-      <link>shared:<define>BOOST_URL_DYN_LINK=1
-      <link>static:<define>BOOST_URL_STATIC_LINK=1
       <define>BOOST_URL_SOURCE
       <toolset>msvc-14.0:<build>no
-    : usage-requirements
+      <toolset>gcc-7:<cxxflags>"-Wno-maybe-uninitialized"    # variant2
+      <toolset>gcc,<target-os>windows:<cxxflags>"-Wno-error=array-bounds"
+    : common-requirements
       <link>shared:<define>BOOST_URL_DYN_LINK=1
       <link>static:<define>BOOST_URL_STATIC_LINK=1
     : source-location ../src
     ;
 
 alias url_sources
-   : src.cpp
+   : [ glob-tree-ex ../src : *.cpp ]
    ;
 
 explicit url_sources ;

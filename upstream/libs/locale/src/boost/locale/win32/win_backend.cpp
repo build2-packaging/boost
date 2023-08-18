@@ -1,17 +1,18 @@
 //
 // Copyright (c) 2009-2011 Artyom Beilis (Tonkikh)
+// Copyright (c) 2022-2023 Alexander Grund
 //
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_LOCALE_SOURCE
 #include "boost/locale/win32/win_backend.hpp"
 #include <boost/locale/gnu_gettext.hpp>
 #include <boost/locale/info.hpp>
 #include <boost/locale/localization_backend.hpp>
 #include <boost/locale/util.hpp>
+#include <boost/locale/util/locale_data.hpp>
 #include "boost/locale/util/gregorian.hpp"
-#include "boost/locale/util/locale_data.hpp"
+#include "boost/locale/util/make_std_unique.hpp"
 #include "boost/locale/win32/all_generator.hpp"
 #include "boost/locale/win32/api.hpp"
 #include <algorithm>
@@ -52,19 +53,16 @@ namespace boost { namespace locale { namespace impl_win {
             if(!invalid_)
                 return;
             invalid_ = false;
-            if(locale_id_.empty()) {
+            if(locale_id_.empty())
                 real_id_ = util::get_system_locale(true); // always UTF-8
-                lc_ = winlocale(real_id_);
-            } else {
-                lc_ = winlocale(locale_id_);
+            else
                 real_id_ = locale_id_;
-            }
             util::locale_data d;
             d.parse(real_id_);
-            if(!d.utf8) {
-                lc_ = winlocale();
-                // Make it C as non-UTF8 locales are not supported
-            }
+            if(!d.is_utf8())
+                lc_ = winlocale(); // Make it C as non-UTF8 locales are not supported
+            else
+                lc_ = winlocale(real_id_);
         }
 
         std::locale install(const std::locale& base, category_t category, char_facet_t type) override
@@ -79,7 +77,7 @@ namespace boost { namespace locale { namespace impl_win {
                 case category_t::calendar: {
                     util::locale_data inf;
                     inf.parse(real_id_);
-                    return util::install_gregorian_calendar(base, inf.country);
+                    return util::install_gregorian_calendar(base, inf.country());
                 }
                 case category_t::message: {
                     gnu_gettext::messages_info minf;
@@ -127,9 +125,9 @@ namespace boost { namespace locale { namespace impl_win {
         winlocale lc_;
     };
 
-    localization_backend* create_localization_backend()
+    std::unique_ptr<localization_backend> create_localization_backend()
     {
-        return new winapi_localization_backend();
+        return make_std_unique<winapi_localization_backend>();
     }
 
 }}} // namespace boost::locale::impl_win

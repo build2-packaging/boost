@@ -62,14 +62,14 @@ inline boost::filesystem::perms make_permissions(boost::filesystem::path const& 
     boost::filesystem::perms prms = boost::filesystem::owner_read | boost::filesystem::group_read | boost::filesystem::others_read;
     if ((attr & FILE_ATTRIBUTE_READONLY) == 0u)
         prms |= boost::filesystem::owner_write | boost::filesystem::group_write | boost::filesystem::others_write;
-    boost::filesystem::path ext = p.extension();
+    boost::filesystem::path ext = detail::path_algorithms::extension_v4(p);
     wchar_t const* q = ext.c_str();
     if (equal_extension(q, L".exe", L".EXE") || equal_extension(q, L".com", L".COM") || equal_extension(q, L".bat", L".BAT") || equal_extension(q, L".cmd", L".CMD"))
         prms |= boost::filesystem::owner_exe | boost::filesystem::group_exe | boost::filesystem::others_exe;
     return prms;
 }
 
-ULONG get_reparse_point_tag_ioctl(HANDLE h);
+ULONG get_reparse_point_tag_ioctl(HANDLE h, boost::filesystem::path const& p, boost::system::error_code* ec);
 
 inline bool is_reparse_point_tag_a_symlink(ULONG reparse_point_tag)
 {
@@ -86,11 +86,6 @@ inline bool is_reparse_point_tag_a_symlink(ULONG reparse_point_tag)
         // them look like directory symlinks in terms of Boost.Filesystem. read_symlink()
         // may return a volume path or NT path for such symlinks.
         || reparse_point_tag == IO_REPARSE_TAG_MOUNT_POINT; // aka "directory junction" or "junction"
-}
-
-inline bool is_reparse_point_a_symlink_ioctl(HANDLE h)
-{
-    return detail::is_reparse_point_tag_a_symlink(detail::get_reparse_point_tag_ioctl(h));
 }
 
 #if !defined(UNDER_CE)

@@ -2,8 +2,7 @@ Boost Math Library
 [![Build Status](https://drone.cpp.al/api/badges/boostorg/math/status.svg)](https://drone.cpp.al/boostorg/math)[![Build Status](https://github.com/boostorg/math/workflows/CI/badge.svg?branch=develop)](https://github.com/boostorg/math/actions)
 ==================
 
->ANNOUNCEMENT: Support for C++11 will be deprecated in this library starting in July 2023 (Boost 1.82).  
->New features will require *at least* C++14, as will existing features starting with the deprecation release.
+>ANNOUNCEMENT: This library now requires a compliant C++14 compiler.
 
 This library is divided into several interconnected parts:
 
@@ -61,7 +60,7 @@ The integration routines are usable for functions returning complex results - an
 
 ### Quaternions and Octonions
 
-Quaternion and Octonians are class templates similar to std::complex.
+Quaternion and Octonion are class templates similar to std::complex.
 
 The full documentation is available on [boost.org](http://www.boost.org/doc/libs/release/libs/math).
 

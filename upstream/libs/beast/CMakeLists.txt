@@ -83,7 +83,7 @@ endfunction()
 #
 #-------------------------------------------------------------------------------
 
-project (Beast VERSION 336)
+project (Beast VERSION 347)
 
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 option (Beast_BUILD_EXAMPLES "Build examples" ON)
@@ -189,8 +189,8 @@ if (MSVC)
 else()
     set(BOOST_INCLUDEDIR ${BOOST_ROOT})
     set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib)
-    find_package(Boost COMPONENTS coroutine filesystem system thread REQUIRED)
-    link_libraries(Boost::coroutine Boost::filesystem Boost::system Boost::thread)
+    find_package(Boost COMPONENTS context filesystem system thread REQUIRED)
+    link_libraries(Boost::context Boost::filesystem Boost::system Boost::thread)
 endif()
 
 link_directories(${BOOST_ROOT}/stage/lib)

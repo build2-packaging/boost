@@ -4,7 +4,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_LOCALE_SOURCE
 #include <boost/locale/collator.hpp>
 #include <boost/locale/generator.hpp>
 #include "boost/locale/icu/all_generator.hpp"
@@ -103,10 +102,10 @@ namespace boost { namespace locale { namespace impl_icu {
             std::vector<uint8_t> tmp;
             tmp.resize(str.length() + 1u);
             icu::Collator* collate = get_collator(level);
-            const int len = collate->getSortKey(str, &tmp[0], tmp.size());
+            const int len = collate->getSortKey(str, tmp.data(), tmp.size());
             if(len > int(tmp.size())) {
                 tmp.resize(len);
-                collate->getSortKey(str, &tmp[0], tmp.size());
+                collate->getSortKey(str, tmp.data(), tmp.size());
             } else
                 tmp.resize(len);
             return tmp;
@@ -122,7 +121,7 @@ namespace boost { namespace locale { namespace impl_icu {
         {
             std::vector<uint8_t> tmp = do_basic_transform(level, b, e);
             tmp.push_back(0);
-            return gnu_gettext::pj_winberger_hash_function(reinterpret_cast<char*>(&tmp.front()));
+            return gnu_gettext::pj_winberger_hash_function(reinterpret_cast<char*>(tmp.data()));
         }
 
         collate_impl(const cdata& d) : cvt_(d.encoding), locale_(d.locale), is_utf8_(d.utf8) {}

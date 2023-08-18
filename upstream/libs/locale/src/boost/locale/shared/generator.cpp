@@ -4,7 +4,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_LOCALE_SOURCE
 #include <boost/locale/encoding.hpp>
 #include <boost/locale/generator.hpp>
 #include <boost/locale/localization_backend.hpp>
@@ -21,8 +20,7 @@ namespace boost { namespace locale {
             backend_manager(mgr)
         {}
 
-        typedef std::map<std::string, std::locale> cached_type;
-        mutable cached_type cached;
+        mutable std::map<std::string, std::locale> cached;
         mutable boost::mutex cached_lock;
 
         category_t cats;
@@ -70,10 +68,9 @@ namespace boost { namespace locale {
 
     void generator::set_default_messages_domain(const std::string& domain)
     {
-        std::vector<std::string>::iterator p;
-        if((p = std::find(d->domains.begin(), d->domains.end(), domain)) != d->domains.end()) {
+        const auto p = std::find(d->domains.begin(), d->domains.end(), domain);
+        if(p != d->domains.end())
             d->domains.erase(p);
-        }
         d->domains.insert(d->domains.begin(), domain);
     }
 
@@ -105,12 +102,11 @@ namespace boost { namespace locale {
     {
         if(d->caching_enabled) {
             boost::unique_lock<boost::mutex> guard(d->cached_lock);
-            data::cached_type::const_iterator p = d->cached.find(id);
-            if(p != d->cached.end()) {
+            const auto p = d->cached.find(id);
+            if(p != d->cached.end())
                 return p->second;
-            }
         }
-        hold_ptr<localization_backend> backend(d->backend_manager.create());
+        auto backend = d->backend_manager.create();
         set_all_options(*backend, id);
 
         std::locale result = base;
@@ -131,10 +127,9 @@ namespace boost { namespace locale {
         }
         if(d->caching_enabled) {
             boost::unique_lock<boost::mutex> guard(d->cached_lock);
-            data::cached_type::const_iterator p = d->cached.find(id);
-            if(p == d->cached.end()) {
+            const auto p = d->cached.find(id);
+            if(p == d->cached.end())
                 d->cached[id] = result;
-            }
         }
         return result;
     }
@@ -161,12 +156,11 @@ namespace boost { namespace locale {
     void generator::set_all_options(localization_backend& backend, const std::string& id) const
     {
         backend.set_option("locale", id);
-        if(d->use_ansi_encoding)
-            backend.set_option("use_ansi_encoding", "true");
-        for(size_t i = 0; i < d->domains.size(); i++)
-            backend.set_option("message_application", d->domains[i]);
-        for(size_t i = 0; i < d->paths.size(); i++)
-            backend.set_option("message_path", d->paths[i]);
+        backend.set_option("use_ansi_encoding", d->use_ansi_encoding ? "true" : "false");
+        for(const std::string& domain : d->domains)
+            backend.set_option("message_application", domain);
+        for(const std::string& path : d->paths)
+            backend.set_option("message_path", path);
     }
 
     // Sanity check
