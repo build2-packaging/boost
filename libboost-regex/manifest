@@ -1,6 +1,7 @@
 : 1
 name: libboost-regex
 version: 1.81.0+1
+type: lib,binless
 #language: c++
 #language: c
 project: boost
@@ -16,8 +17,8 @@ package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
 depends: libicuuc ^65.1.0
 depends: libicui18n ^65.1.0
 depends: libboost-assert == $

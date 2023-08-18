@@ -1,6 +1,7 @@
 : 1
 name: libboost-config
 version: 1.81.0+1
+type: lib,binless
 #language: c++
 project: boost
 summary: Helps Boost library developers adapt to compiler idiosyncrasies; not intended for library users
@@ -14,5 +15,5 @@ email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default ; Performs platform sanity checks.
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0

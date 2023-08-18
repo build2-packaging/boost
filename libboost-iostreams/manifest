@@ -15,8 +15,8 @@ package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
 depends: libz ^1.2.1100
 depends: libbzip2 ^1.0.8
 depends: libboost-numeric-conversion == $
