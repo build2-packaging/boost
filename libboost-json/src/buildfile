@@ -2,6 +2,7 @@ import intf_libs  = libboost-align%lib{boost_align}
 import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container%lib{boost_container}
+import intf_libs += libboost-container-hash%lib{boost_container_hash}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-describe%lib{boost_describe}
 import intf_libs += libboost-mp11%lib{boost_mp11}

@@ -12,6 +12,7 @@ import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-tokenizer%lib{boost_tokenizer}
 import intf_libs += libboost-type-index%lib{boost_type_index}
+import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
 import intf_libs += libboost-winapi%lib{boost_winapi}
 

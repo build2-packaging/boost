@@ -17,7 +17,6 @@ import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-parameter%lib{boost_parameter}
 import intf_libs += libboost-phoenix%lib{boost_phoenix}
-import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-property-tree%lib{boost_property_tree}
 import intf_libs += libboost-proto%lib{boost_proto}
@@ -39,6 +38,7 @@ import impl_libs += libboost-asio%lib{boost_asio}
 import impl_libs += libboost-bind%lib{boost_bind}
 import impl_libs += libboost-interprocess%lib{boost_interprocess}
 import impl_libs += libboost-io%lib{boost_io}
+import impl_libs += libboost-predef%lib{boost_predef}
 import impl_libs += libboost-random%lib{boost_random}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)

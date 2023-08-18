@@ -1,6 +1,6 @@
 : 1
 name: libboost-interprocess
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 type: lib,binless
 #language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: Shared memory, memory mapped files, process-shared mutexes, condition v
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/interprocess
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/interprocess
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/interprocess
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -21,7 +21,6 @@ depends: libboost-assert == $
 depends: libboost-config == $
 depends: libboost-container == $
 depends: libboost-core == $
-depends: libboost-integer == $
 depends: libboost-intrusive == $
 depends: libboost-move == $
 depends: libboost-static-assert == $

@@ -7,7 +7,6 @@ import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-parameter%lib{boost_parameter}
-import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}

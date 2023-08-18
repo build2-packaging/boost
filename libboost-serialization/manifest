@@ -1,13 +1,13 @@
 : 1
 name: libboost-serialization
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 #language: c++
 project: boost
 summary: Serialization for persistence and marshalling
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/serialization
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/serialization
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/serialization
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
