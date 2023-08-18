@@ -1,6 +1,7 @@
 : 1
 name: libboost-hana
 version: 1.81.0+1
+type: lib,binless
 #language: c++
 project: boost
 summary: A modern C++ metaprogramming library. It provides high level algorithms to manipulate heterogeneous sequences, allows writing type-level computations with a natural syntax, provides tools to introspect user-defined types and much more
@@ -15,8 +16,8 @@ package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
 depends: libboost-config == $
 depends: libboost-core == $
 depends: libboost-fusion == $

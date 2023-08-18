@@ -1,6 +1,7 @@
 : 1
 name: libboost-lambda
 version: 1.81.0+1
+type: lib,binless
 #language: c++
 project: boost
 summary: Define small unnamed function objects at the actual call site, and more
@@ -14,8 +15,8 @@ package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
 depends: libboost-bind == $
 depends: libboost-config == $
 depends: libboost-core == $

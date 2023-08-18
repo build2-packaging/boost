@@ -1,6 +1,7 @@
 : 1
 name: libboost-bimap
 version: 1.81.0+1
+type: lib,binless
 #language: c++
 project: boost
 summary: Bidirectional maps library for C++. With Boost.Bimap you can create associative containers in which both types can be used as key
@@ -14,8 +15,8 @@ package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.15.0
-depends: * bpkg >= 0.15.0
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
 depends: libboost-concept-check == $
 depends: libboost-config == $
 depends: libboost-container-hash == $
