@@ -712,10 +712,12 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
   local bscr=()     # Sed scripts for the library buildfile.
   local -A mdeps=() # Dependency project names already added to the manifest.
 
-  local i
-  for i in "${!deps[@]}"; do
-    local d="${deps[$i]}" # Dependency.
+  # Number of dependencies added to the buildfile (conditional dependencies
+  # are skipped).
+  #
+  local bf_dep_count=0
 
+  for d in "${deps[@]}"; do
     local dpn= # Dependency package name.
     local dln= # Dependency library name.
     local dvc= # Dependency version constraint.
@@ -783,7 +785,7 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
 
     if [[ "$depends" != '?'* && ! "$depends" =~ 'enable ('.+')' ]]; then
       local dt="$dpn%lib\{$dln\}" # Dependency text.
-      if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
+      if [[ "$bf_dep_count" -eq 0 ]]; then # First dependency: initialize variable.
         local a=" = " # The formatted assignment operator.
         if [[ "${#deps[@]}" -gt 1 ]]; then
           a="  = " # More deps coming, so adjust to align with " += "
@@ -793,6 +795,7 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
         bscr+=(-e "/^import $vn.*/a\\
 import $vn += $dt")
       fi
+      ((++bf_dep_count))
     fi
   done
 
@@ -825,7 +828,7 @@ import $vn += $dt")
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 lib= # Library name (in `boostdep` format).
-for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
+for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
   udn="$(sed -Ee "s%~%/%g" <<<"$lib")" # Upstream directory name.
   udp="upstream/libs/$udn"             # Upstream directory path.
   un="$(upstream_name "$lib")"         # Upstream library name.
