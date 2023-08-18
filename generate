@@ -385,6 +385,7 @@ function ised () # <file-path> <sed-option>...
 declare -A config_vars=()
 declare -A manifest_url=()
 declare -A manifest_builds=()
+declare -A manifest_build_config=()
 declare -A manifest_depends=()
 declare -A binless_libs=()
 declare -A cxx_only=()
@@ -712,10 +713,13 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
   local bscr=()     # Sed scripts for the library buildfile.
   local -A mdeps=() # Dependency project names already added to the manifest.
 
-  local i
-  for i in "${!deps[@]}"; do
-    local d="${deps[$i]}" # Dependency.
+  # Number of dependencies added to the buildfile (conditional dependencies
+  # are skipped).
+  #
+  local bf_dep_count=0
 
+  local d
+  for d in "${deps[@]}"; do
     local dpn= # Dependency package name.
     local dln= # Dependency library name.
     local dvc= # Dependency version constraint.
@@ -783,7 +787,7 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
 
     if [[ "$depends" != '?'* && ! "$depends" =~ 'enable ('.+')' ]]; then
       local dt="$dpn%lib\{$dln\}" # Dependency text.
-      if [[ "$i" -eq 0 ]]; then # First dependency: initialize variable.
+      if [[ "$bf_dep_count" -eq 0 ]]; then # First dependency: initialize variable.
         local a=" = " # The formatted assignment operator.
         if [[ "${#deps[@]}" -gt 1 ]]; then
           a="  = " # More deps coming, so adjust to align with " += "
@@ -793,6 +797,7 @@ depends:$(manifest_depends "$pn" "$dpn" "$dvc")")
         bscr+=(-e "/^import $vn.*/a\\
 import $vn += $dt")
       fi
+      ((++bf_dep_count))
     fi
   done
 
@@ -825,7 +830,7 @@ import $vn += $dt")
 #      upstream/libs/<lib>/meta/libraries.json.
 #
 lib= # Library name (in `boostdep` format).
-for lib in $(sed -ne '1,$s% %\n%gp' levels | sort); do
+for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
   udn="$(sed -Ee "s%~%/%g" <<<"$lib")" # Upstream directory name.
   udp="upstream/libs/$udn"             # Upstream directory path.
   un="$(upstream_name "$lib")"         # Upstream library name.
@@ -1047,6 +1052,15 @@ package-email: packaging@build2.org ; Mailing list.")
   r="$(sed -Ee 's%(^"|\.?"?$)%%g' <<<"$r")"
   ised_ops+=(-e "s%^(summary:).*%\1 $r%")
 
+  # If a PACKAGE-README.md exists, insert the `package-description-file` value
+  # before the `url` value (thus it should end up right below the
+  # `description-file` value, if it exists).
+  #
+  if [[ -f "$pn/PACKAGE-README.md" ]]; then
+    ised_ops+=(-e "/^url:/i\\
+package-description-file: PACKAGE-README.md")
+  fi
+
   # The `builds` package manifest value. Set to the default value unless
   # overridden for this library (see the override file).
   #
@@ -1059,12 +1073,18 @@ builds: default\
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
   fi
 
-  # Comment out the `language` manifest value because it is not supported by
-  # the latest toolchain release.
+  # The `*-build-config` package manifest values.
   #
-  # @@ TODO Remove this once the 0.16.0 toolchain has been released.
-  #
-  ised_ops+=(-e 's%(^language:)%#\1%')
+  if [[ -v "manifest_build_config[$pn]" ]]; then
+    bcs=(${manifest_build_config[$pn]}) # Build configs.
+
+    for bc in "${bcs[@]}"; do
+      if [[ "$bc" =~ ([^:]+):(.+) ]]; then # <name>:<value>
+        ised_ops+=(-e "/build-error-email/a\\
+${BASH_REMATCH[1]}-build-config: ${BASH_REMATCH[2]}")
+      fi
+    done
+  fi
 
   # Fix up the package manifest.
   #
