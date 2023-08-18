@@ -46,6 +46,7 @@ if(NOT BOOST_FILESYSTEM_DISABLE_STATX)
     endif()
 endif()
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_fdopendir_nofollow.cpp>" BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_dirent_d_type.cpp>" BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_posix_at_apis.cpp>" BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 if(WIN32 AND NOT BOOST_FILESYSTEM_DISABLE_BCRYPT)
     set(CMAKE_REQUIRED_LIBRARIES bcrypt)
@@ -72,6 +73,31 @@ endif()
 
 add_library(boost_filesystem ${BOOST_FILESYSTEM_SOURCES})
 add_library(Boost::filesystem ALIAS boost_filesystem)
+
+get_target_property(BOOST_FILESYSTEM_TARGET_TYPE boost_filesystem TYPE)
+if(BOOST_FILESYSTEM_TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+    set(CMAKE_REQUIRED_LIBRARIES "-Wl,--no-undefined")
+    check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_linkflag_no_undefined.cpp>" BOOST_FILESYSTEM_HAS_LINKFLAG_NO_UNDEFINED)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    if(NOT BOOST_FILESYSTEM_HAS_LINKFLAG_NO_UNDEFINED)
+        set(CMAKE_REQUIRED_LIBRARIES "-Wl,-undefined,error")
+        check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_linkflag_no_undefined.cpp>" BOOST_FILESYSTEM_HAS_LINKFLAG_UNDEFINED_ERROR)
+        unset(CMAKE_REQUIRED_LIBRARIES)
+    endif()
+    if(BOOST_FILESYSTEM_HAS_LINKFLAG_NO_UNDEFINED)
+        if(NOT CMAKE_VERSION VERSION_LESS 3.13)
+            target_link_options(boost_filesystem PRIVATE "-Wl,--no-undefined")
+        else()
+            target_link_libraries(boost_filesystem PRIVATE "-Wl,--no-undefined")
+        endif()
+    elseif(BOOST_FILESYSTEM_HAS_LINKFLAG_UNDEFINED_ERROR)
+        if(NOT CMAKE_VERSION VERSION_LESS 3.13)
+            target_link_options(boost_filesystem PRIVATE "-Wl,-undefined,error")
+        else()
+            target_link_libraries(boost_filesystem PRIVATE "-Wl,-undefined,error")
+        endif()
+    endif()
+endif()
 
 target_include_directories(boost_filesystem PUBLIC include)
 target_include_directories(boost_filesystem PRIVATE src)
@@ -104,6 +130,16 @@ if(WIN32 OR CYGWIN)
         BOOST_USE_WINDOWS_H
         WIN32_LEAN_AND_MEAN
         NOMINMAX
+    )
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 12 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 12) AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+    target_compile_options(boost_filesystem PRIVATE
+        -Wno-restrict
     )
 endif()
 
@@ -163,6 +199,9 @@ if(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 endif()
 if(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+endif()
+if(BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE)
 endif()
 if(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)

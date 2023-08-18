@@ -1,19 +1,18 @@
 //
 // Copyright (c) 2009-2011 Artyom Beilis (Tonkikh)
+// Copyright (c) 2022-2023 Alexander Grund
 //
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_LOCALE_SOURCE
 #include "boost/locale/icu/icu_backend.hpp"
 #include <boost/locale/gnu_gettext.hpp>
 #include <boost/locale/localization_backend.hpp>
 #include <boost/locale/util.hpp>
+#include <boost/locale/util/locale_data.hpp>
 #include "boost/locale/icu/all_generator.hpp"
 #include "boost/locale/icu/cdata.hpp"
-#include "boost/locale/util/locale_data.hpp"
-#include <algorithm>
-#include <iterator>
+#include "boost/locale/util/make_std_unique.hpp"
 
 #include <unicode/ucnv.h>
 
@@ -63,11 +62,11 @@ namespace boost { namespace locale { namespace impl_icu {
             d.parse(real_id_);
 
             data_.locale = icu::Locale::createCanonical(real_id_.c_str());
-            data_.encoding = d.encoding;
-            data_.utf8 = d.utf8;
-            language_ = d.language;
-            country_ = d.country;
-            variant_ = d.variant;
+            data_.encoding = d.encoding();
+            data_.utf8 = d.is_utf8();
+            language_ = d.language();
+            country_ = d.country();
+            variant_ = d.variant();
         }
 
         std::locale install(const std::locale& base, category_t category, char_facet_t type) override
@@ -86,9 +85,7 @@ namespace boost { namespace locale { namespace impl_icu {
                     minf.country = country_;
                     minf.variant = variant_;
                     minf.encoding = data_.encoding;
-                    std::copy(domains_.begin(),
-                              domains_.end(),
-                              std::back_inserter<gnu_gettext::messages_info::domains_type>(minf.domains));
+                    minf.domains = gnu_gettext::messages_info::domains_type(domains_.begin(), domains_.end());
                     minf.paths = paths_;
                     switch(type) {
                         case char_facet_t::nochar: break;
@@ -128,9 +125,9 @@ namespace boost { namespace locale { namespace impl_icu {
         bool use_ansi_encoding_;
     };
 
-    localization_backend* create_localization_backend()
+    std::unique_ptr<localization_backend> create_localization_backend()
     {
-        return new icu_localization_backend();
+        return make_std_unique<icu_localization_backend>();
     }
 
 }}} // namespace boost::locale::impl_icu
