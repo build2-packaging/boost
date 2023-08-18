@@ -1,6 +1,6 @@
 : 1
 name: libboost-functional
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 type: lib,binless
 #language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: The Boost.Function library contains a family of class templates that ar
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/functional
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/functional
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/functional
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

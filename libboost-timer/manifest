@@ -1,13 +1,13 @@
 : 1
 name: libboost-timer
-version: 1.81.0+1
+version: 1.83.0-a.0.z
 #language: c++
 project: boost
 summary: Event timer, progress timer, and progress display classes
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/timer
-doc-url: https://www.boost.org/doc/libs/1_81_0/libs/timer
+doc-url: https://www.boost.org/doc/libs/1_83_0/libs/timer
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -16,10 +16,6 @@ builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
-depends: libboost-chrono == $
 depends: libboost-io == $
 depends: libboost-predef == $
-depends: libboost-throw-exception == $
 depends: libboost-config == $
-depends: libboost-core == $
-depends: libboost-system == $

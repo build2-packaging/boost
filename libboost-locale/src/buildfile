@@ -2,9 +2,10 @@ import intf_libs  = libicuuc%lib{icuuc}
 import intf_libs += libicui18n%lib{icui18n}
 import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-iterator%lib{boost_iterator}
-import impl_libs  = libboost-core%lib{boost_core}
-import impl_libs += libboost-predef%lib{boost_predef}
+import intf_libs += libboost-utility%lib{boost_utility}
+import impl_libs  = libboost-predef%lib{boost_predef}
 import impl_libs += libboost-thread%lib{boost_thread}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)

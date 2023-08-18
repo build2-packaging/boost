@@ -44,6 +44,9 @@ location: libboost-chrono/
 location: libboost-circular-buffer/
 
 :
+location: libboost-compat/
+
+:
 location: libboost-concept-check/
 
 :
@@ -222,6 +225,9 @@ location: libboost-multi-index/
 
 :
 location: libboost-multiprecision/
+
+:
+location: libboost-mysql/
 
 :
 location: libboost-nowide/

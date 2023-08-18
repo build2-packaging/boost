@@ -6,7 +6,6 @@ import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-range%lib{boost_range}
-import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
