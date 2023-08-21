@@ -61,9 +61,16 @@ if! $freebsd
 #
 all_libs = boost_math $compiled_libs
 
+./: lib{boost_math                      \
+        boost_math_c99 boost_math_c99f  \
+        boost_math_tr1 boost_math_tr1f}
+
+./: lib{boost_math_c99l boost_math_tr1l}: include = (!$freebsd) # See above.
+
 # Private headers and dependencies.
 #
-./: lib{$all_libs}: $pub/{$pub_hdrs} {hxx ixx txx}{**} $impl_libs $intf_libs
+
+lib{$all_libs}: $pub/{$pub_hdrs} {hxx ixx txx}{**} $impl_libs $intf_libs
 
 # Sources (binful libraries only).
 #
@@ -125,24 +132,11 @@ src_tr1 = assoc_laguerre \
 
 lib{boost_math_c99}:  tr1/cxx{$src_c99}
 lib{boost_math_c99f}: tr1/cxx{$regex.apply($src_c99, '(.)$', '\1f')}
+lib{boost_math_c99l}: tr1/cxx{$regex.apply($src_c99, '(.)$', '\1l')}
 
 lib{boost_math_tr1}:  tr1/cxx{$src_tr1}
 lib{boost_math_tr1f}: tr1/cxx{$regex.apply($src_tr1, '(.)$', '\1f')}
-
-# Associate the long double sources with the corresponding library targets on
-# all systems but FreeBSD. On FreeBSD, where the long double library targets
-# do not exist, make the source files prerequisites of the directory instead
-# (otherwise they will not be included in the distribution).
-#
-if! $freebsd
-{
-  lib{boost_math_c99l}: tr1/cxx{$regex.apply($src_c99, '(.)$', '\1l')}
-  lib{boost_math_tr1l}: tr1/cxx{$regex.apply($src_tr1, '(.)$', '\1l')}
-}
-else
-{
-  ./: tr1/cxx{$regex.apply($src_c99 $src_tr1, '(.)$', '\1l')}
-}
+lib{boost_math_tr1l}: tr1/cxx{$regex.apply($src_tr1, '(.)$', '\1l')}
 
 #
 # END MANUAL CUSTOMIZATION

@@ -29,9 +29,7 @@ import intf_libs += libboost-variant%lib{boost_variant}
 
 # BEGIN MANUAL CUSTOMIZATION
 #
-if ($config.libboost_spirit.classic_regex || \
-    $config.libboost_spirit.x2            || \
-    $config.libboost_spirit.x3)
+if $config.libboost_spirit.classic_regex
   import intf_libs = libboost-regex%lib{boost_regex}
 #
 # END MANUAL CUSTOMIZATION

@@ -18,7 +18,6 @@
 #include <boost/core/first_scalar.hpp>
 #include <boost/core/identity.hpp>
 #include <boost/core/ignore_unused.hpp>
-#include <boost/core/is_same.hpp>
 #include <boost/core/launder.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/lightweight_test_trait.hpp>
@@ -47,7 +46,6 @@
 #include <boost/core/verbose_terminate_handler.hpp>
 #include <boost/core/yield_primitives.hpp>
 #include <boost/get_pointer.hpp>
-#include <boost/iterator.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/non_type.hpp>
 #include <boost/ref.hpp>
