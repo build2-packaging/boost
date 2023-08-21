@@ -1,4 +1,6 @@
-import intf_libs  = libboost-asio%lib{boost_asio}
+import intf_libs  = libssl%lib{ssl}
+import intf_libs += libcrypto%lib{crypto}
+import intf_libs += libboost-asio%lib{boost_asio}
 import intf_libs += libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
