@@ -1,3 +1,6 @@
-import libs = libboost-regex%lib{boost_regex}
+import! [metadata, rule_hint=cxx.link] lib = libboost-regex%lib{boost_regex}
 
-exe{driver}: {hxx ixx txx h cxx c}{**} $libs testscript{**}
+exe{driver}: cxx{driver} $lib
+
+if $($lib: libboost_regex.icu)
+  cxx.poptions += -DLIBBOOST_REGEX_TESTS_ICU_ENABLED

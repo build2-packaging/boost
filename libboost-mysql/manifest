@@ -18,6 +18,8 @@ builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
+depends: libssl >= 1.1.1
+depends: libcrypto >= 1.1.1
 depends: libboost-asio == $
 depends: libboost-assert == $
 depends: libboost-config == $

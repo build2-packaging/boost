@@ -47,9 +47,10 @@ src_pfx_src = [dir_path] $src_root/src/
 # BEGIN MANUAL CUSTOMIZATION
 #
 
-cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
-                "-I$out_pfx_inc" "-I$src_pfx_inc" \
-                -DBOOST_LOCALE_WITH_ICU=1
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src"       \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"       \
+                -DBOOST_LOCALE_WITH_ICU=1               \
+                -DBOOST_LOCALE_SOURCE
 
 if $windows
   cxx.poptions += -DBOOST_LOCALE_NO_POSIX_BACKEND       \
@@ -60,14 +61,6 @@ else
 
 {hbmia obja}{*}: cxx.poptions += -DBOOST_LOCALE_STATIC_LINK
 {hbmis objs}{*}: cxx.poptions += -DBOOST_LOCALE_DYN_LINK
-
-# These two source files don't define BOOST_LOCALE_SOURCE.
-#
-# @@ TODO Remove this when the fix for
-#    https://github.com/boostorg/locale/issues/145 is released.
-#
-obj{boost/locale/shared/mo_lambda boost/locale/icu/formatters_cache}: \
-  cxx.poptions += -DBOOST_LOCALE_SOURCE
 
 #
 # END MANUAL CUSTOMIZATION
