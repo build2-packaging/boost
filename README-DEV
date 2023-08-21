@@ -1169,11 +1169,12 @@ Rust motivation).
 
 Bug #1: Segfault on macOS
 
-An issue has been logged here:
-https://github.com/boostorg/context/issues/184. Although this has been fixed
-it has not yet been included in the latest release (v1.81.0).
-
-libboost-fiber is also affected by this bug.
+A partial upstream fix to the original issue
+(https://github.com/boostorg/context/pull/213) resolved libboost-context's
+segfaults but not those of its clients, so we are currently applying the
+workaround recommended in the new issue at
+https://github.com/boostorg/context/issues/238 to fix libboost-fiber's
+segfaults.
 
 2.3 libboost-outcome
 
@@ -1260,17 +1261,23 @@ Bug #1
 Issue https://github.com/boostorg/pool/issues/49 causes libboost-fiber and
 libboost-coroutine2 to fail in CI on Windows (all configs but mingw).
 
-2.9 libboost-url
+2.9 libboost-stl-interfaces
 
 Bug #1
 
-CI fails on mingw targets with "error: function
-'boost::urls::decode_view::decode_view(boost::urls::pct_string_view,
-boost::urls::encoding_opts)' definition is marked dllimport". Apparently mingw
-g++ simply does not accept dllimport on inline functions.
+Use of SIZE_MAX without including <cstdint>. Reported upstream at
+https://github.com/boostorg/stl_interfaces/issues/63.
 
-This has been fixed in the following as-of-yet unreleased commit:
-https://github.com/boostorg/url/commit/c3a70873d63affc5735f918dfbf94416799d7399
+Bug #2
+
+GCC 13's libstdc++ ranges header: "error: requires clause differs in
+template redeclaration"
+
+This is a bug in clang. It's been fixed on trunk but not in clang 16, which is
+where we're seeing these failures.
+
+GCC issue: https://gcc.gnu.org/bugzilla//show_bug.cgi?id=109647
+LLVM issue: https://github.com/llvm/llvm-project/issues/49620
 
 3. Boost upstream upgrade procedure
 
@@ -1289,30 +1296,61 @@ layout is different from ours (all of the headers are under
   cd ..
   ./generate --clean-upstream
 
-3.2 Examine the changes in the latest release
+3.2 Regenerate
 
-  - Check that compiled libraries' downstream buildfiles account for added or
-    removed source files.
+Regenerate the packages by running `generate`.
 
-  - Read the release notes:
-    https://www.boost.org/users/history/version_1_77_0.html.
+- Look out for warnings such as "excluded header <path> no longer exists".
 
-  - Look for changes in upstream builds (both CMakeLists.txt and Jamfile*)
-    for libraries for which we provide custom buildfiles.
+- Check that changes in `dependencies` look reasonable (the generation of this
+  file might break due to changes in the `boostdep` tool, for example).
 
-    Things to look out for:
+3.3 Examine the changes in the latest release
 
-      - New or deleted source files
-      - New macro definitions
+  - Read the release notes for the latest version:
+    https://www.boost.org/users/history. It's usually a lot to take in so
+    probably would make sense to read one library at a time as each one is
+    checked for changes, etc.
 
-    To find changed build files:
+  - Update patches in downstream/. To find patches with upstream counterparts
+    that have changed since <git-revision>, run:
 
-      git show --name-only <upstream-upgrade-commit-id> | grep CMakeLists
-      git show --name-only <upstream-upgrade-commit-id> | grep Jamfile
+      ./find-outdated-patches <git-revision>
 
-    To show a build file's changes:
+  - Pay special attention to libraries that:
 
-      git show <upstream-upgrade-commit-id> upstream/libs/foo/CMakeLists.txt
+    - Are new
+
+    - Have custom builds, tests, or overrides
+
+    - Have lots of upstream code changes, especially major ones like
+      new/deleted source files or new macro definitions. Although code changes
+      by themselves are unlikely to cause problems we might flush out upstream
+      bugs (such as having forgotten to update the build with feature-check
+      macros newly added to the code). Also consider testing these libraries'
+      dependents, which can be printed like this:
+
+        ./boostdep --boost-root upstream/ --reverse atomic
+
+      However, those with lots of dependencies are likely to be tested well
+      enough automatically.
+
+    - Are binful
+
+    Run the `libs-of-interest` script to print libraries that match any of the
+    above criteria:
+
+      ./libs-of-interest <git-revision>
+
+    Where <git-revision> is the downstream commit ID in which upstream/ was
+    upgraded.
+
+    For each library of interest, inspect its upstream changes:
+
+      git show <upstream-upgrade-commit-id> upstream/libs/foo/
+
+    Even if there are no upstream changes its tests should at least be run
+    because some of its dependencies may have been updated.
 
   - Look `generate`, `override`, `exclude`, and downstream/* over for anything
     that may be affected by the latest upstream changes, paying special
@@ -1321,25 +1359,8 @@ layout is different from ours (all of the headers are under
   - Check the `TODO` file for anything that may have been resolved by the
     upgrade.
 
-  - Check for new Boost libraries and add the necessary support.
-
-  - Pay extra attention to libraries to which lots of significant code changes
-    have been made that are also binful or are ones we've had problems with in
-    the past. Although code changes by themselves are unlikely to cause
-    problems we might flush out upstream bugs (such as having forgotten to
-    update the build with feature-check macros newly added to the code).
-
   - Look for bugs in section 2 of this file that may have been resolved and
     also record new ones there.
-
-3.3 Regenerate
-
-Regenerate the packages by running `generate`.
-
-- Look out for warnings such as "excluded header <path> no longer exists".
-
-- Check that changes in `dependencies` look reasonable (the generation of this
-  file might break due to changes in the `boostdep` tool, for example).
 
 3.4 Test/CI
   - New libraries
@@ -1350,4 +1371,4 @@ Regenerate the packages by running `generate`.
 
   - Libraries whose dependencies have changed
 
-  - Libraries with custom tests
+  - Libraries with custom builds and/or tests
