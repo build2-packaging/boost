@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# file      : libs-of-interest
+# license   : Boost Software License 1.0; see accompanying LICENSE file
+
+# Print the Boost libraries to pay extra attention to after an upstream
+# upgrade.
+#
+# Arguments:
+#
+# <git-revision>
+#
+#   The downstream git revision containing the upgrade of upstream/.
+#
+
+owd="$(pwd)"
+trap "{ cd '$owd'; exit 1; }" ERR
+set -o errtrace     # Trap in functions and subshells.
+set -o pipefail     # Fail if any pipeline command fails.
+shopt -s lastpipe   # Execute last pipeline command in the current shell.
+shopt -s nullglob   # Expand no-match globs to nothing rather than themselves.
+
+function info () { echo "$*" 1>&2; }
+function error () { info "$*"; exit 1; }
+
+rev="$1" # The git revision containing the upstream/ upgrade.
+
+if [[ -z "$rev" ]]; then
+  error "usage: $(basename "$0") <git-revision>"
+fi
+
+if ! tmpfile="$(mktemp)"; then
+  error "mktemp failed"
+fi
+
+# Find libraries with custom builds or tests.
+#
+find downstream/ -name buildfile | \
+  sed -En 's%downstream/libs/([^/]+)/.+%\1%p' > "$tmpfile"
+
+# Find libraries with overrides. Strip the `libboost-` prefix from library
+# names to match the output of the other commands being run in this stage.
+#
+sed -En 's%.*libboost-([-a-z]+).*%\1%p' override >> "$tmpfile"
+
+# Find libraries with upstream build changes in the specified git
+# revision. Extract the library directories from all paths ending with
+# CMakeLists.txt or Jamfile or Jamfile.*.
+#
+git show --name-only "$rev" | \
+  sed -En 's%upstream/libs/([^/]+)/(build/)?(CMakeLists.txt|Jamfile(\..+)?)%\1%p' \
+      >> "$tmpfile"
+
+# Print binful libraries (note: this is according to upstream; we override
+# this in some cases, see the `override` file).
+#
+./boostdep --boost-root upstream/ --list-buildable >> "$tmpfile"
+
+# Convert the library names to build2 package names: convert `_` to `-` and
+# add the `libboost-` prefix.
+#
+sed -Ei 's%_%-%g; s%(.+)%libboost-\1%' "$tmpfile"
+
+# Print libraries, excluding duplicates and those in `exclude`.
+#
+sort -u "$tmpfile" | while read line; do
+  if ! grep -q "$line" exclude; then
+    echo "$line"
+  fi
+done
+
+rm -rf "$tmpfile"
