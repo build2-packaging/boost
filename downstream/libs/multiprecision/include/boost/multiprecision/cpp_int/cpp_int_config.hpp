@@ -44,8 +44,8 @@ struct int_t
                  typename std::conditional<Bits-1 <= std::numeric_limits<long long>::digits, long long, void
                  >::type>::type>::type>::type>::type;
    
-   static_assert(!std::is_same<void, exact>::value && !std::is_same<void, least>::value, "Number of bits does not match any standard data type. \
-      Please file an issue at https://github.com/boostorg/multiprecision/ referencing this error from cpp_int_config.hpp");
+   static_assert(!std::is_same<void, exact>::value && !std::is_same<void, least>::value, "Number of bits does not match any standard data type. "
+"      Please file an issue at https://github.com/boostorg/multiprecision/ referencing this error from cpp_int_config.hpp");
 };
 
 template <std::size_t Bits>
@@ -65,8 +65,8 @@ struct uint_t
                  typename std::conditional<Bits <= std::numeric_limits<unsigned long long>::digits, unsigned long long, void
                  >::type>::type>::type>::type>::type;
 
-   static_assert(!std::is_same<void, exact>::value && !std::is_same<void, least>::value, "Number of bits does not match any standard data type. \
-      Please file an issue at https://github.com/boostorg/multiprecision/ referencing this error from cpp_int_config.hpp");
+   static_assert(!std::is_same<void, exact>::value && !std::is_same<void, least>::value, "Number of bits does not match any standard data type. "
+"      Please file an issue at https://github.com/boostorg/multiprecision/ referencing this error from cpp_int_config.hpp");
 };
 
 template <std::size_t N>
