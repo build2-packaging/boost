@@ -365,11 +365,6 @@ multiprecision/random.hpp                   \
 multiprecision/tommath.hpp                  \
 "
 
-# nowide/windows.hpp, which can only be included on Windows, is included
-# conditionally by nowide/args.hpp so we do not have to include it.
-#
-exclude_headers["libboost-nowide"]="nowide/windows.hpp"
-
 # opencl.hpp requires Boost.Compute and OpenCL, neither of which are packaged
 # (see note for exclude_dependencies["libboost-numeric-ublas"] below).
 #
