@@ -385,6 +385,7 @@ function ised () # <file-path> <sed-option>...
 declare -A config_vars=()
 declare -A manifest_url=()
 declare -A manifest_builds=()
+declare -A manifest_build_config=()
 declare -A manifest_depends=()
 declare -A binless_libs=()
 declare -A cxx_only=()
@@ -1060,6 +1061,19 @@ builds: ${manifest_builds[$pn]}")
     ised_ops+=(-e '/build-error-email/a\
 builds: default\
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399')
+  fi
+
+  # The `*-build-config` package manifest values.
+  #
+  if [[ -v "manifest_build_config[$pn]" ]]; then
+    bcs=(${manifest_build_config[$pn]}) # Build configs.
+
+    for bc in "${bcs[@]}"; do
+      if [[ "$bc" =~ ([^:]+):(.+) ]]; then # <name>:<value>
+        ised_ops+=(-e "/build-error-email/a\\
+${BASH_REMATCH[1]}-build-config: ${BASH_REMATCH[2]}")
+      fi
+    done
   fi
 
   # Comment out the `language` manifest value because it is not supported by

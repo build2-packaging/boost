@@ -43,6 +43,28 @@ manifest_builds["libboost-winapi"]=\
 manifest_builds["libboost-config"]=\
 "default ; Performs platform sanity checks."
 
+## manifest_build_config
+##
+## The *-build-config package manifest value(s) overrides.
+##
+## Each value is a space-separated list of <config-name>:<value> pairs.
+##
+## Note: only the one-line *-build-config format is supported and no
+## whitespace is allowed.
+##
+## For example, for the libboost-foo library,
+##
+##   manifest_build_config["libboost-foo"]="\
+##   bar:config.libboost_foo.bar=true       \
+##   baz:config.libboost_foo.baz=true       \
+##   "
+##
+## will produce
+##
+##   bar-build-config: config.libboost_foo.bar=true
+##   baz-build-config: config.libboost_foo.baz=true
+##
+
 ## manifest_depends
 ##
 ## Overrides for one or more dependencies' `depends` manifest values.
