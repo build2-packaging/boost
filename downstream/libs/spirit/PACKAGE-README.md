@@ -17,11 +17,9 @@ enabling this support will cause the package to depend on `libboost-regex`.
 
 ### `config.libboost_spirit.x2`
 
-Enable V2 (2nd generation) spirit API. Default is `false`. Note that enabling
-this support will cause the package to depend on `libboost-regex`.
+Enable V2 (2nd generation) spirit API. Default is `false`.
 
 
 ### `config.libboost_spirit.x3`
 
-Enable X3 (3rd generation) spirit API. Default is `false`. Note that enabling
-this support will cause the package to depend on `libboost-regex`.
+Enable X3 (3rd generation) spirit API. Default is `false`.
