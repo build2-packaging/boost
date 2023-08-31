@@ -27,3 +27,5 @@ h{*}: c.importable = true
 # The test target for cross-testing (running tests under Wine, etc).
 #
 test.target = $cxx.target
+
+config [bool] config.libboost_regex.icu ?= false

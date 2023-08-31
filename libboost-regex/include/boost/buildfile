@@ -1,6 +1,4 @@
-import intf_libs  = libicuuc%lib{icuuc}
-import intf_libs += libicui18n%lib{icui18n}
-import intf_libs += libboost-assert%lib{boost_assert}
+import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-concept-check%lib{boost_concept_check}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container-hash%lib{boost_container_hash}
@@ -13,9 +11,31 @@ import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_regex.icu
+{
+  import intf_libs += libicuuc%lib{icuuc}
+  import intf_libs += libicui18n%lib{icui18n}
+}
+#
+# END MANUAL CUSTOMIZATION
+
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 
-lib{boost_regex}: {hxx ixx txx h}{**} $intf_libs
+# BEGIN MANUAL CUSTOMIZATION
+#
+lib{boost_regex}: {hxx ixx txx h}{** -**/icu} $intf_libs
+{
+  export.metadata = 1 libboost_regex
+
+  libboost_regex.icu = [bool] $config.libboost_regex.icu
+}
+
+lib{boost_regex}: regex/hxx{icu v4/icu v5/icu}: \
+  include = $config.libboost_regex.icu
+#
+# END MANUAL CUSTOMIZATION
 
 # Export options.
 #
