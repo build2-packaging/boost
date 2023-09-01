@@ -10,6 +10,7 @@ config_vars["libboost-asio"]="regex=false"
 config_vars["libboost-graph"]="graphviz=false"
 config_vars["libboost-iostreams"]="regex=false"
 config_vars["libboost-range"]="regex=false"
+config_vars["libboost-regex"]="icu=false"
 config_vars["libboost-spirit"]="\
 classic=false                   \
 classic_regex=false             \
@@ -42,6 +43,29 @@ manifest_builds["libboost-winapi"]=\
 
 manifest_builds["libboost-config"]=\
 "default ; Performs platform sanity checks."
+
+## manifest_build_config
+##
+## The *-build-config package manifest value(s) overrides.
+##
+## Each value is a space-separated list of <config-name>:<value> pairs.
+##
+## Note: only the one-line *-build-config format is supported and no
+## whitespace is allowed.
+##
+## For example, for the libboost-foo library,
+##
+##   manifest_build_config["libboost-foo"]="\
+##   bar:config.libboost_foo.bar=true       \
+##   baz:config.libboost_foo.baz=true       \
+##   "
+##
+## will produce
+##
+##   bar-build-config: config.libboost_foo.bar=true
+##   baz-build-config: config.libboost_foo.baz=true
+##
+manifest_build_config["libboost-regex"]="icu:config.libboost_regex.icu=true"
 
 ## manifest_depends
 ##
@@ -107,6 +131,12 @@ manifest_depends["libboost-iostreams:libboost-regex"]=\
 manifest_depends["libboost-range:libboost-regex"]=\
 '? ($config.libboost_range.regex)'
 
+manifest_depends["libboost-regex:libicuuc"]=\
+'? ($config.libboost_regex.icu)'
+
+manifest_depends["libboost-regex:libicui18n"]=\
+'? ($config.libboost_regex.icu)'
+
 manifest_depends["libboost-serialization:libboost-spirit"]=\
 '{
   require
@@ -116,7 +146,7 @@ manifest_depends["libboost-serialization:libboost-spirit"]=\
 }'
 
 manifest_depends["libboost-spirit:libboost-regex"]=\
-'? ($config.libboost_spirit.classic_regex || $config.libboost_spirit.x2 || $config.libboost_spirit.x3)'
+'? ($config.libboost_spirit.classic_regex)'
 
 ## binless_libs
 ##
@@ -181,6 +211,7 @@ source_macro["libboost-fiber"]=true
 source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
 source_macro["libboost-stacktrace"]=true
+source_macro["libboost-url"]=true
 
 ## nonboost_intf_deps
 ##
@@ -198,11 +229,18 @@ source_macro["libboost-stacktrace"]=true
 ## `generate` script (but not around ranges).
 ##
 nonboost_intf_deps["libboost-locale"]="\
-libicuuc%lib{icuuc}^65.1.0            \
-libicui18n%lib{icui18n}^65.1.0        \
+libicuuc%lib{icuuc}^65.1.0             \
+libicui18n%lib{icui18n}^65.1.0         \
 "
 
 nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
+
+# Note: upstream requires SSL unconditionally.
+#
+nonboost_intf_deps["libboost-mysql"]="\
+libssl%lib{ssl}>=1.1.1                \
+libcrypto%lib{crypto}>=1.1.1          \
+"
 
 nonboost_intf_deps["libboost-regex"]="\
 libicuuc%lib{icuuc}^65.1.0            \
@@ -272,18 +310,20 @@ include_headers["libboost-variant"]="variant.hpp"
 ## `include/boost/`.
 ##
 
-# detail/*.hpp: deprecated headers.
+# detail/*.hpp, core/is_same.hpp, iterator.hpp: deprecated headers.
 #
-# Note that this is the Boost.Core library, not Boost.Detail. These headers
-# are in `include/boost/detail` instead of the more conventional
+# Note that this is the Boost.Core library, not Boost.Detail. These detail/
+# headers are in `include/boost/detail` instead of the more conventional
 # `include/boost/core/detail/`.
 #
 exclude_headers["libboost-core"]="\
+core/is_same.hpp                  \
 detail/iterator.hpp               \
 detail/lightweight_test.hpp       \
 detail/no_exceptions_support.hpp  \
 detail/scoped_enum_emulation.hpp  \
 detail/sp_typeinfo.hpp            \
+iterator.hpp                      \
 "
 
 # lightweight_main.hpp, lightweight_test_report.hpp: these files define main().
@@ -356,11 +396,6 @@ multiprecision/mpfr.hpp                     \
 multiprecision/random.hpp                   \
 multiprecision/tommath.hpp                  \
 "
-
-# nowide/windows.hpp, which can only be included on Windows, is included
-# conditionally by nowide/args.hpp so we do not have to include it.
-#
-exclude_headers["libboost-nowide"]="nowide/windows.hpp"
 
 # opencl.hpp requires Boost.Compute and OpenCL, neither of which are packaged
 # (see note for exclude_dependencies["libboost-numeric-ublas"] below).

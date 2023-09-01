@@ -16,6 +16,7 @@ lib{boost-context}: $pub/{$pub_hdrs}
 #
 
 windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class == 'macos')
 
 # Private headers and sources as well as dependencies.
 #
@@ -73,6 +74,23 @@ lib{boost-context}:
 
   cxx.export.libs = $intf_libs
 }
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $macos
+{
+  # While forcing _XOPEN_SOURCE on the users of a library is a bad idea per:
+  #
+  # https://github.com/build2/HOWTO/blob/master/entries/compile-options-in-buildfile.md
+  #
+  # In this case it appears to be the only solution, see issue #238:
+  #
+  # https://github.com/boostorg/context/issues/238
+  #
+  lib{boost_context}: cxx.export.poptions += -D_XOPEN_SOURCE
+}
+#
+# END MANUAL CUSTOMIZATION
 
 liba{boost_context}: cxx.export.poptions += -DBOOST_STATIC
 libs{boost_context}: cxx.export.poptions += -DBOOST_SHARED

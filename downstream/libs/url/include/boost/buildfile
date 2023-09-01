@@ -1,0 +1,21 @@
+pub_hdrs = {hxx ixx txx}{**}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Include `url.natvis` in the distribution. It customizes the display of
+# Boost.Url's types in the MSVC debugger.
+#
+./: $pub_hdrs url/file{url.natvis}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
