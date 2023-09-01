@@ -1,7 +1,7 @@
 : 1
 name: libboost-test
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: Support for simple program testing, full unit testing, and for program execution monitoring
 license: BSL-1.0 ; Boost Software License 1.0.

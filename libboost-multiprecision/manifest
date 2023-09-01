@@ -2,7 +2,7 @@
 name: libboost-multiprecision
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Extended precision arithmetic types for floating point, integer, and rational arithmetic
 license: BSL-1.0 ; Boost Software License 1.0.

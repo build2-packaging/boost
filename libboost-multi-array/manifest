@@ -2,7 +2,7 @@
 name: libboost-multi-array
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Boost.MultiArray provides a generic N-dimensional array concept definition and common implementations of that interface
 license: BSL-1.0 ; Boost Software License 1.0.

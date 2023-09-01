@@ -2,7 +2,7 @@
 name: libboost-date-time
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: A set of date-time libraries based on generic programming concepts
 license: BSL-1.0 ; Boost Software License 1.0.

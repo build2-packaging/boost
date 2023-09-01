@@ -1,7 +1,7 @@
 : 1
 name: libboost-thread
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: Portable C++ multi-threading. C++03, C++11, C++14, C++17
 license: BSL-1.0 ; Boost Software License 1.0.

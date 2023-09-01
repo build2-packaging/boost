@@ -2,7 +2,7 @@
 name: libboost-optional
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: A value-semantic, type-safe wrapper for representing 'optional' (or 'nullable') objects of a given type. An optional object may or may not contain a value of the underlying type
 license: BSL-1.0 ; Boost Software License 1.0.

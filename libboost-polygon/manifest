@@ -2,7 +2,7 @@
 name: libboost-polygon
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Voronoi diagram construction and booleans/clipping, resizing/offsetting and more for planar polygons with integral coordinates
 license: BSL-1.0 ; Boost Software License 1.0.

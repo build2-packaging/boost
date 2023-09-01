@@ -1,7 +1,7 @@
 : 1
 name: libboost-random
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: A complete system for random number generation
 license: BSL-1.0 ; Boost Software License 1.0.
