@@ -1,0 +1,46 @@
+intf_libs = # Interface dependencies.
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $config.libboost_regex.icu
+{
+  import intf_libs += libicuuc%lib{icuuc}
+  import intf_libs += libicui18n%lib{icui18n}
+}
+#
+# END MANUAL CUSTOMIZATION
+#import xxxx_libs += libhello%lib{hello}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+lib{boost_regex}: {hxx ixx txx h}{** -**/icu} $intf_libs
+{
+  export.metadata = 1 libboost_regex
+
+  libboost_regex.icu = [bool] $config.libboost_regex.icu
+}
+
+lib{boost_regex}: regex/hxx{icu v4/icu v5/icu}: \
+  include = $config.libboost_regex.icu
+#
+# END MANUAL CUSTOMIZATION
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_regex}:
+{
+  cc.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cc.export.libs = $intf_libs
+}
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx h}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}

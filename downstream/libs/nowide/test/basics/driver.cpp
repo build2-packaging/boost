@@ -7,6 +7,7 @@
 #include <boost/nowide/filesystem.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/nowide/iostream.hpp>
+#include <boost/nowide/quoted.hpp>
 #include <boost/nowide/replacement.hpp>
 #include <boost/nowide/stackstring.hpp>
 #include <boost/nowide/stat.hpp>
