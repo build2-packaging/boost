@@ -181,6 +181,7 @@ source_macro["libboost-fiber"]=true
 source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
 source_macro["libboost-stacktrace"]=true
+source_macro["libboost-url"]=true
 
 ## nonboost_intf_deps
 ##
@@ -198,11 +199,16 @@ source_macro["libboost-stacktrace"]=true
 ## `generate` script (but not around ranges).
 ##
 nonboost_intf_deps["libboost-locale"]="\
-libicuuc%lib{icuuc}^65.1.0            \
-libicui18n%lib{icui18n}^65.1.0        \
+libicuuc%lib{icuuc}^65.1.0             \
+libicui18n%lib{icui18n}^65.1.0         \
 "
 
 nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
+
+nonboost_intf_deps["libboost-mysql"]="\
+libssl%lib{ssl}>=1.1.1                \
+libcrypto%lib{crypto}>=1.1.1          \
+"
 
 nonboost_intf_deps["libboost-regex"]="\
 libicuuc%lib{icuuc}^65.1.0            \
@@ -272,18 +278,20 @@ include_headers["libboost-variant"]="variant.hpp"
 ## `include/boost/`.
 ##
 
-# detail/*.hpp: deprecated headers.
+# detail/*.hpp, core/is_same.hpp, iterator.hpp: deprecated headers.
 #
-# Note that this is the Boost.Core library, not Boost.Detail. These headers
-# are in `include/boost/detail` instead of the more conventional
+# Note that this is the Boost.Core library, not Boost.Detail. These detail/
+# headers are in `include/boost/detail` instead of the more conventional
 # `include/boost/core/detail/`.
 #
 exclude_headers["libboost-core"]="\
+core/is_same.hpp                  \
 detail/iterator.hpp               \
 detail/lightweight_test.hpp       \
 detail/no_exceptions_support.hpp  \
 detail/scoped_enum_emulation.hpp  \
 detail/sp_typeinfo.hpp            \
+iterator.hpp                      \
 "
 
 # lightweight_main.hpp, lightweight_test_report.hpp: these files define main().
