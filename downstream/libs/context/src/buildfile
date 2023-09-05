@@ -16,6 +16,7 @@ lib{boost-context}: $pub/{$pub_hdrs}
 #
 
 windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class == 'macos')
 
 # Private headers and sources as well as dependencies.
 #
@@ -73,6 +74,13 @@ lib{boost-context}:
 
   cxx.export.libs = $intf_libs
 }
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+if $macos
+  lib{boost_context}: cxx.export.poptions += -D_XOPEN_SOURCE
+#
+# END MANUAL CUSTOMIZATION
 
 liba{boost_context}: cxx.export.poptions += -DBOOST_STATIC
 libs{boost_context}: cxx.export.poptions += -DBOOST_SHARED
