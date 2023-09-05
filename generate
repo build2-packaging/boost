@@ -1051,6 +1051,15 @@ package-email: packaging@build2.org ; Mailing list.")
   r="$(sed -Ee 's%(^"|\.?"?$)%%g' <<<"$r")"
   ised_ops+=(-e "s%^(summary:).*%\1 $r%")
 
+  # If a PACKAGE-README.md exists, insert the `package-description-file` value
+  # before the `url` value (thus it should end up right below the
+  # `description-file` value, if it exists).
+  #
+  if [[ -f "$pn/PACKAGE-README.md" ]]; then
+    ised_ops+=(-e "/^url:/i\\
+package-description-file: PACKAGE-README.md")
+  fi
+
   # The `builds` package manifest value. Set to the default value unless
   # overridden for this library (see the override file).
   #
