@@ -1076,13 +1076,6 @@ ${BASH_REMATCH[1]}-build-config: ${BASH_REMATCH[2]}")
     done
   fi
 
-  # Comment out the `language` manifest value because it is not supported by
-  # the latest toolchain release.
-  #
-  # @@ TODO Remove this once the 0.16.0 toolchain has been released.
-  #
-  ised_ops+=(-e 's%(^language:)%#\1%')
-
   # Fix up the package manifest.
   #
   ised "$pn/manifest" "${ised_ops[@]}"
