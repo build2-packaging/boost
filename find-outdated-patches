@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# file      : find-outdated-patches
+# license   : MIT
+
+# Print the names of files in downstream/ whose upstream counterparts have
+# changed since the specified git revision (inclusive).
+#
+
+owd="$(pwd)"
+trap "{ cd '$owd'; exit 1; }" ERR
+set -o errtrace     # Trap in functions and subshells.
+set -o pipefail     # Fail if any pipeline command fails.
+shopt -s lastpipe   # Execute last pipeline command in the current shell.
+shopt -s nullglob   # Expand no-match globs to nothing rather than themselves.
+
+function info () { echo "$*" 1>&2; }
+function error () { info "$*"; exit 1; }
+
+rev="$1" # The git revision.
+
+if [[ -z "$rev" ]]; then
+  error "usage: $(basename "$0") <git-revision>"
+fi
+
+# For each file in downstream/, use git-diff to check whether its upstream
+# counterpart changed since the specified revision (inclusive).
+#
+for f in $(find downstream/ -type f); do
+  f="${f/downstream/upstream}"
+
+  if [[ "$(git diff --name-only "$rev"~1 -- "$f")" ]]; then
+    echo "$f"
+  fi
+done
