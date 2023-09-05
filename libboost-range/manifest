@@ -7,6 +7,7 @@ project: boost
 summary: A new infrastructure for generic algorithms that builds on top of the new iterator concepts
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/range
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/range
 package-url: https://github.com/build2-packaging/boost

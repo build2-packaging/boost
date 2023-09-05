@@ -7,6 +7,7 @@ summary: The BGL graph interface and graph components are generic, in the same s
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/graph
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/graph
 package-url: https://github.com/build2-packaging/boost

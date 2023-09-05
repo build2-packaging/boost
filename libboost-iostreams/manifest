@@ -7,6 +7,7 @@ summary: Boost.IOStreams provides a framework for defining streams, stream buffe
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/iostreams
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/iostreams
 package-url: https://github.com/build2-packaging/boost

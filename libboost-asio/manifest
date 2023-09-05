@@ -7,6 +7,7 @@ project: boost
 summary: Portable networking and other low-level I/O, including sockets, timers, hostname resolution, socket iostreams, serial ports, file descriptors and Windows HANDLEs
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/asio
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/asio
 package-url: https://github.com/build2-packaging/boost
