@@ -79,13 +79,13 @@ lib{boost-context}:
 #
 if $macos
 {
-  # While forcing _XOPEN_SOURCE on the uses of a library is a bad idea per:
+  # While forcing _XOPEN_SOURCE on the users of a library is a bad idea per:
   #
   # https://github.com/build2/HOWTO/blob/master/entries/compile-options-in-buildfile.md
   #
-  # In this case it appears to be the only solution, see PR #312 for details:
+  # In this case it appears to be the only solution, see issue #238:
   #
-  # https://github.com/boostorg/context/pull/213 @@ TMP replace with issue
+  # https://github.com/boostorg/context/issues/238
   #
   lib{boost_context}: cxx.export.poptions += -D_XOPEN_SOURCE
 }
