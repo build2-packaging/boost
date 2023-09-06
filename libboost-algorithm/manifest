@@ -2,12 +2,13 @@
 name: libboost-algorithm
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: A collection of useful generic algorithms
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/algorithm
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/algorithm
 package-url: https://github.com/build2-packaging/boost

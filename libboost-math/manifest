@@ -1,7 +1,7 @@
 : 1
 name: libboost-math
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: Boost.Math includes several contributions in the domain of mathematics: Floating Point Utilities, Specific Width Floating Point Types, Mathematical Constants, Statistical Distributions, Special Functions, Root Finding and Function Minimization, Polynomials and Rational Functions, Interpolation, and Numerical Integration and Differentiation. Many of these features are templated to support both built-in, and extended width types (e.g. Boost.Multiprecision)
 license: BSL-1.0 ; Boost Software License 1.0.

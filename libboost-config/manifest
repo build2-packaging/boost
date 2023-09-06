@@ -2,7 +2,7 @@
 name: libboost-config
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Helps Boost library developers adapt to compiler idiosyncrasies; not intended for library users
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -2,7 +2,7 @@
 name: libboost-icl
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Interval Container Library, interval sets and maps and aggregation of associated values
 license: BSL-1.0 ; Boost Software License 1.0.

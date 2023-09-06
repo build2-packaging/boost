@@ -1,7 +1,7 @@
 : 1
 name: libboost-filesystem
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: The Boost Filesystem Library provides portable facilities to query and manipulate paths, files, and directories
 license: BSL-1.0 ; Boost Software License 1.0.
