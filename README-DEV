@@ -4,12 +4,11 @@
        to become more common. Feels like it's not worth adding a custom
        buildfile just for a natvis file?
 
-@@ TMP Enable spirit.x{2,3} by default now that they no longer depend on
-       libboost-regex?
+       Let's do.
 
 @@ TMP libboost-fiber segfault on macOS: Workaround OK? Report upstream?
 
-@@ TMP See clang 16 bug under liboost-stl-interfaces below (section 2.9).
+   Yes, let's report.
 
 1. The "(unknown)" dependency in `boostdep` dependency reports
 

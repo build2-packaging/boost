@@ -78,7 +78,17 @@ lib{boost-context}:
 # BEGIN MANUAL CUSTOMIZATION
 #
 if $macos
+{
+  # While forcing _XOPEN_SOURCE on the uses of a library is a bad idea per:
+  #
+  # https://github.com/build2/HOWTO/blob/master/entries/compile-options-in-buildfile.md
+  #
+  # In this case it appears to be the only solution, see PR #312 for details:
+  #
+  # https://github.com/boostorg/context/pull/213 @@ TMP replace with issue
+  #
   lib{boost_context}: cxx.export.poptions += -D_XOPEN_SOURCE
+}
 #
 # END MANUAL CUSTOMIZATION
 

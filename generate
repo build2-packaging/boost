@@ -718,6 +718,7 @@ function add_deps () # <manifest> <buildfile> <deps> <bf-var>
   #
   local bf_dep_count=0
 
+  local d
   for d in "${deps[@]}"; do
     local dpn= # Dependency package name.
     local dln= # Dependency library name.
