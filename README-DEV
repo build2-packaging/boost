@@ -1,15 +1,3 @@
-@@ TMP Boost.URL now also has a .natvis file. We gave libboost-json a custom
-       buildfile just to distribute this file. I see natvis being mentioned
-       more and more in the upstream build infra so natvis is probably going
-       to become more common. Feels like it's not worth adding a custom
-       buildfile just for a natvis file?
-
-       Let's do.
-
-@@ TMP libboost-fiber segfault on macOS: Workaround OK? Report upstream?
-
-   Yes, let's report.
-
 1. The "(unknown)" dependency in `boostdep` dependency reports
 
 (The real cases of "(unknown)" links caused by "#include <boost/*.hpp>" are
@@ -1181,25 +1169,12 @@ Rust motivation).
 
 Bug #1: Segfault on macOS
 
-The original issue was logged at
-https://github.com/boostorg/context/issues/184.
-
-The Boost.Context author closed the issue as resolved by
-https://github.com/boostorg/context/pull/213. Although that pull request did
-apparently fix part of the problem, Boost.Context's own example programs still
-segfault due to the _XOPEN_SOURCE issue mentioned in that pull request: if a
-Boost.Context client includes (for example) a standard C++ header before a
-Context/Fiber one, _XOPEN_SOURCE is not defined when the ucontext struct is
-defined, resulting in its definition having fewer fields than when
-_XOPEN_SOURCE is defined, as Boost.Context expects it to be. Thus the
-segfault.
-
-The pull request did fix our libboost-context tests, but only by coincidence
-as we removed the spurious, unused stdlib header includes from the upstream
-example we use for our test (fibonacci).
-
-It did not fix libboost-fiber's segfaults, however, so we currently work
-around this by exporting -D_XOPEN_SOURCE from libboost-context.
+A partial upstream fix to the original issue
+(https://github.com/boostorg/context/pull/213) resolved libboost-context's
+segfaults but not those of its clients, so we are currently applying the
+workaround recommended in the new issue at
+https://github.com/boostorg/context/issues/238 to fix libboost-fiber's
+segfaults.
 
 2.3 libboost-outcome
 
