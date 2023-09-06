@@ -2,12 +2,13 @@
 name: libboost-spirit
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: LL parser framework represents parsers directly as EBNF grammars in inlined C++
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/spirit
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/spirit
 package-url: https://github.com/build2-packaging/boost

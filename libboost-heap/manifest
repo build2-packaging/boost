@@ -2,7 +2,7 @@
 name: libboost-heap
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Priority queue data structures
 license: BSL-1.0 ; Boost Software License 1.0.

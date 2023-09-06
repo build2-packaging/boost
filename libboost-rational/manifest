@@ -2,7 +2,7 @@
 name: libboost-rational
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: A rational number class
 license: BSL-1.0 ; Boost Software License 1.0.

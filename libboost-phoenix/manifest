@@ -2,7 +2,7 @@
 name: libboost-phoenix
 version: 1.83.0-a.0.z
 type: lib,binless
-#language: c++
+language: c++
 project: boost
 summary: Define small unnamed function objects at the actual call site, and more
 license: BSL-1.0 ; Boost Software License 1.0.

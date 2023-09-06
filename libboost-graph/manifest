@@ -1,12 +1,13 @@
 : 1
 name: libboost-graph
 version: 1.83.0-a.0.z
-#language: c++
+language: c++
 project: boost
 summary: The BGL graph interface and graph components are generic, in the same sense as the Standard Template Library (STL)
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
+package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/graph
 doc-url: https://www.boost.org/doc/libs/1_83_0/libs/graph
 package-url: https://github.com/build2-packaging/boost
