@@ -1,6 +1,6 @@
 : 1
 name: libboost-type-erasure
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: Runtime polymorphism based on concepts

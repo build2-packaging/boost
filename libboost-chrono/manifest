@@ -1,6 +1,6 @@
 : 1
 name: libboost-chrono
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: Useful time utilities. C++11

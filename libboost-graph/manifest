@@ -1,6 +1,6 @@
 : 1
 name: libboost-graph
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: The BGL graph interface and graph components are generic, in the same sense as the Standard Template Library (STL)
