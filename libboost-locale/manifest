@@ -1,6 +1,6 @@
 : 1
 name: libboost-locale
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: Provide localization and Unicode handling tools for C++

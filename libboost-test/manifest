@@ -1,6 +1,6 @@
 : 1
 name: libboost-test
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: Support for simple program testing, full unit testing, and for program execution monitoring

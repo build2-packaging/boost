@@ -1,6 +1,6 @@
 : 1
 name: libboost-atomic
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: C++11-style atomic<>

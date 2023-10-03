@@ -1,6 +1,6 @@
 : 1
 name: libboost-program-options
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: The program_options library allows program developers to obtain program options, that is (name, value) pairs from the user, via conventional methods such as command line and config file

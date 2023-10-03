@@ -1,6 +1,6 @@
 : 1
 name: libboost-json
-version: 1.83.0-a.0.z
+version: 1.83.0
 language: c++
 project: boost
 summary: JSON parsing, serialization, and DOM in C++11

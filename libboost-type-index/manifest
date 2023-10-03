@@ -1,6 +1,6 @@
 : 1
 name: libboost-type-index
-version: 1.83.0-a.0.z
+version: 1.83.0
 type: lib,binless
 language: c++
 project: boost
