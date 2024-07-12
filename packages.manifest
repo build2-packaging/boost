@@ -38,10 +38,16 @@ location: libboost-bind/
 location: libboost-callable-traits/
 
 :
+location: libboost-charconv/
+
+:
 location: libboost-chrono/
 
 :
 location: libboost-circular-buffer/
+
+:
+location: libboost-cobalt/
 
 :
 location: libboost-compat/
@@ -308,10 +314,16 @@ location: libboost-ratio/
 location: libboost-rational/
 
 :
+location: libboost-redis/
+
+:
 location: libboost-regex/
 
 :
 location: libboost-safe-numerics/
+
+:
+location: libboost-scope/
 
 :
 location: libboost-scope-exit/
