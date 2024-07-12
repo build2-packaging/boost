@@ -1250,9 +1250,14 @@ Jamfile and our build currently do.
 
 2.7 liboost-numeric-ublas
 
+Bug #1
+
 Our builds fail due to the bug reported at
 https://github.com/boostorg/ublas/issues/82 (Error when compiling tensor with
-NDEBUG) in May 2020 and still not fixed 1.5 years later.
+NDEBUG).
+
+This bug was reported in 2020. The fix was made in the `develop` branch in
+2022 but still has not been released in 2024.
 
 2.8 libboost-pool
 
@@ -1265,11 +1270,6 @@ libboost-coroutine2 to fail in CI on Windows (all configs but mingw).
 
 Bug #1
 
-Use of SIZE_MAX without including <cstdint>. Reported upstream at
-https://github.com/boostorg/stl_interfaces/issues/63.
-
-Bug #2
-
 GCC 13's libstdc++ ranges header: "error: requires clause differs in
 template redeclaration"
 
@@ -1278,6 +1278,125 @@ where we're seeing these failures.
 
 GCC issue: https://gcc.gnu.org/bugzilla//show_bug.cgi?id=109647
 LLVM issue: https://github.com/llvm/llvm-project/issues/49620
+
+2.10 libboost-cobalt
+
+- Our tests fail with a segfault under CI config
+  macos_14-gcc_14_homebrew-static_O3 and the fix does not look straightforward
+  at all. This is the only macOS config of ours that fails, but the upstream
+  example programs cannot even be compiled in version 1.85.0 (see the next
+  point).
+
+- The upstream examples do not build under version 1.85.0; they also fail with
+  the "too few arguments to function call, expected 2 have 1" error on calls
+  to operator delete. And defining BOOST_COBALT_NO_PMR=1 does not fix it as it
+  does for our test program, which probably means version 1.85.0 of this
+  library is broken on macOS. The upstream examples do, however, build under
+  the develop branch as of 2024-07-24.
+
+@@ TODO Consider disabling this library on macOS until its examples build
+   again.
+
+- Option -fcoroutines is required by some compilers. Unlike other
+  couroutine-related Boost libraries like Boost.Coroutine2, this library uses
+  C++20 coroutines, which requires the -fcoroutines option on some compilers
+  with only experimental support for <coroutine>. Because this is
+  compiler-specific we do not specify this option in the libboost-cobalt
+  buildfile so we leave it to users to do so in their build configurations.
+
+- TODO: Switch to std::pmr instead of falling back to Boost.Container's
+  implementation when std::pmr is more widely supported. Support was only
+  added to Clang version 16, which is still relatively new. (See
+  BOOST_COBALT_USE_STD_PMR and BOOST_COBALT_USE_BOOST_CONTAINER_PMR.)
+
+  - TODO: Remove the dependency on libboost-container when we switch to
+    std::pmr.
+
+Bug #1
+
+On macOS the build fails with "too few arguments to function call, expected 2
+have 1"; the call is of operator delete.
+
+This has already been reported upstream:
+https://github.com/boostorg/cobalt/issues/144.
+
+We work around it by defining BOOST_COBALT_NO_PMR=1 on macOS, which disables
+PMR entirely. This breaks the MSVC build, however; see below.
+
+Bug #2
+
+The build fails under MSVC with BOOST_COBALT_NO_PMR=1 defined (which we do to
+work around macOS bug https://github.com/boostorg/cobalt/issues/144). Work
+around it by defining BOOST_COBALT_USE_BOOST_CONTAINER_PMR=1 on all platforms
+but macOS.
+
+Reported upstream at https://github.com/boostorg/cobalt/issues/193. The fix
+has been merged into the upstream `develop` branch but not yet released.
+
+Warning #1
+
+"mismatched new, delete" warnings on Linux and MinGW.
+
+Already reported upstream: https://github.com/boostorg/cobalt/issues/7.
+
+2.12 libboost-graph
+
+Bug #1
+
+Unnecessary dependency on graphviz (and thus Boost.Regex):
+https://github.com/boostorg/graph/issues/326
+
+Upstream closed the issue and merged our pull request into the develop branch
+a year ago but it has not been released yet.
+
+2.13 libboost-multiprecision
+
+Bug #1
+
+GCC does not handle CRLF properly on Windows/MinGW:
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84583.
+
+2.14 libboost-intrusive
+
+Bug #1
+
+Invalid UTF-8 character in comment. Reported at
+https://github.com/boostorg/intrusive/issues/86. This has been fixed upstream
+but is scheduled to be released in 1.86.0 only.
+
+TODO: Remove this patch when upgrading to 1.86.0.
+
+2.15 libboost-safe-numerics
+
+Bug #1
+
+Clang 18 with libc++ fails with `no member named 'terminate' in namespace
+'std'; did you mean 'template'?` due to <exception> not being included.
+
+Reported upstream at https://github.com/boostorg/safe_numerics/issues/139.
+
+2.16 libboost-fiber
+
+Bug #1
+
+Compilation with MSVC, MinGW, and Clang on Windows fails with "dllimport
+cannot be applied to non-inline function definition". Already reported at
+https://github.com/boostorg/fiber/issues/314.
+
+libboost-container
+
+Warning #1
+
+dlmalloc_ext_2_8_6.c:1085:41: warning: iteration 2305843009213693951 invokes undefined behavior [-Waggressive-loop-optimizations]
+
+Already reported at https://github.com/boostorg/container/issues/234.
+
+Warning #2
+
+dlmalloc_2_8_6.c:5130:5: warning: incompatible pointer types passing 'int *'
+to parameter of type 'volatile long *' [-Wincompatible-pointer-types]
+
+Already reported at https://github.com/boostorg/container/issues/246.
 
 3. Boost upstream upgrade procedure
 
@@ -1321,7 +1440,9 @@ Regenerate the packages by running `generate`.
 
     - Are new
 
-    - Have custom builds, tests, or overrides
+    - Have custom builds, tests, or overrides. But note that some libraries'
+      primary builds are still b2 in which case their various jamfiles may be
+      more advanced than their CMakeLists.txt.
 
     - Have lots of upstream code changes, especially major ones like
       new/deleted source files or new macro definitions. Although code changes
@@ -1332,8 +1453,8 @@ Regenerate the packages by running `generate`.
 
         ./boostdep --boost-root upstream/ --reverse atomic
 
-      However, those with lots of dependencies are likely to be tested well
-      enough automatically.
+      However, those with many dependents are likely to be tested well enough
+      automatically.
 
     - Are binful
 
@@ -1349,9 +1470,6 @@ Regenerate the packages by running `generate`.
 
       git show <upstream-upgrade-commit-id> upstream/libs/foo/
 
-    Even if there are no upstream changes its tests should at least be run
-    because some of its dependencies may have been updated.
-
   - Look `generate`, `override`, `exclude`, and downstream/* over for anything
     that may be affected by the latest upstream changes, paying special
     attention to @@ comments and TODOs.
@@ -1361,6 +1479,10 @@ Regenerate the packages by running `generate`.
 
   - Look for bugs in section 2 of this file that may have been resolved and
     also record new ones there.
+
+  - Build and test each library of interest with something like this:
+
+      for l in $(./libs-of-interest <rev>); { echo ${l^^}; b "{test}($l/)"; }
 
 3.4 Test/CI
   - New libraries
