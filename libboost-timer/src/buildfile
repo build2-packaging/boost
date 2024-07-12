@@ -28,8 +28,8 @@ src_pfx_src = [dir_path] $src_root/src/
 cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
                 "-I$out_pfx_inc" "-I$src_pfx_inc"
 
-{hbmia obja}{*}: cxx.poptions += -DBOOST_TIMER_STATIC_LINK
-{hbmis objs}{*}: cxx.poptions += -DBOOST_TIMER_DYN_LINK
+obja{*}: cxx.poptions += -DBOOST_TIMER_STATIC_LINK
+objs{*}: cxx.poptions += -DBOOST_TIMER_DYN_LINK
 
 # Export options.
 #
@@ -43,9 +43,9 @@ lib{boost_timer}:
 liba{boost_timer}: cxx.export.poptions += -DBOOST_TIMER_STATIC_LINK
 libs{boost_timer}: cxx.export.poptions += -DBOOST_TIMER_DYN_LINK
 
-# For pre-releases use the complete version to make sure they cannot be used
-# in place of another pre-release or the final version. See the version module
-# for details on the version.* variable values.
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
 #
 if $version.pre_release
   lib{boost_timer}: bin.lib.version = "-$version.project_id"

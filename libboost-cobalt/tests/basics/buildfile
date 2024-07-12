@@ -1,0 +1,3 @@
+import libs = libboost-cobalt%lib{boost_cobalt}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

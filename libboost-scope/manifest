@@ -1,0 +1,24 @@
+: 1
+name: libboost-scope
+version: 1.85.0-a.0.z
+type: lib,binless
+language: c++
+project: boost
+summary: A collection of scope guards and a unique_resource wrapper
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/scope
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/scope
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+#build-error-email: builds@build2.org
+builds: default
+builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
+depends: libboost-assert == $
+depends: libboost-config == $
+depends: libboost-core == $
+depends: libboost-type-traits == $

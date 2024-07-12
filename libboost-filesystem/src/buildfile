@@ -1,7 +1,6 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container-hash%lib{boost_container_hash}
-import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-detail%lib{boost_detail}
 import intf_libs += libboost-io%lib{boost_io}
 import intf_libs += libboost-iterator%lib{boost_iterator}
@@ -9,8 +8,9 @@ import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import impl_libs  = libboost-atomic%lib{boost_atomic}
+import impl_libs += libboost-core%lib{boost_core}
 import impl_libs += libboost-predef%lib{boost_predef}
-import impl_libs += libboost-throw-exception%lib{boost_throw_exception}
+import impl_libs += libboost-scope%lib{boost_scope}
 import impl_libs += libboost-winapi%lib{boost_winapi}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
@@ -101,6 +101,7 @@ switch $tclass, $tsys
   #
   case 'linux'
     cxx.poptions += -DBOOST_FILESYSTEM_HAS_DIRENT_D_TYPE        \
+                    -DBOOST_FILESYSTEM_HAS_FALLOCATE            \
                     -DBOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW   \
                     -DBOOST_FILESYSTEM_HAS_POSIX_AT_APIS        \
                     -DBOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE      \

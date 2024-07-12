@@ -1,15 +1,15 @@
 : 1
 name: libboost-utility
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
-summary: Class noncopyable plus checked_delete(), checked_array_delete(), next(), prior() function templates, plus base-from-member idiom
+summary: Various utilities, such as base-from-member idiom and binary literals in C++03
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/utility
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/utility
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/utility
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

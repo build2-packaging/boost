@@ -1,10 +1,7 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
-import intf_libs += libboost-core%lib{boost_core}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-type-index%lib{boost_type_index}
-import intf_libs += libboost-type-traits%lib{boost_type_traits}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

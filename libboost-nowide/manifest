@@ -1,6 +1,6 @@
 : 1
 name: libboost-nowide
-version: 1.83.0
+version: 1.85.0-a.0.z
 language: c++
 project: boost
 summary: Standard library functions with UTF-8 API on Windows
@@ -8,7 +8,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/nowide
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/nowide
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/nowide
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

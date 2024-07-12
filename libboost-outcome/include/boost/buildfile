@@ -1,4 +1,5 @@
-import intf_libs  = libboost-config%lib{boost_config}
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-exception%lib{boost_exception}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}

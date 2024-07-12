@@ -1,6 +1,6 @@
 : 1
 name: libboost-log
-version: 1.83.0
+version: 1.85.0-a.0.z
 language: c++
 project: boost
 summary: Logging library
@@ -8,7 +8,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/log
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/log
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/log
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -19,16 +19,13 @@ depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-align == $
 depends: libboost-asio == $
-depends: libboost-bind == $
 depends: libboost-interprocess == $
 depends: libboost-io == $
 depends: libboost-predef == $
 depends: libboost-random == $
-depends: libboost-array == $
 depends: libboost-assert == $
 depends: libboost-atomic == $
 depends: libboost-config == $
-depends: libboost-container == $
 depends: libboost-core == $
 depends: libboost-date-time == $
 depends: libboost-exception == $
@@ -37,7 +34,6 @@ depends: libboost-function-types == $
 depends: libboost-fusion == $
 depends: libboost-intrusive == $
 depends: libboost-iterator == $
-depends: libboost-lexical-cast == $
 depends: libboost-move == $
 depends: libboost-mpl == $
 depends: libboost-optional == $
@@ -60,7 +56,6 @@ libboost-spirit == $
   }
 }
 \
-depends: libboost-static-assert == $
 depends: libboost-system == $
 depends: libboost-thread == $
 depends: libboost-throw-exception == $

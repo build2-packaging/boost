@@ -13,6 +13,7 @@
 #include <boost/interprocess/permissions.hpp>
 #include <boost/interprocess/segment_manager.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 int
 main ()

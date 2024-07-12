@@ -1,7 +1,6 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-concept-check%lib{boost_concept_check}
 import intf_libs += libboost-config%lib{boost_config}
-import intf_libs += libboost-conversion%lib{boost_conversion}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-detail%lib{boost_detail}
 import intf_libs += libboost-function-types%lib{boost_function_types}

@@ -1,0 +1,28 @@
+: 1
+name: libboost-redis
+version: 1.85.0-a.0.z
+type: lib,binless
+language: c++
+project: boost
+summary: Redis async client library built on top of Boost.Asio
+license: BSL-1.0 ; Boost Software License 1.0.
+topics: C++, Boost
+description-file: README.md
+url: https://github.com/boostorg/redis
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/redis
+package-url: https://github.com/build2-packaging/boost
+email: boost-users@lists.boost.org  ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+#build-error-email: builds@build2.org
+builds: default
+builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
+depends: libssl >= 1.1.1
+depends: libcrypto >= 1.1.1
+depends: libboost-asio == $
+depends: libboost-assert == $
+depends: libboost-core == $
+depends: libboost-mp11 == $
+depends: libboost-system == $
+depends: libboost-throw-exception == $

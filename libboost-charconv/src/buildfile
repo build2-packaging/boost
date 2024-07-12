@@ -1,0 +1,81 @@
+import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-core%lib{boost_core}
+impl_libs = # Implementation dependencies.
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_charconv}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_charconv}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Disable libquadmath (Linux only and no build2 package yet).
+#
+cxx.poptions += -DBOOST_CHARCONV_NO_QUADMATH
+
+#
+# END MANUAL CUSTOMIZATION
+
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_CHARCONV_SOURCE
+obja{*}: cxx.poptions += -DBOOST_CHARCONV_STATIC_LINK
+objs{*}: cxx.poptions += -DBOOST_CHARCONV_DYN_LINK
+
+# Export options.
+#
+lib{boost_charconv}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_CHARCONV_NO_LIB
+
+  # BEGIN MANUAL CUSTOMIZATION
+  #
+
+  # Disable libquadmath (Linux only and no build2 package yet).
+  #
+  cxx.export.poptions += -DBOOST_CHARCONV_NO_QUADMATH
+
+  #
+  # END MANUAL CUSTOMIZATION
+
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost_charconv}: cxx.export.poptions += -DBOOST_CHARCONV_STATIC_LINK
+libs{boost_charconv}: cxx.export.poptions += -DBOOST_CHARCONV_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_charconv}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost_charconv}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

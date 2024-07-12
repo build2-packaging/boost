@@ -1,6 +1,6 @@
 : 1
 name: libboost-typeof
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
@@ -8,7 +8,7 @@ summary: Typeof operator emulation
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/typeof
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/typeof
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/typeof
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -18,5 +18,3 @@ builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-config == $
-depends: libboost-preprocessor == $
-depends: libboost-type-traits == $

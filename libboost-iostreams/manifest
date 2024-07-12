@@ -1,6 +1,6 @@
 : 1
 name: libboost-iostreams
-version: 1.83.0
+version: 1.85.0-a.0.z
 language: c++
 project: boost
 summary: Boost.IOStreams provides a framework for defining streams, stream buffers and i/o filters
@@ -9,7 +9,7 @@ topics: C++, Boost
 description-file: README.md
 package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/iostreams
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/iostreams
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/iostreams
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
