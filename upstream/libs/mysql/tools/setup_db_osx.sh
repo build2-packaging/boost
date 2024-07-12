@@ -1,15 +1,13 @@
 #!/bin/bash
 #
-# Copyright (c) 2019-2023 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
+# Copyright (c) 2019-2024 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
 # Setup database. We can't use a Docker service as Docker
-# is not supported in osx
-
-set -e
+# is not supported in osx.
 
 # Install the DB
 brew install mysql@8.0
