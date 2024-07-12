@@ -205,11 +205,28 @@ cxx_only["libboost-stacktrace"]=true
 ## macro to have the same value: most use an empty value but some use `1`).
 ##
 source_macro["libboost-atomic"]=true
+source_macro["libboost-charconv"]=true
+
+# Boost.Chrono made the definition in its source files conditional and at the
+# same time added an unconditional definition to its CMakeLists.txt. Not sure
+# where they're headed but presumably its not back to where they were.
+#
+source_macro["libboost-chrono"]=true
+
+source_macro["libboost-cobalt"]=true
 source_macro["libboost-context"]=true
 source_macro["libboost-coroutine"]=true
 source_macro["libboost-fiber"]=true
 source_macro["libboost-filesystem"]=true
 source_macro["libboost-json"]=true
+
+# Boost.ProgramOptions made the definition in its source files conditional and
+# at the same time added an unconditional definition to its
+# CMakeLists.txt. Not sure where they're headed but presumably its not back to
+# where they were.
+#
+source_macro["libboost-program-options"]=true
+
 source_macro["libboost-stacktrace"]=true
 source_macro["libboost-url"]=true
 
@@ -238,6 +255,13 @@ nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
 # Note: upstream requires SSL unconditionally.
 #
 nonboost_intf_deps["libboost-mysql"]="\
+libssl%lib{ssl}>=1.1.1                \
+libcrypto%lib{crypto}>=1.1.1          \
+"
+
+# Note: upstream requires SSL unconditionally.
+#
+nonboost_intf_deps["libboost-redis"]="\
 libssl%lib{ssl}>=1.1.1                \
 libcrypto%lib{crypto}>=1.1.1          \
 "
@@ -281,6 +305,11 @@ include_headers["libboost-geometry"]="geometry/geometry.hpp"
 include_headers["libboost-histogram"]="histogram.hpp"
 include_headers["libboost-lambda2"]="lambda2.hpp"
 include_headers["libboost-optional"]="optional/optional.hpp"
+include_headers["libboost-redis"]="\
+redis.hpp                          \
+redis/src.hpp                      \
+"
+
 include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 
 # The comment at the top of this header says "Include the default amount of
@@ -310,7 +339,7 @@ include_headers["libboost-variant"]="variant.hpp"
 ## `include/boost/`.
 ##
 
-# detail/*.hpp, core/is_same.hpp, iterator.hpp: deprecated headers.
+# detail/*.hpp, core/is_same.hpp, iterator.hpp, *swap.hpp: deprecated headers.
 #
 # Note that this is the Boost.Core library, not Boost.Detail. These detail/
 # headers are in `include/boost/detail` instead of the more conventional
@@ -318,12 +347,15 @@ include_headers["libboost-variant"]="variant.hpp"
 #
 exclude_headers["libboost-core"]="\
 core/is_same.hpp                  \
+core/swap.hpp                     \
 detail/iterator.hpp               \
 detail/lightweight_test.hpp       \
 detail/no_exceptions_support.hpp  \
 detail/scoped_enum_emulation.hpp  \
 detail/sp_typeinfo.hpp            \
 iterator.hpp                      \
+swap.hpp                          \
+utility/swap.hpp                  \
 "
 
 # lightweight_main.hpp, lightweight_test_report.hpp: these files define main().
@@ -415,7 +447,6 @@ safe_numerics/range_value.hpp              \
 # system/*_error.hpp: deprecated headers.
 #
 exclude_headers["libboost-system"]="\
-system/cygwin_error.hpp             \
 system/linux_error.hpp              \
 system/windows_error.hpp            \
 "
