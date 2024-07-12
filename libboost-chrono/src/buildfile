@@ -41,6 +41,7 @@ src_pfx_src = [dir_path] $src_root/src/
 cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
                 "-I$out_pfx_inc" "-I$src_pfx_inc"
 
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_CHRONO_SOURCE
 {hbmia obja}{*}: cxx.poptions += -DBOOST_CHRONO_STATIC_LINK
 {hbmis objs}{*}: cxx.poptions += -DBOOST_CHRONO_DYN_LINK
 

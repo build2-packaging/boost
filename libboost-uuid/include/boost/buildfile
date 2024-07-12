@@ -28,6 +28,19 @@ lib{boost_uuid}:
   cxx.export.libs = $intf_libs
 }
 
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if ($cxx.target.class == 'windows')
+{
+  lib{boost_uuid}: cxx.export.libs += ($cxx.target.system == 'mingw32'  \
+                                       ? -lbcrypt                       \
+                                       : bcrypt.lib)
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #

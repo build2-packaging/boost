@@ -1,0 +1,119 @@
+import intf_libs  = libboost-asio%lib{boost_asio}
+import intf_libs += libboost-circular-buffer%lib{boost_circular_buffer}
+import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-container%lib{boost_container}
+import intf_libs += libboost-core%lib{boost_core}
+import intf_libs += libboost-intrusive%lib{boost_intrusive}
+import intf_libs += libboost-leaf%lib{boost_leaf}
+import intf_libs += libboost-mp11%lib{boost_mp11}
+import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
+import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
+import intf_libs += libboost-system%lib{boost_system}
+import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
+import intf_libs += libboost-variant2%lib{boost_variant2}
+impl_libs = # Implementation dependencies.
+
+intf_libs = $cxx.deduplicate_export_libs($intf_libs)
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+lib{boost_cobalt}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost_cobalt}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class  == 'macos')
+
+# Work around multiple PMR-related bugs and issues. See README-DEV for details.
+#
+# The macOS workaround breaks the MSVC build so we use a different PMR
+# configuration on the other platforms.
+#
+if $macos
+  cxx.poptions += -DBOOST_COBALT_NO_PMR=1
+else
+{
+  # @@ TODO: Switch to std::pmr (BOOST_COBALT_USE_STD_PMR) once it is more
+  #    widely supported (see README-DEV).
+  #
+  cxx.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
+}
+
+# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
+#
+if $windows
+  cxx.poptions += -D_WIN32_WINNT=0x0601
+
+#
+# END MANUAL CUSTOMIZATION
+
+{hbmi  obj }{*}: cxx.poptions += -DBOOST_COBALT_SOURCE
+obja{*}: cxx.poptions += -DBOOST_COBALT_STATIC_LINK
+objs{*}: cxx.poptions += -DBOOST_COBALT_DYN_LINK
+
+# Export options.
+#
+lib{boost_cobalt}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc" \
+                         -DBOOST_COBALT_NO_LIB
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Note that despite upstream exporting _WIN32_WINNT, keeping it private only
+# does not cause any errors or warnings for us. It's not referenced by any of
+# Cobalt's code so it's probably for Asio but we've never had to export this
+# macro before so assume it's a mistake.
+
+# See the comments above about these PMR macros.
+#
+if $macos
+  lib{boost_cobalt}: cxx.export.poptions += -DBOOST_COBALT_NO_PMR=1
+else
+{
+  lib{boost_cobalt}: \
+    cxx.export.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+liba{boost_cobalt}: cxx.export.poptions += -DBOOST_COBALT_STATIC_LINK
+libs{boost_cobalt}: cxx.export.poptions += -DBOOST_COBALT_DYN_LINK
+
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost_cobalt}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost_cobalt}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false

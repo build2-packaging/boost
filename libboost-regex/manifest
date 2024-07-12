@@ -1,6 +1,6 @@
 : 1
 name: libboost-regex
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 language: c
@@ -11,7 +11,7 @@ topics: C++, Boost
 description-file: README.md
 package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/regex
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/regex
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/regex
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.

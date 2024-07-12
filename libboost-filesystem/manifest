@@ -1,6 +1,6 @@
 : 1
 name: libboost-filesystem
-version: 1.83.0
+version: 1.85.0-a.0.z
 language: c++
 project: boost
 summary: The Boost Filesystem Library provides portable facilities to query and manipulate paths, files, and directories
@@ -8,7 +8,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/filesystem
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/filesystem
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/filesystem
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -18,13 +18,13 @@ builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-atomic == $
+depends: libboost-core == $
 depends: libboost-predef == $
-depends: libboost-throw-exception == $
+depends: libboost-scope == $
 depends: libboost-winapi == $
 depends: libboost-assert == $
 depends: libboost-config == $
 depends: libboost-container-hash == $
-depends: libboost-core == $
 depends: libboost-detail == $
 depends: libboost-io == $
 depends: libboost-iterator == $

@@ -16,8 +16,10 @@
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/core/fclose_deleter.hpp>
 #include <boost/core/first_scalar.hpp>
+#include <boost/core/functor.hpp>
 #include <boost/core/identity.hpp>
 #include <boost/core/ignore_unused.hpp>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/core/launder.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/lightweight_test_trait.hpp>
@@ -37,7 +39,6 @@
 #include <boost/core/size.hpp>
 #include <boost/core/snprintf.hpp>
 #include <boost/core/span.hpp>
-#include <boost/core/swap.hpp>
 #include <boost/core/typeinfo.hpp>
 #include <boost/core/type_name.hpp>
 #include <boost/core/uncaught_exceptions.hpp>
@@ -49,12 +50,10 @@
 #include <boost/noncopyable.hpp>
 #include <boost/non_type.hpp>
 #include <boost/ref.hpp>
-#include <boost/swap.hpp>
 #include <boost/type.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/utility/explicit_operator_bool.hpp>
-#include <boost/utility/swap.hpp>
 #include <boost/visit_each.hpp>
 
 int

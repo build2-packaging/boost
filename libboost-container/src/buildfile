@@ -2,7 +2,6 @@ import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-intrusive%lib{boost_intrusive}
 import intf_libs += libboost-move%lib{boost_move}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
 impl_libs = # Implementation dependencies.
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
