@@ -31,8 +31,8 @@ tsys   = $cxx.target.system
 #
 # The `noop` variant disables backtracing and is supported on all platforms.
 #
-# @@ TODO Add boost_stacktrace_backtrace when libbacktrace is packaged for
-#    build2.
+# @@ TODO Add boost_stacktrace_backtrace and boost_stacktrace_from_exception
+#    when libbacktrace is packaged for build2.
 #
 variants = boost_stacktrace_noop
 
