@@ -1,13 +1,3 @@
-Once build2 0.16.0 is out with package-description manifest value support:
+Nothing, currently.
 
-  Add this value for packages with PACKAGE-README.md in downstream/.
-
-On the release:
-
-  Remove
-  downstream/libs/multiprecision/include/boost/multiprecision/cpp_int/cpp_int_config.hpp
-  once the following GCC bug has been resolved:
-  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84583.
-
-  If upstream decides to fix https://github.com/boostorg/graph/issues/326,
-  remove the mentioned patches from downstream/.
+See README-DEV for upstream bug reports we're waiting on to be resolved.
