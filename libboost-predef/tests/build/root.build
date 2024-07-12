@@ -3,10 +3,6 @@ using c
 h{*}: extension = h
 c{*}: extension = c
 
-# Assume headers are importable unless stated otherwise.
-#
-h{*}: c.importable = true
-
 # Every exe{} in this subproject is by default a test.
 #
 exe{*}: test = true

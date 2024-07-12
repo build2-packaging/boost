@@ -1,0 +1,3 @@
+import libs = libboost-redis%lib{boost_redis}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

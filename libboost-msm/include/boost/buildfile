@@ -13,6 +13,7 @@ import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-proto%lib{boost_proto}
 import intf_libs += libboost-serialization%lib{boost_serialization}
 import intf_libs += libboost-tuple%lib{boost_tuple}
+import intf_libs += libboost-type-index%lib{boost_type_index}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-typeof%lib{boost_typeof}
 

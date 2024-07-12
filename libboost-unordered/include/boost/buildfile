@@ -2,14 +2,9 @@ import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container-hash%lib{boost_container_hash}
 import intf_libs += libboost-core%lib{boost_core}
-import intf_libs += libboost-move%lib{boost_move}
 import intf_libs += libboost-mp11%lib{boost_mp11}
 import intf_libs += libboost-predef%lib{boost_predef}
-import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
-import intf_libs += libboost-tuple%lib{boost_tuple}
-import intf_libs += libboost-type-traits%lib{boost_type_traits}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

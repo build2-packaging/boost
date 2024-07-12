@@ -1,6 +1,6 @@
 : 1
 name: libboost-variant
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
@@ -9,7 +9,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/variant
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/variant
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/variant
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -19,13 +19,11 @@ builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-assert == $
-depends: libboost-bind == $
 depends: libboost-config == $
 depends: libboost-container-hash == $
 depends: libboost-core == $
 depends: libboost-detail == $
 depends: libboost-integer == $
-depends: libboost-move == $
 depends: libboost-mpl == $
 depends: libboost-preprocessor == $
 depends: libboost-static-assert == $

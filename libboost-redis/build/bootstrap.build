@@ -1,0 +1,7 @@
+project = libboost-redis
+
+using version
+using config
+using test
+using install
+using dist

@@ -1,6 +1,6 @@
 : 1
 name: libboost-intrusive
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
@@ -9,7 +9,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/intrusive
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/intrusive
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/intrusive
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -20,6 +20,4 @@ depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-assert == $
 depends: libboost-config == $
-depends: libboost-container-hash == $
 depends: libboost-move == $
-depends: libboost-static-assert == $

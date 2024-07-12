@@ -1,6 +1,6 @@
 : 1
 name: libboost-asio
-version: 1.83.0
+version: 1.85.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
@@ -9,7 +9,7 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 package-description-file: PACKAGE-README.md
 url: https://github.com/boostorg/asio
-doc-url: https://www.boost.org/doc/libs/1_83_0/libs/asio
+doc-url: https://www.boost.org/doc/libs/1_85_0/libs/asio
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
@@ -19,19 +19,9 @@ builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
 depends: libboost-align == $
-depends: libboost-array == $
 depends: libboost-assert == $
-depends: libboost-bind == $
-depends: libboost-chrono == $
 depends: libboost-config == $
 depends: libboost-context == $
-depends: libboost-core == $
 depends: libboost-date-time == $
-depends: libboost-exception == $
-depends: libboost-function == $
-depends: libboost-regex == $ ? ($config.libboost_asio.regex)
-depends: libboost-smart-ptr == $
 depends: libboost-system == $
 depends: libboost-throw-exception == $
-depends: libboost-type-traits == $
-depends: libboost-utility == $

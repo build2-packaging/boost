@@ -10,9 +10,7 @@ import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-date-time%lib{boost_date_time}
 import intf_libs += libboost-exception%lib{boost_exception}
 import intf_libs += libboost-function%lib{boost_function}
-import intf_libs += libboost-intrusive%lib{boost_intrusive}
 import intf_libs += libboost-io%lib{boost_io}
-import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-move%lib{boost_move}
 import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-predef%lib{boost_predef}
@@ -25,8 +23,7 @@ import intf_libs += libboost-tuple%lib{boost_tuple}
 import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-utility%lib{boost_utility}
 import intf_libs += libboost-winapi%lib{boost_winapi}
-import impl_libs  = libboost-algorithm%lib{boost_algorithm}
-import impl_libs += libboost-lexical-cast%lib{boost_lexical_cast}
+impl_libs = # Implementation dependencies.
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

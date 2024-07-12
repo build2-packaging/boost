@@ -7,10 +7,6 @@ ixx{*}: extension = ipp
 txx{*}: extension = tpp
 cxx{*}: extension = cpp
 
-# Assume headers are importable unless stated otherwise.
-#
-hxx{*}: cxx.importable = true
-
 # Every exe{} in this subproject is by default a test.
 #
 exe{*}: test = true
