@@ -854,6 +854,7 @@ for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
   #
   he= # Header file extension.
   se= # Source file extension.
+  ie= # Implementation file extension.
 
   # Suboptions to the `bdep-new` `--lang` option. Start off with the primary
   # and, if applicable, secondary language suboptions. For example, "c++,c".
@@ -872,6 +873,7 @@ for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
     c++*)
       he="hpp"
       se="cpp"
+      ie="ipp"
       ;;
     # Primary language is C.
     #
@@ -967,9 +969,13 @@ for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
         -f "downstream/libs/$udn/include/boost/$un.$he" ]]; then
     # There are patched headers.
     #
-    find "$udp/include/boost/" -type f -name "*.$he" | while read f; do
+    # Note that if `ie` is empty (which will be the case for a C library) then
+    # the resultant `*.` pattern will not match any files.
+    #
+    find "$udp/include/boost/" -type f \
+         -name "*.$he" -or -name "*.$ie" | while read f; do
       dp="${f/upstream/downstream}"                 # Downstream path.
-      pp="$pn/$(dirname "${f#upstream/libs/$un/}")" # Package-relative path.
+      pp="$pn/$(dirname "${f#upstream/libs/$udn/}")" # Package-relative path.
       rp="$(sed -Ee 's%[^/]+%..%g' <<<"$pp")"       # Path from pp to root.
 
       # Create any missing directories in the package-relative path.
