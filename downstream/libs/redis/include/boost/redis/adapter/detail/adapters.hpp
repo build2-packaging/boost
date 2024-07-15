@@ -30,10 +30,8 @@
 
 // See https://stackoverflow.com/a/31658120/1077832
 #include<ciso646>
-#ifdef _LIBCPP_VERSION
-#else
 #include <cstdlib>
-#endif
+#include <cmath> // HUGE_VAL
 
 namespace boost::redis::adapter::detail
 {
@@ -57,7 +55,6 @@ void boost_redis_from_bulk(bool& t, std::string_view sv, system::error_code&)
 inline
 void boost_redis_from_bulk(double& d, std::string_view sv, system::error_code& ec)
 {
-#ifdef _LIBCPP_VERSION
    // The string in sv is not null terminated and we also don't know
    // if there is enough space at the end for a null char. The easiest
    // thing to do is to create a temporary.
@@ -66,11 +63,6 @@ void boost_redis_from_bulk(double& d, std::string_view sv, system::error_code& e
    d = std::strtod(tmp.data(), &end);
    if (d == HUGE_VAL || d == 0)
       ec = redis::error::not_a_double;
-#else
-   auto const res = std::from_chars(sv.data(), sv.data() + std::size(sv), d);
-   if (res.ec != std::errc())
-      ec = redis::error::not_a_double;
-#endif // _LIBCPP_VERSION
 }
 
 template <class CharT, class Traits, class Allocator>
