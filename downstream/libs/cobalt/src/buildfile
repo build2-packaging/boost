@@ -1,0 +1,104 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+pub_hdrs = $($pub/ pub_hdrs)
+
+windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class  == 'macos')
+
+lib{boost-cobalt}: $pub/{$pub_hdrs}
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost-cobalt}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Work around multiple PMR-related bugs and issues. See README-DEV for details.
+#
+# The macOS workaround breaks the MSVC build so we use a different PMR
+# configuration on the other platforms.
+#
+if $macos
+  cxx.poptions += -DBOOST_COBALT_NO_PMR=1
+else
+{
+  # @@ TODO: Switch to std::pmr (BOOST_COBALT_USE_STD_PMR) once it is more
+  #    widely supported (see README-DEV).
+  #
+  cxx.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
+}
+
+# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
+#
+if $windows
+  cxx.poptions += -D_WIN32_WINNT=0x0601
+
+#
+# END MANUAL CUSTOMIZATION
+
+obja{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+objs{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# Export options.
+#
+lib{boost-cobalt}:
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# See the comments above about these PMR macros.
+#
+if $macos
+  lib{boost-cobalt}: cxx.export.poptions += -DBOOST_COBALT_NO_PMR=1
+else
+{
+  lib{boost-cobalt}: \
+    cxx.export.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
+}
+
+# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
+#
+if $windows
+  lib{boost-cobalt}: cxx.export.poptions += -D_WIN32_WINNT=0x0601
+
+#
+# END MANUAL CUSTOMIZATION
+
+liba{boost-cobalt}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-cobalt}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-cobalt}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost-cobalt}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false
