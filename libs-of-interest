@@ -38,10 +38,11 @@ fi
 find downstream/ -name buildfile | \
   sed -En 's%downstream/libs/([^/]+)/.+%\1%p' > "$tmpfile"
 
-# Find libraries with overrides. Strip the `libboost-` prefix from library
-# names to match the output of the other commands being run in this stage.
+# Find libraries with overrides (skipping comments). Strip the `libboost-`
+# prefix from library names to match the output of the other commands being
+# run in this stage.
 #
-sed -En 's%.*libboost-([-a-z]+).*%\1%p' override >> "$tmpfile"
+sed -En 's%^[^#]*libboost-([-a-z]+).*%\1%p' override >> "$tmpfile"
 
 # Find libraries with upstream build changes in the specified git
 # revision. Extract the library directories from all paths ending with
