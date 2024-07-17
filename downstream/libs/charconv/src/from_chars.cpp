@@ -349,7 +349,7 @@ namespace {
 template <typename T>
 boost::charconv::from_chars_result from_chars_strict_impl(const char *first, const char *last, T &value, boost::charconv::chars_format fmt) noexcept
 {
-    T temp_value;
+    T temp_value {};
     const auto r = boost::charconv::from_chars_erange(first, last, temp_value, fmt);
 
     if (r)
