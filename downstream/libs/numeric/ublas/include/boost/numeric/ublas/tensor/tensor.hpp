@@ -329,8 +329,8 @@ public:
 	 *
 	 * @param other tensor with a different layout to be copied.
 	 */
-	BOOST_UBLAS_INLINE
 	template<class other_layout>
+	BOOST_UBLAS_INLINE
 	tensor (const tensor<value_type, other_layout> &other)
 		: tensor_expression_type<self_type> ()
 		, extents_ (other.extents())
@@ -351,8 +351,8 @@ public:
 	 *
 	 * @param expr tensor expression
 	 */
-	BOOST_UBLAS_INLINE
 	template<class derived_type>
+	BOOST_UBLAS_INLINE
 	tensor (const tensor_expression_type<derived_type> &expr)
 		: tensor_expression_type<self_type> ()
 		, extents_ ( detail::retrieve_extents(expr) )
@@ -373,8 +373,8 @@ public:
 	 *
 	 * @param expr matrix expression
 	 */
-	BOOST_UBLAS_INLINE
 	template<class derived_type>
+	BOOST_UBLAS_INLINE
 	tensor (const matrix_expression_type<derived_type> &expr)
 		: tensor(  matrix_type ( expr )  )
 	{
@@ -389,8 +389,8 @@ public:
 	 *
 	 * @param expr vector expression
 	 */
-	BOOST_UBLAS_INLINE
 	template<class derived_type>
+	BOOST_UBLAS_INLINE
 	tensor (const vector_expression_type<derived_type> &expr)
 		: tensor(  vector_type ( expr )  )
 	{
@@ -404,8 +404,8 @@ public:
 	 *
 	 * @param expr expression that is evaluated.
 	 */
-	BOOST_UBLAS_INLINE
 	template<class derived_type>
+	BOOST_UBLAS_INLINE
 	tensor &operator = (const tensor_expression_type<derived_type> &expr)
 	{
 		detail::eval(*this, expr);
@@ -532,8 +532,8 @@ public:
 	 *  @param i zero-based index where 0 <= i < this->size() if sizeof...(is) == 0, else 0<= i < this->size(0)
 	 *  @param is zero-based indices where 0 <= is[r] < this->size(r) where  0 < r < this->rank()
 	 */
-	BOOST_UBLAS_INLINE
 	template<class ... size_types>
+	BOOST_UBLAS_INLINE
 	reference at (size_type i, size_types ... is) {
 		if constexpr (sizeof...(is) == 0)
 			return this->data_[i];
@@ -579,8 +579,8 @@ public:
 	 *  @param i placeholder
 	 *  @param is zero-based indices where 0 <= is[r] < this->size(r) where  0 < r < this->rank()
 	 */
-	BOOST_UBLAS_INLINE
 	template<std::size_t I, class ... index_types>
+	BOOST_UBLAS_INLINE
 	decltype(auto) operator() (index::index_type<I> p, index_types ... ps) const
 	{
 		constexpr auto N = sizeof...(ps)+1;
