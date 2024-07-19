@@ -211,8 +211,8 @@ namespace detail {
  * @param[in] w stride vector of length p
  * @returns relative memory location depending on \c i and \c w
 */
-BOOST_UBLAS_INLINE
 template<class size_type, class layout_type>
+BOOST_UBLAS_INLINE
 auto access(std::vector<size_type> const& i, basic_strides<size_type,layout_type> const& w)
 {
 	const auto p = i.size();
@@ -231,8 +231,8 @@ auto access(std::vector<size_type> const& i, basic_strides<size_type,layout_type
  * @param[in] sum the current relative memory index
  * @returns relative memory location depending on \c i and \c w
 */
-BOOST_UBLAS_INLINE
 template<std::size_t r, class layout_type, class ... size_types>
+BOOST_UBLAS_INLINE
 auto access(std::size_t sum, basic_strides<std::size_t, layout_type> const& w, std::size_t i, size_types ... is)
 {
 	sum+=i*w[r];
