@@ -811,6 +811,44 @@ import $vn += $dt")
   fi
 }
 
+# Symlink an upstream file into the package directory.
+#
+# If there is a downstream version of the file, its symlink gets the upstream
+# filename while the upstream original's symlink gets the upstream filename
+# with a ".orig" extension.
+#
+# <upstream-file-path>: The path to the upstream file.
+#
+# <package-name>: The library package name (e.g., libboost-numeric-limits).
+#
+# <upstream-directory-name>: The name of the library's directory in
+#                            upstream/libs/ (e.g. `asio` or `numeric/limits`).
+#
+function symlink_upstream_file ()
+  # <upstream-file-path> <package-name> <upstream-directory-name>
+{
+  local f="$1"
+  local pn="$2"
+  local udn="$3"
+
+  local dp="${f/upstream/downstream}"                  # Downstream path.
+  local pp="$pn/$(dirname "${f#upstream/libs/$udn/}")" # Package-relative path.
+  local rp="$(sed -Ee 's%[^/]+%..%g' <<<"$pp")"        # Path from pp to root.
+
+  # Create any missing directories in the package-relative path.
+  #
+  if [[ ! -d "$pp" ]]; then
+    mkdir -p "$pp"
+  fi
+
+  if [[ -f "$dp" ]]; then # There is a downstream version of this file.
+    ln -s "$rp/$f" "$pp/$(basename "$f").orig" # Original.
+    ln -s "$rp/$dp" "$pp"                      # Patched version.
+  else
+    ln -s "$rp/$f" "$pp"
+  fi
+}
+
 # Generate a build2 project/package for each Boost library and add them as
 # packages to the root project.
 #
@@ -974,22 +1012,7 @@ for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
     #
     find "$udp/include/boost/" -type f \
          -name "*.$he" -or -name "*.$ie" | while read f; do
-      dp="${f/upstream/downstream}"                 # Downstream path.
-      pp="$pn/$(dirname "${f#upstream/libs/$udn/}")" # Package-relative path.
-      rp="$(sed -Ee 's%[^/]+%..%g' <<<"$pp")"       # Path from pp to root.
-
-      # Create any missing directories in the package-relative path.
-      #
-      if [[ ! -d "$pp" ]]; then
-        mkdir -p "$pp"
-      fi
-
-      if [[ -f "$dp" ]]; then # There is a downstream version of this header.
-        ln -s "$rp/$f" "$pp/$(basename "$f").orig" # Original.
-        ln -s "$rp/$dp" "$pp"                      # Patched version.
-      else
-        ln -s "$rp/$f" "$pp"
-      fi
+      symlink_upstream_file "$f" "$pn" "$udn"
     done
   else
     for f in "$udp/include/boost/"*; do
@@ -1004,9 +1027,26 @@ for lib in $(sed -ne '1,$s% %\n%g ; p' levels | sort); do
     rm "$pn/src/${pn#lib}.$se"
     rm "$pn/include/boost/export.$he"
 
-    for f in "$udp/src/"*; do
-      ln -s "../../$f" "$pn/src/"
-    done
+    # Symlink upstream source files. This is very similar to the headers case
+    # above so see those comments for more information.
+    #
+    # First check that src/ exists otherwise find will print a warning.
+    #
+    if [[ -d "downstream/libs/$udn/src/" &&
+          -n "$(find "downstream/libs/$udn/src/" -type f -name "*.$se")" ]]; then
+      # There are patched source files.
+      #
+      find "$udp/src/" -type f | while read f; do
+        symlink_upstream_file "$f" "$pn" "$udn"
+      done
+    else
+      # No patched source files so simply symlink all files and directories
+      # directly under src/.
+      #
+      for f in "$udp/src/"*; do
+        ln -s "../../$f" "$pn/src/"
+      done
+    fi
   fi
 
   # Derive the project url package manifest value (see the override file for
