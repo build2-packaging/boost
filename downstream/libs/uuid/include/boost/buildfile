@@ -1,0 +1,33 @@
+intf_libs = # Interface dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+lib{boost-uuid}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost-uuid}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if ($cxx.target.class == 'windows')
+  cxx.export.libs += ($cxx.target.system == 'mingw32' ? -lbcrypt : bcrypt.lib)
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
