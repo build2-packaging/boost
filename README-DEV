@@ -1339,15 +1339,6 @@ Warning #1
 
 Already reported upstream: https://github.com/boostorg/cobalt/issues/7.
 
-2.11 libboost-redis
-
-Bug #1
-
-Fails to compile on g++ 10 (for one) because std::from_chars does not yet have
-floating-point support (it was added in g++ 11).
-
-Reported upstream: https://github.com/boostorg/redis/issues/203
-
 2.12 libboost-graph
 
 Bug #1
