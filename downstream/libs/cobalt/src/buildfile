@@ -81,6 +81,8 @@ else
 
 # Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
 #
+# @@ Iffy to export it, is it used in any headers?
+#
 if $windows
   lib{boost-cobalt}: cxx.export.poptions += -D_WIN32_WINNT=0x0601
 
