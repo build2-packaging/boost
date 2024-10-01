@@ -69,6 +69,11 @@ lib{boost-cobalt}:
 # BEGIN MANUAL CUSTOMIZATION
 #
 
+# Note that despite upstream exporting _WIN32_WINNT, keeping it private only
+# does not cause any errors or warnings for us. It's not referenced by any of
+# Cobalt's code so it's probably for Asio but we've never had to export this
+# macro before so assume it's a mistake.
+
 # See the comments above about these PMR macros.
 #
 if $macos
@@ -78,13 +83,6 @@ else
   lib{boost-cobalt}: \
     cxx.export.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
 }
-
-# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
-#
-# @@ Iffy to export it, is it used in any headers?
-#
-if $windows
-  lib{boost-cobalt}: cxx.export.poptions += -D_WIN32_WINNT=0x0601
 
 #
 # END MANUAL CUSTOMIZATION
