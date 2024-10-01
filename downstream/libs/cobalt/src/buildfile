@@ -10,9 +10,6 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
-windows = ($cxx.target.class == 'windows')
-macos   = ($cxx.target.class  == 'macos')
-
 lib{boost-cobalt}: $pub/{$pub_hdrs}
 
 # Private headers and sources as well as dependencies.
@@ -31,6 +28,9 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 # BEGIN MANUAL CUSTOMIZATION
 #
+
+windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class  == 'macos')
 
 # Work around multiple PMR-related bugs and issues. See README-DEV for details.
 #
