@@ -23,9 +23,6 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
-windows = ($cxx.target.class == 'windows')
-macos   = ($cxx.target.class  == 'macos')
-
 lib{boost_cobalt}: $pub/{$pub_hdrs}
 
 # Private headers and sources as well as dependencies.
@@ -44,6 +41,9 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 # BEGIN MANUAL CUSTOMIZATION
 #
+
+windows = ($cxx.target.class == 'windows')
+macos   = ($cxx.target.class  == 'macos')
 
 # Work around multiple PMR-related bugs and issues. See README-DEV for details.
 #
@@ -84,6 +84,11 @@ lib{boost_cobalt}:
 # BEGIN MANUAL CUSTOMIZATION
 #
 
+# Note that despite upstream exporting _WIN32_WINNT, keeping it private only
+# does not cause any errors or warnings for us. It's not referenced by any of
+# Cobalt's code so it's probably for Asio but we've never had to export this
+# macro before so assume it's a mistake.
+
 # See the comments above about these PMR macros.
 #
 if $macos
@@ -93,11 +98,6 @@ else
   lib{boost_cobalt}: \
     cxx.export.poptions += -DBOOST_COBALT_USE_BOOST_CONTAINER_PMR=1
 }
-
-# Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
-#
-if $windows
-  lib{boost_cobalt}: cxx.export.poptions += -D_WIN32_WINNT=0x0601
 
 #
 # END MANUAL CUSTOMIZATION
