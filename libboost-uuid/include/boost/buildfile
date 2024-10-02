@@ -32,7 +32,11 @@ lib{boost_uuid}:
 #
 
 if ($cxx.target.class == 'windows')
-  cxx.export.libs += ($cxx.target.system == 'mingw32' ? -lbcrypt : bcrypt.lib)
+{
+  lib{boost_uuid}: cxx.export.libs += ($cxx.target.system == 'mingw32'  \
+                                       ? -lbcrypt                       \
+                                       : bcrypt.lib)
+}
 
 #
 # END MANUAL CUSTOMIZATION
