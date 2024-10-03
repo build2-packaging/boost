@@ -1,0 +1,7 @@
+: 1
+name: libboost-charconv
+version: 1.85.0
+language: c++
+project: boost
+summary: An implementation of <charconv> in C++11
+license: BSL-1.0; Boost Software License 1.0.

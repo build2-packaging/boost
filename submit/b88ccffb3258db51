@@ -1,0 +1,8 @@
+: 1
+name: libboost-system
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Extensible error reporting
+license: BSL-1.0; Boost Software License 1.0.

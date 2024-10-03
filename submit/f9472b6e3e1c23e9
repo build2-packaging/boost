@@ -1,0 +1,9 @@
+: 1
+name: libboost-utility
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Various utilities, such as base-from-member idiom and binary\
+ literals in C++03
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,10 @@
+: 1
+name: libboost-outcome
+version: 1.85.0
+type: lib,binless
+language: c++
+language: c
+project: boost
+summary: A deterministic failure handling library partially simulating\
+ lightweight exceptions
+license: BSL-1.0; Boost Software License 1.0.

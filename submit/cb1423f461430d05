@@ -1,0 +1,8 @@
+: 1
+name: libboost-numeric-interval
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Extends the usual arithmetic functions to mathematical intervals
+license: BSL-1.0; Boost Software License 1.0.

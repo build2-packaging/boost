@@ -1,0 +1,8 @@
+: 1
+name: libboost-flyweight
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Design pattern to manage large quantities of highly redundant objects
+license: BSL-1.0; Boost Software License 1.0.

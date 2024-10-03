@@ -1,0 +1,8 @@
+: 1
+name: libboost-io
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Utilities for the standard I/O library
+license: BSL-1.0; Boost Software License 1.0.

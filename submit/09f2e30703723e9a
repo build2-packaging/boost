@@ -1,0 +1,8 @@
+: 1
+name: libboost-variant2
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: A never-valueless, strong guarantee implementation of std::variant
+license: BSL-1.0; Boost Software License 1.0.

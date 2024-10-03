@@ -1,0 +1,7 @@
+: 1
+name: libboost-atomic
+version: 1.85.0
+language: c++
+project: boost
+summary: C++11-style atomic types
+license: BSL-1.0; Boost Software License 1.0.

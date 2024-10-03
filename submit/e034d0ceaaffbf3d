@@ -1,0 +1,9 @@
+: 1
+name: libboost-parameter
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Boost.Parameter Library - Write functions that accept arguments by\
+ name
+license: BSL-1.0; Boost Software License 1.0.

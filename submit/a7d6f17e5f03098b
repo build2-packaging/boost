@@ -1,0 +1,8 @@
+: 1
+name: libboost-type-traits
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Templates for fundamental properties of types
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,7 @@
+: 1
+name: libboost-type-erasure
+version: 1.85.0
+language: c++
+project: boost
+summary: Runtime polymorphism based on concepts
+license: BSL-1.0; Boost Software License 1.0.

@@ -1,0 +1,8 @@
+: 1
+name: libboost-yap
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: An expression template library for C++14 and later
+license: BSL-1.0; Boost Software License 1.0.

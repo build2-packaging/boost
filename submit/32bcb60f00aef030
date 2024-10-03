@@ -1,0 +1,8 @@
+: 1
+name: libboost-scope
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: A collection of scope guards and a unique_resource wrapper
+license: BSL-1.0; Boost Software License 1.0.

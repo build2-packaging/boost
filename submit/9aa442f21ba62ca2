@@ -1,0 +1,9 @@
+: 1
+name: libboost-exception
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: The Boost Exception library supports transporting of arbitrary data\
+ in exception objects, and transporting of exceptions between threads
+license: BSL-1.0; Boost Software License 1.0.

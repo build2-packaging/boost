@@ -1,0 +1,8 @@
+: 1
+name: libboost-redis
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Redis async client library built on top of Boost.Asio
+license: BSL-1.0; Boost Software License 1.0.

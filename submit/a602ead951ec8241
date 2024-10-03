@@ -1,0 +1,8 @@
+: 1
+name: libboost-assert
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Customizable assert macros
+license: BSL-1.0; Boost Software License 1.0.

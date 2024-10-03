@@ -1,0 +1,9 @@
+: 1
+name: libboost-msm
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: A very high-performance library for expressive UML2 finite state\
+ machines
+license: BSL-1.0; Boost Software License 1.0.

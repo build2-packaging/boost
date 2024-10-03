@@ -1,0 +1,8 @@
+: 1
+name: libboost-process
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Library to create processes in a portable way
+license: BSL-1.0; Boost Software License 1.0.

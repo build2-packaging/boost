@@ -1,0 +1,8 @@
+: 1
+name: libboost-any
+version: 1.85.0
+type: lib,binless
+language: c++
+project: boost
+summary: Safe, generic container for single values of different value types
+license: BSL-1.0; Boost Software License 1.0.
