@@ -1,6 +1,6 @@
 : 1
 name: libboost-container
-version: 1.85.0-a.0.z
+version: 1.85.0
 language: c++
 language: c
 project: boost
