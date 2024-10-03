@@ -1,6 +1,6 @@
 : 1
 name: libboost-cobalt
-version: 1.85.0-a.0.z
+version: 1.85.0
 language: c++
 project: boost
 summary: Coroutines. Basic Algorithms summary: boost-cobalt C++ library Types
