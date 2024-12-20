@@ -1339,34 +1339,19 @@ Warning #1
 
 Already reported upstream: https://github.com/boostorg/cobalt/issues/7.
 
-2.12 libboost-graph
-
-Bug #1
-
-Unnecessary dependency on graphviz (and thus Boost.Regex):
-https://github.com/boostorg/graph/issues/326
-
-Upstream closed the issue and merged our pull request into the develop branch
-a year ago but it has not been released yet.
-
-2.13 libboost-multiprecision
+2.11 libboost-multiprecision
 
 Bug #1
 
 GCC does not handle CRLF properly on Windows/MinGW:
 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84583.
 
-2.14 libboost-intrusive
+Warning #1
 
-Bug #1
+'float_denorm_style' is deprecated: already reported at
+https://github.com/boostorg/multiprecision/issues/619.
 
-Invalid UTF-8 character in comment. Reported at
-https://github.com/boostorg/intrusive/issues/86. This has been fixed upstream
-but is scheduled to be released in 1.86.0 only.
-
-TODO: Remove this patch when upgrading to 1.86.0.
-
-2.15 libboost-safe-numerics
+2.12 libboost-safe-numerics
 
 Bug #1
 
@@ -1375,15 +1360,7 @@ Clang 18 with libc++ fails with `no member named 'terminate' in namespace
 
 Reported upstream at https://github.com/boostorg/safe_numerics/issues/139.
 
-2.16 libboost-fiber
-
-Bug #1
-
-Compilation with MSVC, MinGW, and Clang on Windows fails with "dllimport
-cannot be applied to non-inline function definition". Already reported at
-https://github.com/boostorg/fiber/issues/314.
-
-libboost-container
+2.13 libboost-container
 
 Warning #1
 
@@ -1397,6 +1374,108 @@ dlmalloc_2_8_6.c:5130:5: warning: incompatible pointer types passing 'int *'
 to parameter of type 'volatile long *' [-Wincompatible-pointer-types]
 
 Already reported at https://github.com/boostorg/container/issues/246.
+
+2.14 libboost-redis
+
+Only works with g++ and clang++ versions >= 11 (needs floating-point versions
+of std::from_chars()).
+
+2.15 libboost-process
+
+One might expect that the BOOST_PROCESS_VERSION macro is supposed to be
+defined to 1 when using the v1 library and 2 when using the v2
+library. However the way it's used in v2/detail/config.hpp to define the v2
+namespace seems to contradict that. Furthermore, its value is defaulted to 1
+in both v1 and v2 headers and it is not defined in any build file.
+
+Therefore we currently just ignore its existence.
+
+Bug #1
+
+Boost.Process V1 uses std::codecvt_utf8 but this was deprecated in C++17 and
+removed in C++26. The version of libc++ used on FreeBSD with clang 18 has
+apparently removed std::codecvt_utf8 as it issues compilation errors while
+clang 17 only issues a deprecation warning. (On Linux clang 18 with libc++
+does not even issue a warning.)
+
+This has been reported upstream at
+https://github.com/boostorg/process/issues/286 but it does not look like the
+author plans to fix it ("use V2 instead").
+
+Thus V1 will probably start failing on more and more platforms so we'll need
+to re-evaluate the situation before too long. Seeing that V1 is header-only,
+we could probably just stop running its tests by default.
+
+For the time being we simply disable the V1 test on FreeBSD (i.e., the V2
+tests are still run).
+
+2.16 libboost-parser
+
+There are build failures with clang on Linux and FreeBSD.
+
+Bug #1
+
+error: no template named 'range_adaptor_closure' in namespace 'std::ranges';
+did you mean 'std::__range_adaptor_closure'?
+
+ranges::range_adaptor_closure is not implemented in libc++ <19 (despite the
+__cpp_lib_ranges feature check macro claiming otherwise):
+
+  https://github.com/llvm/llvm-project/issues/70557#issuecomment-1851936055
+
+https://en.cppreference.com/w/cpp/compiler_support (search for
+"range_adaptor_closure")
+
+We work around this error by exporting -DBOOST_PARSER_DISABLE_CONCEPTS for all
+clang configs.
+
+Bug #2
+
+Clang <18 with libstdc++:
+
+error: pack expansion contains parameter pack '_UTypes' that has a different
+length (1 vs. 2) from outer parameter packs
+
+https://github.com/llvm/llvm-project/issues/61415
+
+Fixed by https://github.com/llvm/llvm-project/pull/120380, fix committed
+recently but looks to be targeted for release only in clang 20.
+
+We are letting these build configs fail for now.
+
+Bug #3
+
+include\boost/parser/detail/hl.hpp(176): fatal error C1001: Internal compiler
+error.  (compiler file 'msc1.cpp', line 1593)
+
+Occurs under windows_10-msvc_17.10** configs.
+
+According to
+https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/fatal-error-c1001
+this sounds like an MSVC parser error.
+
+It's not immediately apparent what the problem is so we're leaving these
+builds to fail for now.
+
+2.17 libboost-fiber
+
+warning C4251: "...struct foo needs to have dll-interface..." (MSVC).
+
+  Ignore these. Upstream is aware but it does not look like they plan to do
+  anything about it:
+  https://github.com/boostorg/fiber/issues/265#issuecomment-725497376
+
+warning: struct std::aligned_storage’ is deprecated
+
+  Reported upstream at https://github.com/boostorg/fiber/issues/303.
+
+2.18 libboost-iostreams
+
+warning C4275: non dll-interface class 'std::ios_base::failure' used as base
+for dll-interface class 'boost::iostreams::bzip2_error'
+
+  Reported upstream at https://github.com/boostorg/iostreams/issues/100 but
+  still unresolved.
 
 3. Boost upstream upgrade procedure
 
