@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <memory>
 #include <boost/scope/unique_fd.hpp>
 
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS >= 0) && defined(_SC_THREAD_SAFE_FUNCTIONS) && \
@@ -90,25 +91,15 @@ namespace filesystem {
 
 BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec) const
 {
-    system::error_code local_ec;
-    m_symlink_status = detail::symlink_status(m_path, &local_ec);
+    m_status = filesystem::file_status();
+    m_symlink_status = filesystem::file_status();
+
+    m_symlink_status = detail::symlink_status(m_path, ec);
 
     if (!filesystem::is_symlink(m_symlink_status))
     {
         // Also works if symlink_status fails - set m_status to status_error as well
         m_status = m_symlink_status;
-
-        if (BOOST_UNLIKELY(!!local_ec))
-        {
-            if (!ec)
-                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::directory_entry::refresh", m_path, local_ec));
-
-            *ec = local_ec;
-            return;
-        }
-
-        if (ec)
-            ec->clear();
     }
     else
     {
@@ -279,7 +270,8 @@ inline system::error_code dir_itr_close(dir_itr_imp& imp) noexcept
 // Obtains a file descriptor from the directory iterator
 inline int dir_itr_fd(dir_itr_imp const& imp, system::error_code& ec)
 {
-    int fd = ::dirfd(static_cast< DIR* >(imp.handle));
+    // Note: dirfd is a macro on FreeBSD 9 and older
+    const int fd = dirfd(static_cast< DIR* >(imp.handle));
     if (BOOST_UNLIKELY(fd < 0))
     {
         int err = errno;
@@ -371,7 +363,7 @@ int readdir_select_impl(dir_itr_imp& imp, struct dirent** result);
 
 typedef int readdir_impl_t(dir_itr_imp& imp, struct dirent** result);
 
-//! Pointer to the actual implementation of the copy_file_data implementation
+//! Pointer to the actual implementation of readdir
 readdir_impl_t* readdir_impl_ptr = &readdir_select_impl;
 
 void init_readdir_impl()
@@ -668,8 +660,8 @@ extra_data_format g_extra_data_format = file_directory_information_format;
  * Must be large enough to accommodate at least one FILE_DIRECTORY_INFORMATION or *_DIR_INFO struct and one filename.
  * NTFS, VFAT, exFAT and ReFS support filenames up to 255 UTF-16/UCS-2 characters. (For ReFS, there is no information
  * on the on-disk format, and it is possible that it supports longer filenames, up to 32768 UTF-16/UCS-2 characters.)
- * The buffer cannot be larger than 64k, because up to Windows 8.1, NtQueryDirectoryFile and GetFileInformationByHandleEx
- * fail with ERROR_INVALID_PARAMETER when trying to retrieve the filenames from a network share.
+ * The buffer cannot be larger than 64k, otherwise up to Windows 8.1, NtQueryDirectoryFile and GetFileInformationByHandleEx
+ * fail with ERROR_INVALID_PARAMETER when trying to retrieve filenames from a network share.
  */
 BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_extra_size = 65536u;
 
@@ -808,7 +800,7 @@ system::error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::f
                 if (!NT_SUCCESS(status))
                 {
                     dir_itr_close(imp);
-                    if (status == STATUS_NO_MORE_FILES)
+                    if (BOOST_NTSTATUS_EQ(status, STATUS_NO_MORE_FILES))
                         goto done;
 
                     return system::error_code(translate_ntstatus(status), system::system_category());
@@ -1056,7 +1048,7 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
                 // causes a ERROR_FILE_NOT_FOUND error returned from FindFirstFileW
                 // (which is presumably equivalent to STATUS_NO_SUCH_FILE) which we
                 // do not consider an error. It is treated as eof instead.
-                if (status == STATUS_NO_MORE_FILES || status == STATUS_NO_SUCH_FILE)
+                if (BOOST_NTSTATUS_EQ(status, STATUS_NO_MORE_FILES) || BOOST_NTSTATUS_EQ(status, STATUS_NO_SUCH_FILE))
                     goto done;
 
                 return error_code(translate_ntstatus(status), system_category());
@@ -1087,7 +1079,94 @@ BOOST_CONSTEXPR_OR_CONST err_t not_found_error_code = ERROR_PATH_NOT_FOUND;
 
 } // namespace
 
-#if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_POSIX_API)
+
+//! Tests if the directory is empty
+bool is_empty_directory(boost::scope::unique_fd&& fd, path const& p, error_code* ec)
+{
+#if !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+    // Use a more optimal implementation without the overhead of constructing the iterator state
+
+    struct closedir_deleter
+    {
+        using result_type = void;
+        result_type operator() (DIR* dir) const noexcept
+        {
+            ::closedir(dir);
+        }
+    };
+
+    int err;
+
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    std::unique_ptr< DIR, closedir_deleter > dir(::fdopendir(fd.get()));
+    if (BOOST_UNLIKELY(!dir))
+    {
+        err = errno;
+    fail:
+        emit_error(err, p, ec, "boost::filesystem::is_empty");
+        return false;
+    }
+
+    // At this point fd will be closed by closedir
+    fd.release();
+#else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    std::unique_ptr< DIR, closedir_deleter > dir(::opendir(p.c_str()));
+    if (BOOST_UNLIKELY(!dir))
+    {
+        err = errno;
+    fail:
+        emit_error(err, p, ec, "boost::filesystem::is_empty");
+        return false;
+    }
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+
+    while (true)
+    {
+        errno = 0;
+        struct dirent* const ent = ::readdir(dir.get());
+        if (!ent)
+        {
+            err = errno;
+            if (err != 0)
+                goto fail;
+
+            return true;
+        }
+
+        // Skip dot and dot-dot entries
+        if (!(ent->d_name[0] == path::dot
+            && (ent->d_name[1] == static_cast< path::string_type::value_type >('\0') ||
+                (ent->d_name[1] == path::dot && ent->d_name[2] == static_cast< path::string_type::value_type >('\0')))))
+        {
+            return false;
+        }
+    }
+
+#else // !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+
+    filesystem::directory_iterator itr;
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    filesystem::detail::directory_iterator_params params{ std::move(fd) };
+    filesystem::detail::directory_iterator_construct(itr, p, directory_options::none, &params, ec);
+#else
+    filesystem::detail::directory_iterator_construct(itr, p, directory_options::none, nullptr, ec);
+#endif
+    return itr == filesystem::directory_iterator();
+
+#endif // !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+}
+
+#else // BOOST_WINDOWS_API
+
+//! Tests if the directory is empty
+bool is_empty_directory(unique_handle&& h, path const& p, error_code* ec)
+{
+    filesystem::directory_iterator itr;
+    filesystem::detail::directory_iterator_params params{ h.get(), false };
+    filesystem::detail::directory_iterator_construct(itr, p, directory_options::none, &params, ec);
+    return itr == filesystem::directory_iterator();
+}
 
 //! Initializes directory iterator implementation
 void init_directory_iterator_impl() noexcept
@@ -1442,7 +1521,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         {
                             symlink_ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
                         }
-                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
                             symlink_ft = dir_it->symlink_file_type(ec);
                         }
@@ -1537,7 +1616,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         {
                             goto get_file_type_by_handle;
                         }
-                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
                             ft = dir_it->file_type(ec);
                         }

@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-cmake_minimum_required(VERSION 3.5...3.20)
+cmake_minimum_required(VERSION 3.8...3.20)
 
 project(boost_uuid VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
@@ -16,19 +16,39 @@ target_link_libraries(boost_uuid
   INTERFACE
     Boost::assert
     Boost::config
-    Boost::container_hash
-    Boost::core
-    Boost::io
-    Boost::move
-    Boost::numeric_conversion
-    Boost::predef
-    Boost::random
-    Boost::static_assert
     Boost::throw_exception
-    Boost::tti
     Boost::type_traits
-    Boost::winapi
 )
+
+target_compile_features(boost_uuid INTERFACE cxx_std_11)
+
+# Link Boost::uuid to libatomic
+
+set(_def_linkatomic OFF)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+  set(_def_linkatomic ON)
+
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+
+  set(_def_linkatomic ON)
+
+endif()
+
+option(BOOST_UUID_LINK_LIBATOMIC "Boost.UUID: link Boost::uuid to libatomic" ${_def_linkatomic})
+
+unset(_def_linkatomic)
+
+if(BOOST_UUID_LINK_LIBATOMIC)
+
+  target_link_libraries(boost_uuid INTERFACE atomic)
+
+endif()
+
+# Testing support
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 

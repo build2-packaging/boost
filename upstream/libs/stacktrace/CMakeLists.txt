@@ -71,14 +71,21 @@ endif()
 stacktrace_check(BOOST_STACKTRACE_HAS_WINDBG has_windbg.cpp "" "dbgeng;ole32" "")
 stacktrace_check(BOOST_STACKTRACE_HAS_WINDBG_CACHED has_windbg_cached.cpp "${CMAKE_CURRENT_SOURCE_DIR}/../config/include" "dbgeng;ole32" "")
 
+set(_default_from_exception ON)
+if (NOT CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64|i386|i686|x86")
+  set(_default_from_exception OFF)
+endif()
+
 option(BOOST_STACKTRACE_ENABLE_NOOP "Boost.Stacktrace: build boost_stacktrace_noop" ON)
 option(BOOST_STACKTRACE_ENABLE_BACKTRACE "Boost.Stacktrace: build boost_stacktrace_backtrace" ${BOOST_STACKTRACE_HAS_BACKTRACE})
 option(BOOST_STACKTRACE_ENABLE_ADDR2LINE "Boost.Stacktrace: build boost_stacktrace_addr2line" ${_default_addr2line})
 option(BOOST_STACKTRACE_ENABLE_BASIC "Boost.Stacktrace: build boost_stacktrace_basic" ON)
 option(BOOST_STACKTRACE_ENABLE_WINDBG "Boost.Stacktrace: build boost_stacktrace_windbg" ${BOOST_STACKTRACE_HAS_WINDBG})
 option(BOOST_STACKTRACE_ENABLE_WINDBG_CACHED "Boost.Stacktrace: build boost_stacktrace_windbg_cached" ${BOOST_STACKTRACE_HAS_WINDBG_CACHED})
+option(BOOST_STACKTRACE_ENABLE_FROM_EXCEPTION "Boost.Stacktrace: build boost_stacktrace_from_exception" ${_default_from_exception})
 
 unset(_default_addr2line)
+unset(_default_from_exception)
 
 message(STATUS "Boost.Stacktrace: "
   "noop ${BOOST_STACKTRACE_ENABLE_NOOP}, "
@@ -86,15 +93,50 @@ message(STATUS "Boost.Stacktrace: "
   "addr2line ${BOOST_STACKTRACE_ENABLE_ADDR2LINE}, "
   "basic ${BOOST_STACKTRACE_ENABLE_BASIC}, "
   "windbg ${BOOST_STACKTRACE_ENABLE_WINDBG}, "
-  "windbg_cached ${BOOST_STACKTRACE_ENABLE_WINDBG_CACHED}"
+  "windbg_cached ${BOOST_STACKTRACE_ENABLE_WINDBG_CACHED}, "
+  "from_exception ${BOOST_STACKTRACE_ENABLE_FROM_EXCEPTION}"
 )
 
 stacktrace_add_library(noop ${BOOST_STACKTRACE_ENABLE_NOOP} "" "")
-stacktrace_add_library(backtrace ${BOOST_STACKTRACE_ENABLE_BACKTRACE} "backtrace" "")
-stacktrace_add_library(addr2line ${BOOST_STACKTRACE_ENABLE_ADDR2LINE} "" "")
-stacktrace_add_library(basic ${BOOST_STACKTRACE_ENABLE_BASIC} "" "")
+stacktrace_add_library(backtrace ${BOOST_STACKTRACE_ENABLE_BACKTRACE} "backtrace;${CMAKE_DL_LIBS}" "")
+stacktrace_add_library(addr2line ${BOOST_STACKTRACE_ENABLE_ADDR2LINE} "${CMAKE_DL_LIBS}" "")
+stacktrace_add_library(basic ${BOOST_STACKTRACE_ENABLE_BASIC} "${CMAKE_DL_LIBS}" "")
 stacktrace_add_library(windbg ${BOOST_STACKTRACE_ENABLE_WINDBG} "dbgeng;ole32" "_GNU_SOURCE=1")
 stacktrace_add_library(windbg_cached ${BOOST_STACKTRACE_ENABLE_WINDBG_CACHED} "dbgeng;ole32" "_GNU_SOURCE=1")
+
+# boost_stacktrace, default library
+
+add_library(boost_stacktrace INTERFACE)
+add_library(Boost::stacktrace ALIAS boost_stacktrace)
+
+target_include_directories(boost_stacktrace INTERFACE include)
+
+if(BOOST_STACKTRACE_ENABLE_WINDBG)
+
+  target_link_libraries(boost_stacktrace INTERFACE Boost::stacktrace_windbg)
+
+elseif(BOOST_STACKTRACE_ENABLE_BACKTRACE)
+
+  target_link_libraries(boost_stacktrace INTERFACE Boost::stacktrace_backtrace)
+
+elseif(BOOST_STACKTRACE_ENABLE_ADDR2LINE)
+
+  target_link_libraries(boost_stacktrace INTERFACE Boost::stacktrace_addr2line)
+
+elseif(BOOST_STACKTRACE_ENABLE_BASIC)
+
+  target_link_libraries(boost_stacktrace INTERFACE Boost::stacktrace_basic)
+
+elseif(BOOST_STACKTRACE_ENABLE_NOOP)
+
+  target_link_libraries(boost_stacktrace INTERFACE Boost::stacktrace_noop)
+
+endif()
+
+# Boost::stacktrace_from_exception is never the default
+stacktrace_add_library(from_exception ${BOOST_STACKTRACE_ENABLE_FROM_EXCEPTION} "${CMAKE_DL_LIBS};boost_stacktrace" "")
+
+#
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 

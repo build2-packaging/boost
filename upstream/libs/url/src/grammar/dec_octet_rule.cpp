@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_IMPL_GRAMMAR_DEC_OCTET_RULE_IPP
-#define BOOST_URL_IMPL_GRAMMAR_DEC_OCTET_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/grammar/charset.hpp>
@@ -19,7 +17,7 @@
 namespace boost {
 namespace urls {
 namespace grammar {
-
+namespace implementation_defined {
 auto
 dec_octet_rule_t::
 parse(
@@ -86,9 +84,8 @@ parse(
     return static_cast<
         value_type>(v);
 }
-
+} // implementation_defined
 } // grammar
 } // urls
 } // boost
 
-#endif

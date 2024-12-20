@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_RFC_IMPL_AUTHORITY_RULE_IPP
-#define BOOST_URL_RFC_IMPL_AUTHORITY_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/rfc/authority_rule.hpp>
@@ -24,7 +22,7 @@ namespace boost {
 namespace urls {
 
 auto
-authority_rule_t::
+implementation_defined::authority_rule_t::
 parse(
     char const*& it,
     char const* const end
@@ -83,4 +81,3 @@ parse(
 } // urls
 } // boost
 
-#endif

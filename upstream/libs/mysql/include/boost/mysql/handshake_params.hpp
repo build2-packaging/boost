@@ -18,10 +18,16 @@ namespace boost {
 namespace mysql {
 
 /**
- * \brief Parameters defining how to perform the handshake with a MySQL server.
+ * \brief (Legacy) Parameters defining how to perform the handshake with a MySQL server.
+ *
  * \par Object lifetimes
  * This object stores references to strings (like username and password), performing
  * no copy of these values. Users are resposible for keeping them alive until required.
+ *
+ * \par Legacy
+ * This class is used with the legacy \ref connection class.
+ * New code should use \ref any_connection, instead.
+ * The equivalent to `handshake_params` is \ref connect_params.
  */
 class handshake_params
 {
@@ -34,7 +40,7 @@ class handshake_params
 
 public:
     /// The default collation to use with the connection (`utf8mb4_general_ci` on both MySQL and MariaDB).
-    static constexpr std::uint16_t default_collation = 45;
+    static BOOST_INLINE_CONSTEXPR std::uint16_t default_collation = 45;
 
     /**
      * \brief Initializing constructor.

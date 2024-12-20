@@ -55,15 +55,15 @@ target_link_libraries(main PRIVATE Boost::charconv Threads::Threads OpenSSL::Cry
 
 Boost.MySQL has been tested with the following compilers:
 
-- gcc 5 to 13.
-- clang 3.6 to 16.
+- gcc 5 to 14.
+- clang 3.6 to 18.
 - msvc 14.1, 14.2 and 14.3.
 
 And with the following databases:
 
 - MySQL v5.7.41.
-- MySQL v8.0.33.
-- MariaDB v11.0.
+- MySQL v8.4.1.
+- MariaDB v11.4.2.
 
 ## Features
 
@@ -78,5 +78,6 @@ And with the following databases:
   respectively.
 - Encrypted connections (TLS).
 - TCP and UNIX socket transports.
-- (Experimental) connection pools.
-- (Experimental) friendly client-side generated SQL.
+- Connection pools.
+- Friendly client-side generated SQL.
+- (Experimental) pipelines.

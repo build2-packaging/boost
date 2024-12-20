@@ -85,6 +85,13 @@ struct channel
       this->unlink();
     }
 
+    void interrupt_await()
+    {
+      this->cancelled = true;
+      if (awaited_from)
+        awaited_from.release().resume();
+    }
+
     struct cancel_impl;
     bool await_ready() { return !chn->buffer_.empty(); }
     template<typename Promise>
@@ -99,7 +106,11 @@ struct channel
   struct write_op : intrusive::list_base_hook<intrusive::link_mode<intrusive::auto_unlink> >
   {
     channel * chn;
-    variant2::variant<T*, const T*> ref;
+    using ref_t = std::conditional_t<
+        std::is_copy_constructible_v<T>,
+        variant2::variant<T*, const T*>,
+        T*>;
+    ref_t ref;
     boost::source_location loc;
     bool cancelled = false, direct = false;
     asio::cancellation_slot cancel_slot{};
@@ -112,6 +123,13 @@ struct channel
       if (begin_transaction)
           begin_transaction(awaited_from.get());
       this->unlink();
+    }
+
+    void interrupt_await()
+    {
+      this->cancelled = true;
+      if (awaited_from)
+        awaited_from.release().resume();
     }
 
     struct cancel_impl;
@@ -130,18 +148,37 @@ struct channel
   boost::intrusive::list<write_op, intrusive::constant_time_size<false> > write_queue_;
  public:
   read_op   read(const boost::source_location & loc = BOOST_CURRENT_LOCATION)  {return  read_op{{}, this, loc}; }
+
+#if defined(BOOST_WINDOWS_API)
+  BOOST_NOINLINE
+#endif
   write_op write(const T  && value, const boost::source_location & loc = BOOST_CURRENT_LOCATION)
+    requires std::is_copy_constructible_v<T>
   {
     return write_op{{}, this, &value, loc};
   }
+
+#if defined(BOOST_WINDOWS_API)
+  BOOST_NOINLINE
+#endif
   write_op write(const T  &  value, const boost::source_location & loc = BOOST_CURRENT_LOCATION)
+    requires std::is_copy_constructible_v<T>
   {
     return write_op{{}, this, &value, loc};
   }
+
+
+#if defined(BOOST_WINDOWS_API)
+  BOOST_NOINLINE
+#endif
   write_op write(      T &&  value, const boost::source_location & loc = BOOST_CURRENT_LOCATION)
   {
     return write_op{{}, this, &value, loc};
   }
+
+#if defined(BOOST_WINDOWS_API)
+  BOOST_NOINLINE
+#endif
   write_op write(      T  &  value, const boost::source_location & loc = BOOST_CURRENT_LOCATION)
   {
     return write_op{{}, this, &value, loc};
@@ -211,6 +248,13 @@ struct channel<void>
       this->unlink();
     }
 
+    void interrupt_await()
+    {
+      this->cancelled = true;
+      if (awaited_from)
+        awaited_from.release().resume();
+    }
+
     struct cancel_impl;
     bool await_ready() { return (chn->n_ > 0); }
     template<typename Promise>
@@ -236,6 +280,13 @@ struct channel<void>
       if (begin_transaction)
           begin_transaction(awaited_from.get());
       this->unlink();
+    }
+
+    void interrupt_await()
+    {
+      this->cancelled = true;
+      if (awaited_from)
+        awaited_from.release().resume();
     }
 
     struct cancel_impl;
