@@ -132,6 +132,7 @@ switch $tclass, $tsys
     cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT \
                     -DBOOST_USE_WINDOWS_H         \
                     -DWIN32_LEAN_AND_MEAN         \
+                    -D_WIN32_WINNT=0x0A00         \
                     -DNOMINMAX
     cxx.libs     += -lbcrypt
   }
@@ -140,6 +141,7 @@ switch $tclass, $tsys
     cxx.poptions += -DBOOST_FILESYSTEM_HAS_BCRYPT \
                     -DBOOST_USE_WINDOWS_H         \
                     -DWIN32_LEAN_AND_MEAN         \
+                    -D_WIN32_WINNT=0x0A00         \
                     -DNOMINMAX
     cxx.libs     += bcrypt.lib
   }
