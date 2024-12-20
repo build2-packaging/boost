@@ -32,6 +32,10 @@ cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
 
 # Disable libquadmath (Linux only and no build2 package yet).
 #
+# Note that this macro is not referenced in any source code but the upstream
+# build does define it. (BOOST_CHARCONV_HAS_QUADMATH, on the other hand, is
+# referenced in code.)
+#
 cxx.poptions += -DBOOST_CHARCONV_NO_QUADMATH
 
 #
