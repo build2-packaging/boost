@@ -11,11 +11,6 @@ libboost-property-map-parallel
 libboost-python
 libboost-wave
 
-# We don't plan to support the kinds of compilers that would require the use
-# of Boost.Compatibility.
-#
-libboost-compatibility
-
 # This library uses Boost.Context's ASM implementation (fcontext_t) directly
 # which we have chosen not to compile for now. This seems like a mistake and
 # the path of the header it includes being `boost/context/detail/fcontext.hpp`
