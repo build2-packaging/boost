@@ -27,8 +27,9 @@ macos   = ($cxx.target.class == 'macos')
 
 # Private headers and sources as well as dependencies.
 #
-lib{boost_context}: {hxx ixx txx}{**}                                      \
-                    cxx{** -dummy -untested -windows/** -posix/** -asm/**} \
+lib{boost_context}: {hxx ixx txx}{**}                           \
+                    cxx{** -dummy -untested -fcontext           \
+                           -windows/** -posix/** -asm/**}       \
                     $impl_libs $intf_libs
 
 lib{boost_context}: windows/cxx{**}: include = $windows

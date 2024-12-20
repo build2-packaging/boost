@@ -1,0 +1,3 @@
+import libs = libboost-parser%lib{boost_parser}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

@@ -4,6 +4,7 @@
 #include <boost/interprocess/exceptions.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/interprocess_fwd.hpp>
+#include <boost/interprocess/interprocess_printers.hpp>
 #include <boost/interprocess/managed_external_buffer.hpp>
 #include <boost/interprocess/managed_heap_memory.hpp>
 #include <boost/interprocess/managed_mapped_file.hpp>

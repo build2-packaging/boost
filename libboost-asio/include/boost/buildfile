@@ -34,13 +34,13 @@ if ($cxx.target.class == 'windows')
 
   if ($cxx.target.system == 'mingw32')
   {
-    lib{boost_asio}: cxx.libs += -lws2_32 -lmswsock
-    lib{boost_asio}: cxx.export.libs += -lws2_32 -lmswsock
+    lib{boost_asio}: cxx.libs += -lws2_32 -lmswsock -lbcrypt
+    lib{boost_asio}: cxx.export.libs += -lws2_32 -lmswsock -lbcrypt
   }
   else
   {
-    lib{boost_asio}: cxx.libs += ws2_32.lib mswsock.lib
-    lib{boost_asio}: cxx.export.libs += ws2_32.lib mswsock.lib
+    lib{boost_asio}: cxx.libs += ws2_32.lib mswsock.lib bcrypt.lib
+    lib{boost_asio}: cxx.export.libs += ws2_32.lib mswsock.lib bcrypt.lib
   }
 }
 else

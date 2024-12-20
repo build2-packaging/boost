@@ -1,11 +1,8 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
 import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-container%lib{boost_container}
-import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-intrusive%lib{boost_intrusive}
 import intf_libs += libboost-move%lib{boost_move}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
-import intf_libs += libboost-type-traits%lib{boost_type_traits}
 import intf_libs += libboost-winapi%lib{boost_winapi}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
@@ -22,6 +19,40 @@ lib{boost_interprocess}:
   cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
   cxx.export.libs = $intf_libs
 }
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if ($cxx.target.class == 'linux')
+{
+  lib{boost_interprocess}:
+  {
+    cxx.libs        += -lrt
+    cxx.export.libs += -lrt
+  }
+}
+elif ($cxx.target.class == 'windows')
+{
+  if ($cxx.target.system == 'mingw32')
+  {
+    lib{boost_interprocess}:
+    {
+      cxx.libs        += -lole32 -loleaut32 -lpsapi
+      cxx.export.libs += -lole32 -loleaut32 -lpsapi
+    }
+  }
+  else
+  {
+    lib{boost_interprocess}:
+    {
+      cxx.libs        += ole32.lib oleaut32.lib psapi.lib
+      cxx.export.libs += ole32.lib oleaut32.lib psapi.lib
+    }
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
 
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.

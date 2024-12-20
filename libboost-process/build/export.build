@@ -3,7 +3,7 @@ if ($regex.search($name($import.target), '-'))
 
 $out_root/
 {
-  include include/boost/
+  include src/
 }
 
-export $out_root/include/boost/$import.target
+export $out_root/src/$import.target

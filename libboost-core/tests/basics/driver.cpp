@@ -31,6 +31,7 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/core/null_deleter.hpp>
 #include <boost/core/nvp.hpp>
+#include <boost/core/pointer_in_range.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/quick_exit.hpp>
 #include <boost/core/ref.hpp>

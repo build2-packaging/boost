@@ -1,4 +1,4 @@
-#include <boost/uuid/uuid.hpp>
+#include <boost/uuid.hpp>
 
 int
 main ()
