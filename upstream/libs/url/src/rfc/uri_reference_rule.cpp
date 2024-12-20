@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_RFC_IMPL_URI_REFERENCE_RULE_IPP
-#define BOOST_URL_RFC_IMPL_URI_REFERENCE_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/rfc/uri_reference_rule.hpp>
@@ -22,7 +20,7 @@ namespace boost {
 namespace urls {
 
 auto
-uri_reference_rule_t::
+implementation_defined::uri_reference_rule_t::
 parse(
     char const*& it,
     char const* const end
@@ -49,4 +47,3 @@ parse(
 } // urls
 } // boost
 
-#endif

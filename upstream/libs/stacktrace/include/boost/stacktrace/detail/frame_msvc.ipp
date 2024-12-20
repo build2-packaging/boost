@@ -18,12 +18,22 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/stacktrace/detail/to_dec_array.hpp>
 #include <boost/stacktrace/detail/to_hex_array.hpp>
+
+#ifdef WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#else
+// Prevent inclusion of extra Windows SDK headers which can cause conflict
+// with other code using Windows SDK
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include "dbgeng.h"
 
 #include <mutex>
 
-#ifdef BOOST_MSVC
+#if defined(__clang__) || defined(BOOST_MSVC)
 #   pragma comment(lib, "ole32.lib")
 #   pragma comment(lib, "Dbgeng.lib")
 #endif

@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_GRAMMAR_IMPL_DELIM_RULE_IPP
-#define BOOST_URL_GRAMMAR_IMPL_DELIM_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/detail/config.hpp>
@@ -19,7 +17,7 @@ namespace urls {
 namespace grammar {
 
 auto
-ch_delim_rule::
+implementation_defined::ch_delim_rule::
 parse(
     char const*& it,
     char const* end) const noexcept ->
@@ -45,4 +43,3 @@ parse(
 } // urls
 } // boost
 
-#endif

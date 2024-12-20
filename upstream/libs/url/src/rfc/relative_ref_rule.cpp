@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_RFC_IMPL_RELATIVE_REF_RULE_IPP
-#define BOOST_URL_RFC_IMPL_RELATIVE_REF_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/rfc/relative_ref_rule.hpp>
@@ -25,7 +23,7 @@ namespace boost {
 namespace urls {
 
 auto
-relative_ref_rule_t::
+implementation_defined::relative_ref_rule_t::
 parse(
     char const*& it,
     char const* const end
@@ -54,13 +52,13 @@ parse(
             it, end, detail::query_part_rule);
         if(! rv)
             return rv.error();
-        if(rv->has_query)
+        auto& v = *rv;
+        if(v.has_query)
         {
             // map "?" to { {} }
             u.apply_query(
-                rv->query,
-                rv->count +
-                    rv->query.empty());
+                v.query,
+                v.count);
         }
     }
 
@@ -80,4 +78,3 @@ parse(
 } // urls
 } // boost
 
-#endif

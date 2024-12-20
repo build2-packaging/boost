@@ -272,6 +272,18 @@ if (WIN32)
             set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/src/windows/simple_event_log.h" PROPERTIES GENERATED TRUE)
             set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/src/windows/simple_event_log.rc" PROPERTIES GENERATED TRUE)
 
+            if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                # Workaround for a windres.exe issue on MinGW-w64: by default, it uses popen to pipe preprocessed
+                # output from the preprocessor, but popen is buggy on non-English Windows systems and causes
+                # compilation errors such as:
+                #
+                # windres.exe: can't open file `page:': Invalid argument
+                #
+                # This option forces windres.exe to use a temporary file instead.
+                # https://github.com/boostorg/log/pull/231
+                list(APPEND CMAKE_RC_FLAGS "--use-temp-file")
+            endif()
+
             list(APPEND boost_log_sources
                 "${CMAKE_CURRENT_BINARY_DIR}/src/windows/simple_event_log.h"
                 "${CMAKE_CURRENT_BINARY_DIR}/src/windows/simple_event_log.rc"
@@ -459,10 +471,8 @@ target_include_directories(boost_log
 
 target_link_libraries(boost_log
     PUBLIC
-        Boost::array
         Boost::assert
         Boost::config
-        Boost::container
         Boost::core
         Boost::date_time
         Boost::filesystem
@@ -478,13 +488,11 @@ target_link_libraries(boost_log
         Boost::proto
         Boost::range
         Boost::smart_ptr
-        Boost::static_assert
         Boost::system
         Boost::throw_exception
         Boost::type_index
         Boost::type_traits
         Boost::utility
-        Boost::winapi
 
     PRIVATE
         Boost::align
@@ -497,6 +505,13 @@ target_link_libraries(boost_log
         Boost::spirit
         ${boost_log_regex_backend_private_libs}
 )
+
+if (WIN32 OR CYGWIN)
+    target_link_libraries(boost_log
+        PUBLIC
+            Boost::winapi
+    )
+endif()
 
 if (NOT BOOST_LOG_NO_THREADS)
     target_link_libraries(boost_log

@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/url
 //
 
-#ifndef BOOST_URL_RFC_IMPL_QUERY_RULE_IPP
-#define BOOST_URL_RFC_IMPL_QUERY_RULE_IPP
 
 #include <boost/url/detail/config.hpp>
 #include <boost/url/rfc/query_rule.hpp>
@@ -20,7 +18,7 @@ namespace boost {
 namespace urls {
 
 auto
-query_rule_t::
+implementation_defined::query_rule_t::
 parse(
     char const*& it,
     char const* end
@@ -29,10 +27,10 @@ parse(
 {
     if(it == end)
     {
-        // empty string = 0 params
+        // empty string = 1 param
+        core::string_view str(it, 0);
         return params_encoded_view(
-            detail::query_ref(
-                core::string_view(it, 0), 0, 0));
+            detail::query_ref(str, 0, 1));
     }
     auto const it0 = it;
     std::size_t dn = 0;
@@ -52,18 +50,12 @@ parse(
         }
         if(*it == '%')
         {
-            if(end - it < 3)
+            if(end - it < 3 ||
+                (!grammar::hexdig_chars(it[1]) ||
+                 !grammar::hexdig_chars(it[2])))
             {
-                // missing HEXDIG
-                BOOST_URL_RETURN_EC(
-                    error::missing_pct_hexdig);
-            }
-            if (!grammar::hexdig_chars(it[1]) ||
-                !grammar::hexdig_chars(it[2]))
-            {
-                // expected HEXDIG
-                BOOST_URL_RETURN_EC(
-                    error::bad_pct_hexdig);
+                // missing valid HEXDIG
+                break;
             }
             it += 3;
             dn += 2;
@@ -73,14 +65,12 @@ parse(
         break;
     }
     std::size_t const n(it - it0);
+    core::string_view str(it0, n);
     return params_encoded_view(
         detail::query_ref(
-            core::string_view(it0, n),
-            n - dn,
-            nparam));
+            str, n - dn, nparam));
 }
 
 } // urls
 } // boost
 
-#endif

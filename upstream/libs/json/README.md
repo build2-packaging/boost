@@ -81,7 +81,10 @@ file in your project.
 ```
 
 MSVC users must also define the macro `BOOST_JSON_NO_LIB` to disable
-auto-linking.
+auto-linking. Note, that if you also want to avoid linking to Boost.Container,
+which is a dependency of Boost.JSON, you have to define
+`BOOST_CONTAINER_NO_LIB`. In order to disable auto-linking to Boost libraries
+completely you can define `BOOST_ALL_NO_LIB` instead.
 
 ### Embedded
 
@@ -107,6 +110,9 @@ Boost.JSON has been tested with the following compilers:
 * clang: 3.5, 3.6, 3.7, 3.8, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 * gcc: 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12
 * msvc: 14.0, 14.1, 14.2, 14.3
+
+**Note: support for GCC 4.8 and 4.9 is deprecated and will stop in
+Boost 1.88.0.**
 
 ### Supported JSON Text
 
