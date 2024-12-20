@@ -1,0 +1,7 @@
+project = libboost-parser
+
+using version
+using config
+using test
+using install
+using dist

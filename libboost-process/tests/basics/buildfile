@@ -1,3 +1,20 @@
-import libs = libboost-process%lib{boost_process}
+# The V1 library is header-only (and soon to be deprecated); the new V2
+# library is compiled.
+#
+import libs_v1 = libboost-process%lib{boost_process_v1}
+import libs_v2 = libboost-process%lib{boost_process}
 
-exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
+tclass = $cxx.target.class
+tsys   = $cxx.target.system
+
+# Disable the V1 tests on FreeBSD (insufficient upstream support; see
+# README-DEV).
+#
+./: exe{driver-v1}: include = ($tclass != 'bsd' || $tsys != 'freebsd')
+./: exe{driver-v2}: include = true
+
+exe{driver-v1}: cxx{driver-v1} $libs_v1
+exe{driver-v2}: cxx{driver-v2} $libs_v2
+
+if ($tclass == 'windows')
+  obje{driver-v2}: cxx.poptions += -DLIBBOOST_PROCESS_TESTS_WINDOWS

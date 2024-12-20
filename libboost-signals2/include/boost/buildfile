@@ -4,6 +4,7 @@ import intf_libs += libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-function%lib{boost_function}
 import intf_libs += libboost-iterator%lib{boost_iterator}
+import intf_libs += libboost-move%lib{boost_move}
 import intf_libs += libboost-mpl%lib{boost_mpl}
 import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-parameter%lib{boost_parameter}

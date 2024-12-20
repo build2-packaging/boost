@@ -1,36 +1,27 @@
-import intf_libs  = libboost-algorithm%lib{boost_algorithm}
-import intf_libs += libboost-asio%lib{boost_asio}
-import intf_libs += libboost-assert%lib{boost_assert}
-import intf_libs += libboost-config%lib{boost_config}
-import intf_libs += libboost-core%lib{boost_core}
-import intf_libs += libboost-filesystem%lib{boost_filesystem}
-import intf_libs += libboost-fusion%lib{boost_fusion}
-import intf_libs += libboost-io%lib{boost_io}
-import intf_libs += libboost-iterator%lib{boost_iterator}
-import intf_libs += libboost-move%lib{boost_move}
-import intf_libs += libboost-optional%lib{boost_optional}
-import intf_libs += libboost-system%lib{boost_system}
-import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
-import intf_libs += libboost-tokenizer%lib{boost_tokenizer}
-import intf_libs += libboost-type-index%lib{boost_type_index}
-import intf_libs += libboost-type-traits%lib{boost_type_traits}
-import intf_libs += libboost-utility%lib{boost_utility}
-import intf_libs += libboost-winapi%lib{boost_winapi}
-
-intf_libs = $cxx.deduplicate_export_libs($intf_libs)
-
-lib{boost_process}: {hxx ixx txx}{**} $intf_libs
-
-# Export options.
+# BEGIN MANUAL CUSTOMIZATION
 #
-out_pfx = [dir_path] $out_root/include/
-src_pfx = [dir_path] $src_root/include/
 
-lib{boost_process}:
-{
-  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
-  cxx.export.libs = $intf_libs
-}
+# Note that there are two versions of Boost.Process: V1 and V2. V1 is
+# scheduled to be deprecated in Boost 1.88.0. New projects are advised to use
+# V2. (See src/buildfile for the library targets.)
+
+# The V1 headers. Included via <boost/process.hpp>.
+#
+pub_hdrs_v1 = hxx{process} process/hxx{v1} process/v1/{hxx ixx txx}{**}
+
+# The V2 headers. Included via <boost/process/v2.hpp>.
+#
+# Note that v2 headers are not included via <boost/process.hpp> despite the
+# latter being BOOST_PROCESS_VERSION-aware. This feels like it might change in
+# the near future. (This is based solely on the upstream v2 code examples;
+# there is no documentation, comments, or build code covering this topic.)
+#
+pub_hdrs_v2 = process/hxx{v2} process/v2/{hxx ixx txx}{**}
+
+./: $pub_hdrs_v1 $pub_hdrs_v2
+
+#
+# END MANUAL CUSTOMIZATION
 
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
