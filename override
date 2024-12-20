@@ -227,6 +227,8 @@ source_macro["libboost-json"]=true
 #
 source_macro["libboost-program-options"]=true
 
+source_macro["libboost-process"]=true
+source_macro["libboost-random"]=true
 source_macro["libboost-stacktrace"]=true
 source_macro["libboost-url"]=true
 
@@ -318,6 +320,7 @@ include_headers["libboost-phoenix"]="phoenix/phoenix.hpp"
 include_headers["libboost-outcome"]="outcome.hpp"
 
 include_headers["libboost-ratio"]="ratio.hpp"
+include_headers["libboost-uuid"]="uuid.hpp"
 
 # One day we can handle this by exporting metadata about which components
 # are enabled (like we do in libevent). Currently this is tested indirectly
