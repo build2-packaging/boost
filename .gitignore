@@ -4,6 +4,10 @@
 #
 .build2/local/
 
+# Compilation database.
+#
+compile_commands.json
+
 # The generated files.
 #
 /boostdep

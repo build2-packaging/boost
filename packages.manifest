@@ -260,6 +260,9 @@ location: libboost-outcome/
 location: libboost-parameter/
 
 :
+location: libboost-parser/
+
+:
 location: libboost-pfr/
 
 :
