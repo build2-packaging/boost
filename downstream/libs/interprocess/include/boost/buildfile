@@ -1,0 +1,58 @@
+intf_libs = # Interface dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+lib{boost_interprocess}: {hxx ixx txx}{**} $intf_libs
+
+# Export options.
+#
+out_pfx = [dir_path] $out_root/include/
+src_pfx = [dir_path] $src_root/include/
+
+lib{boost_interprocess}:
+{
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
+}
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+if ($cxx.target.class == 'linux')
+{
+  lib{boost_interprocess}:
+  {
+    cxx.libs        += -lrt
+    cxx.export.libs += -lrt
+  }
+}
+elif ($cxx.target.class == 'windows')
+{
+  if ($cxx.target.system == 'mingw32')
+  {
+    lib{boost_interprocess}:
+    {
+      cxx.libs        += -lole32 -loleaut32 -lpsapi
+      cxx.export.libs += -lole32 -loleaut32 -lpsapi
+    }
+  }
+  else
+  {
+    lib{boost_interprocess}:
+    {
+      cxx.libs        += ole32.lib oleaut32.lib psapi.lib
+      cxx.export.libs += ole32.lib oleaut32.lib psapi.lib
+    }
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Install into the boost/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx ixx txx}{*}:
+{
+  install         = include/boost/
+  install.subdirs = true
+}
