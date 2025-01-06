@@ -19,9 +19,13 @@ lib{boost-uuid}:
 
 if ($cxx.target.class == 'windows')
 {
-  lib{boost-uuid}: cxx.export.libs += ($cxx.target.system == 'mingw32'  \
-                                       ? -lbcrypt                       \
-                                       : bcrypt.lib)
+  bcrypt = ($cxx.target.system == 'mingw32' ? -lbcrypt : bcrypt.lib)
+
+  lib{boost-uuid}:
+  {
+    cxx.libs        += $bcrypt
+    cxx.export.libs += $bcrypt
+  }
 }
 
 #
