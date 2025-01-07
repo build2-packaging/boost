@@ -16,15 +16,20 @@ pub_hdrs = $($pub/ pub_hdrs)
 tclass = $cxx.target.class
 tsys   = $cxx.target.system
 
+windows = ($tclass == 'windows')
+
 # Boost.Stacktrace comes in a number of implementation variants, each of which
 # is compiled to a different library file with the names conforming to the
 # following scheme:
 #
 #   libboost_stacktrace_<variant>
 #
-# The user selects a variant by linking against the corresponding library
-# name. (If using Boost.Stacktrace as a header-only library, the variant is
-# selected by defining the corresponding macro.)
+# The user can explicitly select a variant by linking against the
+# corresponding library name. (If using Boost.Stacktrace as a header-only
+# library, the variant is selected by defining the corresponding macro.)
+#
+# There is also libboost_stacktrace which links the target platform's
+# preferred variant.
 #
 
 # The list of library variants that will be built.
@@ -36,7 +41,8 @@ tsys   = $cxx.target.system
 #
 variants = boost_stacktrace_noop
 
-# Select additional variants to be built.
+# Select additional variants to be built and select the target platform's
+# preferred variant (via lib{boost_stacktrace}).
 #
 # This is a condensed version of Table 37.2 at
 # https://www.boost.org/doc/libs/1_75_0/doc/html/stacktrace/configuration_and_build.html,
@@ -64,14 +70,20 @@ variants = boost_stacktrace_noop
 #   depends on is not always available. We can add support for this variant in
 #   the future, when we package libbacktrace for build2.
 #
-if ($tclass == 'windows')
+if $windows
+{
   variants += boost_stacktrace_windbg        \
               boost_stacktrace_windbg_cached
+}
 else
   variants += boost_stacktrace_addr2line
 
-if ($tclass != 'windows' || $tsys == 'mingw32')
+if (!$windows || $tsys == 'mingw32')
   variants += boost_stacktrace_basic
+
+./: lib{boost_stacktrace}
+lib{boost_stacktrace}: lib{boost_stacktrace_windbg}:    include = $windows
+lib{boost_stacktrace}: lib{boost_stacktrace_addr2line}: include = (!$windows)
 
 # Let each variant require all headers because the upstream headers are not
 # cleanly separated by variant implementation.
@@ -154,6 +166,13 @@ lib{$variants}:
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs     = $intf_libs
 }
+
+# Export the target platform's preferred variant from lib{boost_stacktrace}.
+#
+if ($windows)
+  lib{boost_stacktrace}: cxx.export.libs = lib{boost_stacktrace_windbg}
+else
+  lib{boost_stacktrace}: cxx.export.libs = lib{boost_stacktrace_addr2line}
 
 # Note that the `generate` script will change `-DBOOST_SHARED` to
 # `-DBOOST_STACKTRACE_DYN_LINK` but leave `-DBOOST_STACKTRACE_LINK` unchanged.

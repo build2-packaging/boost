@@ -26,3 +26,10 @@ for d: $variants # d: driver.
   ./: exe{$d}: obje{$d} $lib
   obje{$d}: cxx{driver} $lib
 }
+
+# Do the same for lib{boost_stacktrace}.
+#
+import lib = libboost-stacktrace%lib{boost_stacktrace}
+
+./: exe{driver-stacktrace}: obje{driver-stacktrace} $lib
+obje{driver-stacktrace}: cxx{driver} $lib

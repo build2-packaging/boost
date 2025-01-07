@@ -1,5 +1,6 @@
 # Test executables.
 #
+driver-stacktrace
 driver-addr2line
 driver-basic
 driver-backtrace
