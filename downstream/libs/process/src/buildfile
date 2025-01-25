@@ -1,0 +1,131 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+# Public headers.
+#
+pub = [dir_path] ../include/boost/
+
+include $pub
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+# Note that there are two versions of Boost.Process: V1 and V2. V1 is
+# scheduled to be deprecated in Boost 1.88.0. New projects are advised to use
+# V2.
+#
+# Note that the upstream build files cover only V2, and that build/Jamfile
+# seems to be more complete and current than CMakeLists.txt, which has
+# apparently been auto-generated. They differ in significant ways, for example
+# in the libraries that they export.
+
+pub_hdrs_v1 = $($pub/ pub_hdrs_v1)
+pub_hdrs_v2 = $($pub/ pub_hdrs_v2)
+
+# Note that it would have been better to name V2 lib{boost_process_v2} and
+# keep lib{boost-process} for V1. But we cannot do that since upstream is
+# using lib{boost-process} for V2 and if we deviate then our target won't
+# be substitutable with system-installed. The upstream probably thought it's
+# ok because V1 is header only and this has no binary.
+#
+# Note also that it's unclear which dependencies V1 and V2 actually need (and
+# which are interface vs implementation for V2). There is not much we can do
+# to sort it out (they should have made V2 a separate library for that).
+
+# The V2 library, compiled.
+#
+./: lib{boost-process}: $pub/{$pub_hdrs_v2}
+
+# The V1 library, header-only.
+#
+./: lib{boost_process_v1}: $pub/{$pub_hdrs_v1}
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Private headers and sources as well as dependencies.
+#
+lib{boost-process}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+lib{boost_process_v1}: $intf_libs
+
+#
+# END MANUAL CUSTOMIZATION
+
+# Build options.
+#
+out_pfx_inc = [dir_path] $out_root/include/
+src_pfx_inc = [dir_path] $src_root/include/
+out_pfx_src = [dir_path] $out_root/src/
+src_pfx_src = [dir_path] $src_root/src/
+
+cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
+                "-I$out_pfx_inc" "-I$src_pfx_inc"
+
+# BEGIN MANUAL CUSTOMIZATION
+#
+
+cxx.poptions += -DBOOST_ASIO_NO_DEPRECATED
+
+switch $cxx.target.class, $cxx.target.system
+{
+  case 'linux'
+    cxx.libs += -pthread
+  # Note: Upstream does not add libelf but our static FreeBSD builds fail
+  #       without it because it's required by libkvm. Assume the same is true
+  #       on the other BSDs.
+  #
+  case 'bsd', 'freebsd'
+    cxx.libs += -lkvm -lelf -lprocstat
+  case 'bsd'
+    cxx.libs += -lkvm -lelf
+  case 'windows', 'mingw32'
+  {
+    cxx.poptions += -DWIN32_LEAN_AND_MEAN
+    cxx.libs     += -ladvapi32 -lntdll -lws2_32
+  }
+  case 'windows'
+  {
+    cxx.poptions += -DWIN32_LEAN_AND_MEAN \
+                    -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE
+    cxx.libs     += advapi32.lib ntdll.lib ws2_32.lib
+  }
+}
+
+#
+# END MANUAL CUSTOMIZATION
+
+obja{*}: cxx.poptions += -DBOOST_STATIC_BUILD
+objs{*}: cxx.poptions += -DBOOST_SHARED_BUILD
+
+# Export options.
+#
+# BEGIN MANUAL CUSTOMIZATION
+#
+lib{boost_process boost_process_v1}:
+#
+# END MANUAL CUSTOMIZATION
+{
+  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.libs = $intf_libs
+}
+
+liba{boost-process}: cxx.export.poptions += -DBOOST_STATIC
+libs{boost-process}: cxx.export.poptions += -DBOOST_SHARED
+
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{boost-process}: bin.lib.version = "-$version.project_id"
+else
+  lib{boost-process}: bin.lib.version = "-$version.major.$version.minor"
+
+# Don't install private headers.
+#
+{hxx ixx txx}{*}: install = false
