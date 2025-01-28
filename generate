@@ -20,6 +20,13 @@
 #   Clean up the upstream tree by removing files and directories we do not
 #   need, then exit.
 #
+# --disable-boostdep-compilation
+#
+#   Don't compile boostdep. During development one might want to disable the
+#   system Boost headers to prevent them being found and thus interfering with
+#   our build. But boostdep cannot be compiled without Boost.Filesystem, so
+#   use this option to prevent this script from trying.
+#
 
 owd="$(pwd)"
 trap "{ cd '$owd'; exit 1; }" ERR
@@ -40,6 +47,11 @@ version_suffix="-a.0.z"
 #
 clean_upstream=
 
+# If true, compile boostdep. (See the `--disable-boostdep-compilation` option
+# above.)
+#
+compile_boostdep=true
+
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --version-suffix)
@@ -50,6 +62,10 @@ while [[ "$#" -gt 0 ]]; do
     --clean-upstream)
       shift
       clean_upstream=true
+      ;;
+    --disable-boostdep-compilation)
+      shift
+      compile_boostdep=
       ;;
     -*)
       error "unknown option: $1"
@@ -194,16 +210,20 @@ boostver="$(($r / 100000)).$((($r / 100) % 1000)).$(($r % 100))"
 #
 rm -rf .gitignore .gitattributes \
        .bdep buildfile repositories.manifest packages.manifest \
-       levels dependencies boostdep libboost-*
+       levels dependencies libboost-*
 
-# Compile boostdep.
+
+# Compile boostdep (unless requested not to).
 #
 # Note that here we rely on the boost_filesystem library of a suitable version
 # to be installed into the system. Building boostdep only using source files
 # in the upstream/ directory feels too complicated at the moment since
 # boost-filesystem has quite a lot of dependencies.
 #
-c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
+if [[ $compile_boostdep ]]; then
+  rm -rf boostdep
+  c++ -o boostdep upstream/tools/boostdep/src/boostdep.cpp -lboost_filesystem
+fi
 
 # Produce the library dependency levels file.
 #
@@ -1388,7 +1408,9 @@ i{hbmi  obj }{*}: $mod.poptions += -DBOOST_${umn}_SOURCE")
 
   # Generate the smoke test if this package does not have a custom one.
   #
-  if [[ ! -f "$ctd/basics/driver.$se" ]]; then
+  if [[ ! -d "$ctd/basics/" ]] ||
+     [[ -z "$(find "$ctd/basics/" -type f -name "driver*.$se")" ]]; then
+
     # Build the include directive(s) appropriate for this library. If it
     # exists, include only the super-header (a single header which includes
     # all of its headers), otherwise include all headers in
@@ -1482,6 +1504,11 @@ main ()
   return 0;
 }
 EOF
+  elif [[ ! -f "$ctd/basics/driver.$se" ]]; then
+    # This library has a custom test driver but it's not called driver.$se so
+    # remove the bdep-generated driver.$se.
+    #
+    rm "$pn/tests/basics/driver.$se"
   fi
 done
 
