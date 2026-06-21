@@ -21,13 +21,15 @@
 namespace boost {
 namespace urls {
 
-/** Common functionality for containers
+/** Percent-encoded query helper base
 
-    This base class is used by the library
-    to provide common member functions for
-    containers. This cannot be instantiated
-    directly; Instead, use one of the
-    containers or functions:
+    This base implements the shared
+    percent-encoded query parameter view
+    functionality used by @ref params_encoded_view
+    and @ref params_encoded_ref. It cannot be
+    instantiated directly; instead, use one of
+    those containers or the corresponding ref
+    adaptors.
 
     @par Containers
     @li @ref params_ref
@@ -35,7 +37,7 @@ namespace urls {
     @li @ref params_encoded_ref
     @li @ref params_encoded_view
 */
-class BOOST_URL_DECL params_encoded_base
+class BOOST_SYMBOL_VISIBLE params_encoded_base
 {
     friend class url_view_base;
     friend class params_encoded_ref;
@@ -74,34 +76,7 @@ public:
         it is no longer referenced by any
         container or iterator.
     */
-#ifdef BOOST_URL_DOCS
-    using iterator = __see_below__;
-#else
-
-    /** A Bidirectional iterator to a query parameter
-
-        Objects of this type allow iteration
-        through the parameters in the query.
-        Strings returned by iterators may
-        contain percent escapes.
-        The values returned are read-only;
-        changes to parameters must be made
-        through the container instead, if the
-        container supports modification.
-
-        <br>
-
-        The strings produced when iterators
-        are dereferenced refer to the underlying
-        character buffer.
-        Ownership is not transferred; the caller
-        is responsible for ensuring that the
-        lifetime of the buffer extends until
-        it is no longer referenced by any
-        container or iterator.
-    */
     class iterator;
-#endif
 
     /// @copydoc iterator
     using const_iterator = iterator;
@@ -157,6 +132,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The maximum number of characters possible.
     */
     static
     constexpr
@@ -195,6 +172,9 @@ public:
         @par Specification
         @li <a href="https://en.wikipedia.org/wiki/Query_string"
             >Query string (Wikipedia)</a>
+
+        @return The query string.
+
     */
     pct_string_view
     buffer() const noexcept;
@@ -211,6 +191,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return `true` if there are no params.
     */
     bool
     empty() const noexcept;
@@ -227,6 +209,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The number of params.
     */
     std::size_t
     size() const noexcept;
@@ -238,6 +222,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return An iterator to the beginning.
     */
     iterator
     begin() const noexcept;
@@ -249,6 +235,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return An iterator to the end.
     */
     iterator
     end() const noexcept;
@@ -286,6 +274,8 @@ public:
         the value @ref ignore_case is passed
         here, the comparison is
         case-insensitive.
+
+        @return `true` if a matching key exists.
     */
     bool
     contains(
@@ -323,10 +313,52 @@ public:
         the value @ref ignore_case is passed
         here, the comparison is
         case-insensitive.
+
+        @return The number of matching keys.
     */
     std::size_t
     count(
         pct_string_view key,
+        ignore_case_param ic = {}) const noexcept;
+
+    /** Return the value for a key or a fallback
+
+        This convenience function searches for the
+        first parameter matching `key` and returns
+        its percent-encoded value. If no parameter
+        with the specified key exists, the provided
+        fallback `value` is returned instead. When
+        the key is found but the corresponding
+        parameter has no value, an empty string is
+        returned.
+
+        @par Example
+        @code
+        url_view u( "/path?first=John&last=Doe" );
+        assert( u.encoded_params().get_or(
+            "missing", "n%2Fa" ) == "n%2Fa" );
+        @endcode
+
+        @par Complexity
+        Linear in `this->buffer().size()`.
+
+        @par Exception Safety
+        Throws nothing.
+
+        @param key The key to match.
+        @param value The fallback string returned
+        when no matching key exists. If this
+        parameter is omitted, an empty string is
+        used.
+        @param ic Optional case-insensitive compare
+        indicator.
+
+        @return The encoded value or the fallback.
+    */
+    pct_string_view
+    get_or(
+        pct_string_view key,
+        pct_string_view value = {},
         ignore_case_param ic = {}) const noexcept;
 
     /** Find a matching key
@@ -557,8 +589,11 @@ private:
     @code
     return os << ps.buffer();
     @endcode
+
+    @param os The output stream to write to
+    @param qp The params to write
+    @return A reference to the output stream, for chaining
 */
-BOOST_URL_DECL
 std::ostream&
 operator<<(
     std::ostream& os,

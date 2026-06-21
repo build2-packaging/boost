@@ -11,8 +11,12 @@
 #ifndef BOOST_LOCKFREE_FIFO_HPP_INCLUDED
 #define BOOST_LOCKFREE_FIFO_HPP_INCLUDED
 
+#include <boost/config.hpp>
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#    pragma once
+#endif
+
 #include <boost/assert.hpp>
-#include <boost/config.hpp> // for BOOST_LIKELY & BOOST_ALIGNMENT
 #include <boost/core/allocator_access.hpp>
 #include <boost/parameter/optional.hpp>
 #include <boost/parameter/parameters.hpp>
@@ -25,10 +29,6 @@
 #include <boost/lockfree/detail/tagged_ptr.hpp>
 #include <boost/lockfree/detail/uses_optional.hpp>
 #include <boost/lockfree/lockfree_forward.hpp>
-
-#ifdef BOOST_HAS_PRAGMA_ONCE
-#    pragma once
-#endif
 
 
 #if defined( _MSC_VER )
@@ -77,14 +77,14 @@ typedef parameter::parameters< boost::parameter::optional< tag::allocator >, boo
  *
  *  \b Requirements:
  *   - T must have a copy constructor
- *   - T must have a trivial assignment operator
+ *   - T must have a trivial copy assignment operator
  *   - T must have a trivial destructor
  *
  * */
 template < typename T, typename... Options >
 #if !defined( BOOST_NO_CXX20_HDR_CONCEPTS )
     requires( std::is_copy_assignable_v< T >,
-              std::is_trivially_assignable_v< T&, T >,
+              std::is_trivially_copy_assignable_v< T >,
               std::is_trivially_destructible_v< T > )
 #endif
 class queue
@@ -93,7 +93,7 @@ private:
 #ifndef BOOST_DOXYGEN_INVOKED
 
     BOOST_STATIC_ASSERT( ( std::is_trivially_destructible< T >::value ) );
-    BOOST_STATIC_ASSERT( ( std::is_trivially_assignable< T&, T >::value ) );
+    BOOST_STATIC_ASSERT( ( std::is_trivially_copy_assignable< T >::value ) );
 
     typedef typename detail::queue_signature::bind< Options... >::type bound_args;
 
@@ -104,7 +104,7 @@ private:
     static constexpr bool node_based         = !( has_capacity || fixed_sized );
     static constexpr bool compile_time_sized = has_capacity;
 
-    struct BOOST_ALIGNMENT( BOOST_LOCKFREE_CACHELINE_BYTES ) node
+    struct alignas( detail::cacheline_bytes ) node
     {
         typedef typename detail::select_tagged_handle< node, node_based >::tagged_handle_type tagged_node_handle;
         typedef typename detail::select_tagged_handle< node, node_based >::handle_type        handle_type;
@@ -354,10 +354,10 @@ private:
 
     bool do_push_node( node* n )
     {
-        handle_type node_handle = pool.get_handle( n );
-
         if ( n == NULL )
             return false;
+
+        handle_type node_handle = pool.get_handle( n );
 
         for ( ;; ) {
             tagged_node_handle tail      = tail_.load( memory_order_acquire );
@@ -393,26 +393,47 @@ public:
      * \note Not Thread-safe. If internal memory pool is exhausted and the memory pool is not fixed-sized, a new node
      * will be allocated from the OS. This may not be lock-free. \throws if memory allocator throws
      * */
+    bool unsynchronized_push( const T& t )
+    {
+        return unsynchronized_push_impl( t );
+    }
+
+    /// \copydoc boost::lockfree::queue::unsynchronized_push(const T& t)
     bool unsynchronized_push( T&& t )
     {
-        node* n = pool.template construct< false, false >( std::forward< T >( t ), pool.null_handle() );
+        return unsynchronized_push_impl( std::forward< T >( t ) );
+    }
+
+private:
+#ifndef BOOST_DOXYGEN_INVOKED
+    template < typename U >
+    bool unsynchronized_push_impl( U&& t )
+    {
+        node* n = pool.template construct< false, false >( std::forward< U >( t ), pool.null_handle() );
 
         if ( n == NULL )
             return false;
 
+        handle_type node_handle = pool.get_handle( n );
+
         for ( ;; ) {
-            tagged_node_handle tail     = tail_.load( memory_order_relaxed );
-            tagged_node_handle next     = tail->next.load( memory_order_relaxed );
-            node*              next_ptr = next.get_ptr();
+            tagged_node_handle tail      = tail_.load( memory_order_relaxed );
+            node*              tail_node = pool.get_pointer( tail );
+            tagged_node_handle next      = tail_node->next.load( memory_order_relaxed );
+            node*              next_ptr  = pool.get_pointer( next );
 
             if ( next_ptr == 0 ) {
-                tail->next.store( tagged_node_handle( n, next.get_next_tag() ), memory_order_relaxed );
-                tail_.store( tagged_node_handle( n, tail.get_next_tag() ), memory_order_relaxed );
+                tail_node->next.store( tagged_node_handle( node_handle, next.get_next_tag() ), memory_order_relaxed );
+                tail_.store( tagged_node_handle( node_handle, tail.get_next_tag() ), memory_order_relaxed );
                 return true;
             } else
-                tail_.store( tagged_node_handle( next_ptr, tail.get_next_tag() ), memory_order_relaxed );
+                tail_.store( tagged_node_handle( pool.get_handle( next_ptr ), tail.get_next_tag() ),
+                             memory_order_relaxed );
         }
     }
+
+#endif
+public:
 
     /** Pops object from queue.
      *
@@ -606,7 +627,7 @@ public:
 private:
 #ifndef BOOST_DOXYGEN_INVOKED
     atomic< tagged_node_handle > head_;
-    static constexpr int         padding_size = BOOST_LOCKFREE_CACHELINE_BYTES - sizeof( tagged_node_handle );
+    static constexpr int         padding_size = detail::cacheline_bytes - sizeof( tagged_node_handle );
     char                         padding1[ padding_size ];
     atomic< tagged_node_handle > tail_;
     char                         padding2[ padding_size ];

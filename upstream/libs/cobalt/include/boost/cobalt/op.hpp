@@ -12,7 +12,7 @@
 #include <boost/cobalt/detail/sbo_resource.hpp>
 #include <boost/cobalt/result.hpp>
 #include <boost/core/no_exceptions_support.hpp>
-
+#include <boost/config.hpp>
 #include <boost/asio/deferred.hpp>
 
 
@@ -21,7 +21,7 @@ namespace boost::cobalt
 
 
 template<typename ... Args>
-struct op
+struct BOOST_SYMBOL_VISIBLE op
 {
   virtual void ready(cobalt::handler<Args...>) {};
   virtual void initiate(cobalt::completion_handler<Args...> complete) = 0 ;
@@ -41,9 +41,7 @@ struct op
     awaitable_base(op<Args...> * op_, resource_type *resource) : op_(*op_), resource(resource) {}
     awaitable_base(awaitable_base && lhs) noexcept = default;
 
-#if defined(_MSC_VER)
-    BOOST_NOINLINE ~awaitable_base() {}
-#endif
+    BOOST_COBALT_MSVC_NOINLINE ~awaitable_base() {}
 
     bool await_ready()
     {
@@ -83,7 +81,7 @@ struct op
       }
       BOOST_CATCH_END
     }
-
+    BOOST_COBALT_MSVC_NOINLINE
     auto await_resume(const boost::source_location & loc = BOOST_CURRENT_LOCATION)
     {
       if (init_ep)
@@ -91,9 +89,7 @@ struct op
       return await_resume(as_result_tag{}).value(loc);
     }
 
-#if defined(_MSC_VER)
-    BOOST_NOINLINE
-#endif
+    BOOST_COBALT_MSVC_NOINLINE
     auto await_resume(const struct as_tuple_tag &)
     {
       if (init_ep)
@@ -101,9 +97,7 @@ struct op
       return *std::move(result);
     }
 
-#if defined(_MSC_VER)
-    BOOST_NOINLINE
-#endif
+    BOOST_COBALT_MSVC_NOINLINE
     auto await_resume(const struct as_result_tag &)
     {
       if (init_ep)
@@ -131,7 +125,7 @@ struct op
     }
   };
 
-  awaitable operator co_await() &&
+  awaitable operator co_await()
   {
     return awaitable{this};
   }

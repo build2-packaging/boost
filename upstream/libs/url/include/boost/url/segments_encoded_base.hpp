@@ -20,13 +20,13 @@
 namespace boost {
 namespace urls {
 
-/** Common functionality for containers
+/** Percent-encoded path segment helper base
 
-    This base class is used by the library
-    to provide common member functions for
-    containers. This cannot be instantiated
-    directly; Instead, use one of the
-    containers or functions:
+    Implements the shared encoded-segment
+    algorithms reused by @ref segments_encoded_view
+    and @ref segments_encoded_ref. It is not
+    intended to be instantiated directly; use
+    one of those concrete containers instead.
 
     @par Containers
     @li @ref segments_ref
@@ -34,7 +34,7 @@ namespace urls {
     @li @ref segments_encoded_ref
     @li @ref segments_encoded_view
 */
-class segments_encoded_base
+class BOOST_SYMBOL_VISIBLE segments_encoded_base
 {
     detail::path_ref ref_;
 
@@ -73,34 +73,7 @@ public:
         it is no longer referenced by any
         container or iterator.
     */
-#ifdef BOOST_URL_DOCS
-    using iterator = __see_below__;
-#else
-
-    /** A Bidirectional iterator to a path segment
-
-        Objects of this type allow iteration
-        through the segments in the path.
-        Strings returned by iterators may
-        contain percent escapes.
-        The values returned are read-only;
-        changes to segments must be made
-        through the container instead, if the
-        container supports modification.
-
-        <br>
-
-        The strings produced when iterators
-        are dereferenced refer to the underlying
-        character buffer.
-        Ownership is not transferred; the caller
-        is responsible for ensuring that the
-        lifetime of the buffer extends until
-        it is no longer referenced by any
-        container or iterator.
-    */
     class iterator;
-#endif
 
     /// @copydoc iterator
     using const_iterator = iterator;
@@ -150,6 +123,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The maximum number of characters possible.
     */
     static
     constexpr
@@ -176,8 +151,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return A string view of the buffer.
     */
-    BOOST_URL_DECL
     pct_string_view
     buffer() const noexcept;
 
@@ -196,8 +172,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return `true` if the path is absolute, otherwise `false`.
     */
-    BOOST_URL_DECL
     bool
     is_absolute() const noexcept;
 
@@ -213,8 +190,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return `true` if there are no segments, otherwise `false`.
     */
-    BOOST_URL_DECL
     bool
     empty() const noexcept;
 
@@ -230,8 +208,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The number of segments.
     */
-    BOOST_URL_DECL
     std::size_t
     size() const noexcept;
 
@@ -263,6 +242,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The first segment.
     */
     pct_string_view
     front() const noexcept;
@@ -300,6 +281,8 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return The last segment.
     */
     pct_string_view
     back() const noexcept;
@@ -312,8 +295,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return An iterator to the first segment.
     */
-    BOOST_URL_DECL
     iterator
     begin() const noexcept;
 
@@ -324,8 +308,9 @@ public:
 
         @par Exception Safety
         Throws nothing.
+
+        @return An iterator to one past the last segment.
     */
-    BOOST_URL_DECL
     iterator
     end() const noexcept;
 };
@@ -344,8 +329,11 @@ public:
     @code
     return os << ps.buffer();
     @endcode
+
+    @param os The output stream to write to.
+    @param ps The object to format.
+    @return A reference to the output stream.
 */
-BOOST_URL_DECL
 std::ostream&
 operator<<(
     std::ostream& os,

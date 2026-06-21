@@ -13,7 +13,7 @@
 #include <boost/url/detail/config.hpp>
 #include <boost/url/url_base.hpp>
 #include <boost/align/align_up.hpp>
-#include <boost/static_assert.hpp>
+#include <boost/core/detail/static_assert.hpp>
 #include <cstddef>
 
 namespace boost {
@@ -49,8 +49,7 @@ class static_url;
         @li @ref parse_uri
         @li @ref parse_uri_reference
 */
-class BOOST_URL_DECL
-    static_url_base
+class BOOST_SYMBOL_VISIBLE static_url_base
     : public url_base
 {
     template<std::size_t>
@@ -236,7 +235,7 @@ public:
         Linear in `u.size()`.
 
         @par Exception Safety
-        Exception thrown if maximum size exceeded.
+        Throws nothing.
 
         @param u The url to copy.
     */
@@ -294,6 +293,7 @@ public:
         Throws nothing.
 
         @param u The url to copy.
+        @return A reference to this object.
     */
     static_url&
     operator=(
@@ -326,6 +326,7 @@ public:
         Capacity would be exceeded.
 
         @param u The url to copy.
+        @return A reference to this object.
     */
     static_url&
     operator=(
@@ -382,6 +383,10 @@ public:
     static_url& set_host_ipv4(ipv4_address const& addr) { url_base::set_host_ipv4(addr); return *this; }
     /// @copydoc url_base::set_host_ipv6
     static_url& set_host_ipv6(ipv6_address const& addr) { url_base::set_host_ipv6(addr); return *this; }
+    /// @copydoc url_base::set_zone_id
+    static_url& set_zone_id(core::string_view s) { url_base::set_zone_id(s); return *this; }
+    /// @copydoc url_base::set_encoded_zone_id
+    static_url& set_encoded_zone_id(pct_string_view const& s) { url_base::set_encoded_zone_id(s); return *this; }
     /// @copydoc url_base::set_host_ipvfuture
     static_url& set_host_ipvfuture(core::string_view s) { url_base::set_host_ipvfuture(s); return *this; }
     /// @copydoc url_base::set_host_name
@@ -469,5 +474,8 @@ private:
 };
 } // std
 #endif
+
+#include <boost/url/parse.hpp>
+#include <boost/url/impl/static_url.hpp>
 
 #endif

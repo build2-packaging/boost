@@ -19,8 +19,11 @@
 #include <boost/fusion/include/at_key.hpp>
 #include <boost/type_traits/add_const.hpp>
 
+#include <boost/msm/front/detail/state_tags.hpp>
+
 namespace boost { namespace msm { namespace front {namespace detail
 {
+
 template <class Attributes= ::boost::fusion::map<> >
 struct inherit_attributes
 {
@@ -60,13 +63,22 @@ struct state_base : public inherit_attributes<Attributes>, USERBASE
 {
     typedef USERBASE        user_state_base;
     typedef Attributes      attributes_type;
+    struct internal
+    {
+        typedef state_tag   tag;
+    };
 
     // empty implementation for the states not wishing to define an entry condition
     // will not be called polymorphic way
-    template <class Event,class FSM>
-    void on_entry(Event const& ,FSM&){}
-    template <class Event,class FSM>
-    void on_exit(Event const&,FSM& ){}
+    template <class Event, class FSM>
+    void on_entry(Event const&, FSM&) {}
+    template <class Event, class FSM>
+    void on_exit(Event const&, FSM&) {}
+    template <class Event, class FSM>
+    bool is_event_deferred(Event const&, FSM&) const
+    {
+        return true;
+    }
     // default (empty) transition table;
     typedef ::boost::mpl::vector<>  internal_transition_table;
     typedef ::boost::fusion::vector<>  internal_transition_table11;

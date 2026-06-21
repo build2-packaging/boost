@@ -73,10 +73,10 @@ namespace boost { namespace parser { namespace detail {
         std::ostream & os,
         int components = 0);
 
-    template<typename Context, typename ParserTuple>
+    template<typename Context, typename ParserTuple, typename DelimiterParser>
     void print_parser(
         Context const & context,
-        perm_parser<ParserTuple> const & parser,
+        perm_parser<ParserTuple, DelimiterParser> const & parser,
         std::ostream & os,
         int components = 0);
 
@@ -248,6 +248,13 @@ namespace boost { namespace parser { namespace detail {
     template<typename Context>
     void print_parser(
         Context const & context,
+        char_set_parser<symb_chars> const & parser,
+        std::ostream & os,
+        int components = 0);
+
+    template<typename Context>
+    void print_parser(
+        Context const & context,
         char_set_parser<lower_case_chars> const & parser,
         std::ostream & os,
         int components = 0);
@@ -280,10 +287,14 @@ namespace boost { namespace parser { namespace detail {
         std::ostream & os,
         int components = 0);
 
-    template<typename Context, typename Quotes, typename Escapes>
+    template<
+        typename Context,
+        typename Quotes,
+        typename Escapes,
+        typename CharParser>
     void print_parser(
         Context const & context,
-        quoted_string_parser<Quotes, Escapes> const & parser,
+        quoted_string_parser<Quotes, Escapes, CharParser> const & parser,
         std::ostream & os,
         int components = 0);
 
@@ -582,10 +593,13 @@ namespace boost { namespace parser { namespace detail {
     }
 
     template<typename Context, typename T>
-    auto resolve(Context const & context, T const & x);
+    decltype(auto) resolve(Context const & context, T const & x);
 
     template<typename Context>
     auto resolve(Context const &, nope n);
+
+    template<typename DependentType, bool DoTraceMacro>
+    constexpr bool trace_disabled = !DoTraceMacro;
 
     template<
         bool DoTrace,
@@ -595,6 +609,8 @@ namespace boost { namespace parser { namespace detail {
         typename Attribute>
     struct scoped_trace_t
     {
+        static_assert(!trace_disabled<Iter, BOOST_PARSER_DO_TRACE>);
+
         scoped_trace_t(
             std::ostream & os,
             Iter & first,
@@ -670,6 +686,9 @@ namespace boost { namespace parser { namespace detail {
         flags f,
         Attribute const & attr)
     {
+        if constexpr (!BOOST_PARSER_DO_TRACE)
+            return;
+
         if constexpr (Context::do_trace) {
             std::stringstream oss;
             detail::print_parser(context, parser, oss);
@@ -684,6 +703,9 @@ namespace boost { namespace parser { namespace detail {
     template<typename Context, typename Attribute>
     auto final_trace(Context const & context, flags f, Attribute const & attr)
     {
+        if constexpr (!BOOST_PARSER_DO_TRACE)
+            return;
+
         if (!detail::do_trace(f))
             return;
 

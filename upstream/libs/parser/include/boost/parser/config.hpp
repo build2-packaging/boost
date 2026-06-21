@@ -16,25 +16,29 @@
 
 /** Boost.Parser uses assertions (`BOOST_ASSERT()`) in several places to
     indicate that your use of the library has an error in it.  All of those
-    places could heve instead been ill-formed code, caught at compile time.
+    places could have instead been ill-formed code, caught at compile time.
     It is far quicker and easier to determine exactly where in your code such
     an error is located if this is a runtime failure; you can just look at the
-    stack in your favorite debugger.  However, if you want to make thes kinds
+    stack in your favorite debugger.  However, if you want to make these kinds
     of errors always ill-formed code, define this macro. */
 #    define BOOST_PARSER_NO_RUNTIME_ASSERTIONS
 
 /** Asserts that the given condition is true.  If
     `BOOST_PARSER_NO_RUNTIME_ASSERTIONS` macro is defined by the user,
-    `BOOST_PARSER_ASSERT` expends to a compile-time `static_assert()`.
+    `BOOST_PARSER_ASSERT` expands to a compile-time `static_assert()`.
     Otherwise, it expands to a run-time `BOOST_ASSERT()`.  Note that defining
     `BOOST_DISABLE_ASSERTS` disables the use of C `assert`, even when
-    `BOOST_ASSERT` is unavailble. */
+    `BOOST_ASSERT` is unavailable. */
 #    define BOOST_PARSER_ASSERT(condition)
 
 /** Boost.Parser will automatically use concepts to constrain templates when
     building in C++20 mode, if the compiler defines `__cpp_lib_concepts`.  To
     disable the use of concepts, define this macro. */
 #    define BOOST_PARSER_DISABLE_CONCEPTS
+
+/** Boost.Parser will generate code to trace the execution of each and every
+    parser by default.  To disable all trace code, define this macro. */
+#    define BOOST_PARSER_DISABLE_TRACE
 
 /** Define this macro to use `boost::hana::tuple` instead of `std::tuple`
     throughout Boost.Parser. */
@@ -73,6 +77,12 @@
 
 #endif
 
+// Follows logic in boost/config/detail/select_compiler_config.hpp.
+#if defined(__clang__) && !defined(__ibmxl__) && !defined(__CODEGEARC__)
+#elif defined(__GNUC__) && !defined(__ibmxl__)
+#define BOOST_PARSER_GCC
+#endif
+
 #if defined(__cpp_lib_constexpr_algorithms)
 #    define BOOST_PARSER_ALGO_CONSTEXPR constexpr
 #else
@@ -84,6 +94,12 @@
 #    define BOOST_PARSER_USE_CONCEPTS 1
 #else
 #    define BOOST_PARSER_USE_CONCEPTS 0
+#endif
+
+#if defined(BOOST_PARSER_DISABLE_TRACE)
+#    define BOOST_PARSER_DO_TRACE 0
+#else
+#    define BOOST_PARSER_DO_TRACE 1
 #endif
 
 #if defined(__cpp_lib_ranges) && BOOST_PARSER_USE_CONCEPTS

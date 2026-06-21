@@ -15,6 +15,7 @@
 
 #include <boost/json/error.hpp>
 #include <boost/json/conversion.hpp>
+#include <boost/json/value.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
 #include <vector>
@@ -1052,7 +1053,7 @@ struct ignoring_handler
         --array_depth_;
 
         if( (array_depth_ + object_depth_) == 0 )
-            return parent_->signal_end(ec);
+            return parent_->signal_value(ec);
         return true;
     }
 
@@ -1130,6 +1131,10 @@ class converting_handler<described_class_conversion_tag, V, P>
 #else
 
 private:
+    static_assert(
+        uniquely_named_members<V>::value,
+        "The type has several described members with the same name.");
+
     using Dm = described_members<V>;
     using Dt = struct_element_list<V>;
 

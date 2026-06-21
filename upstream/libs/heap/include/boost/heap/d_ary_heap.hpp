@@ -14,12 +14,13 @@
 #include <vector>
 
 #include <boost/assert.hpp>
+#include <boost/config.hpp>
 
 #include <boost/heap/detail/heap_comparison.hpp>
+#include <boost/heap/detail/heap_utils.hpp>
 #include <boost/heap/detail/mutable_heap.hpp>
 #include <boost/heap/detail/ordered_adaptor_iterator.hpp>
 #include <boost/heap/detail/stable_heap.hpp>
-#include <boost/mem_fn.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 #    pragma once
@@ -30,7 +31,7 @@
 #    ifdef BOOST_HEAP_SANITYCHECKS
 #        define BOOST_HEAP_ASSERT BOOST_ASSERT
 #    else
-#        define BOOST_HEAP_ASSERT( expression )
+#        define BOOST_HEAP_ASSERT( expression ) static_assert( true, "force semicolon" )
 #    endif
 #endif
 
@@ -55,7 +56,13 @@ typedef parameter::parameters< boost::parameter::required< tag::arity >,
 
 /* base class for d-ary heap */
 template < typename T, class BoundArgs, class IndexUpdater >
-class d_ary_heap : private make_heap_base< T, BoundArgs, false >::type
+class d_ary_heap :
+#ifndef BOOST_MSVC
+    private
+#else
+    public
+#endif
+    make_heap_base< T, BoundArgs, false >::type
 {
     typedef make_heap_base< T, BoundArgs, false > heap_base_maker;
 
@@ -151,31 +158,10 @@ public:
         super_t( cmp )
     {}
 
-    d_ary_heap( d_ary_heap const& rhs ) :
-        super_t( rhs ),
-        q_( rhs.q_ )
-    {}
-
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    d_ary_heap( d_ary_heap&& rhs ) :
-        super_t( std::move( rhs ) ),
-        q_( std::move( rhs.q_ ) )
-    {}
-
-    d_ary_heap& operator=( d_ary_heap&& rhs )
-    {
-        super_t::operator=( std::move( rhs ) );
-        q_ = std::move( rhs.q_ );
-        return *this;
-    }
-#endif
-
-    d_ary_heap& operator=( d_ary_heap const& rhs )
-    {
-        static_cast< super_t& >( *this ) = static_cast< super_t const& >( rhs );
-        q_                               = rhs.q_;
-        return *this;
-    }
+    d_ary_heap( d_ary_heap const& rhs )            = default;
+    d_ary_heap( d_ary_heap&& rhs )                 = default;
+    d_ary_heap& operator=( d_ary_heap&& rhs )      = default;
+    d_ary_heap& operator=( d_ary_heap const& rhs ) = default;
 
     bool empty( void ) const
     {
@@ -215,7 +201,6 @@ public:
         siftup( q_.size() - 1 );
     }
 
-#if !defined( BOOST_NO_CXX11_RVALUE_REFERENCES ) && !defined( BOOST_NO_CXX11_VARIADIC_TEMPLATES )
     template < class... Args >
     void emplace( Args&&... args )
     {
@@ -223,7 +208,7 @@ public:
         reset_index( size() - 1, size() - 1 );
         siftup( q_.size() - 1 );
     }
-#endif
+
     void pop( void )
     {
         BOOST_ASSERT( !empty() );
@@ -237,10 +222,13 @@ public:
         siftdown( 0 );
     }
 
-    void swap( d_ary_heap& rhs )
+    void do_swap( d_ary_heap& rhs ) noexcept( std::is_nothrow_move_constructible< super_t >::value
+                                              && std::is_nothrow_move_assignable< super_t >::value
+                                              && std::is_nothrow_move_constructible< container_type >::value
+                                              && std::is_nothrow_move_assignable< container_type >::value )
     {
-        super_t::swap( rhs );
-        q_.swap( rhs.q_ );
+        super_t::do_swap( rhs );
+        detail::swap_via_move( q_, rhs.q_ );
     }
 
     iterator begin( void ) const
@@ -349,7 +337,7 @@ private:
     size_type last_child_index( size_type index ) const
     {
         const size_t    first_index = first_child_index( index );
-        const size_type last_index  = ( std::min )( first_index + D - 1, size() - 1 );
+        const size_type last_index  = (std::min)( first_index + D - 1, size() - 1 );
 
         return last_index;
     }
@@ -415,9 +403,9 @@ struct select_dary_heap
 {
     static const bool is_mutable = extract_mutable< BoundArgs >::value;
 
-    typedef typename boost::conditional< is_mutable,
-                                         priority_queue_mutable_wrapper< d_ary_heap< T, BoundArgs, nop_index_updater > >,
-                                         d_ary_heap< T, BoundArgs, nop_index_updater > >::type type;
+    typedef typename std::conditional< is_mutable,
+                                       priority_queue_mutable_wrapper< d_ary_heap< T, BoundArgs, nop_index_updater > >,
+                                       d_ary_heap< T, BoundArgs, nop_index_updater > >::type type;
 };
 
 } /* namespace detail */
@@ -513,28 +501,19 @@ public:
     {}
 
     /// \copydoc boost::heap::priority_queue::priority_queue(priority_queue const &)
-    d_ary_heap( d_ary_heap const& rhs ) :
-        super_t( rhs )
-    {}
+    d_ary_heap( d_ary_heap const& rhs ) = default;
 
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     /// \copydoc boost::heap::priority_queue::priority_queue(priority_queue &&)
-    d_ary_heap( d_ary_heap&& rhs ) :
-        super_t( std::move( rhs ) )
-    {}
+    d_ary_heap( d_ary_heap&& rhs ) = default;
 
     /// \copydoc boost::heap::priority_queue::operator=(priority_queue &&)
-    d_ary_heap& operator=( d_ary_heap&& rhs )
-    {
-        super_t::operator=( std::move( rhs ) );
-        return *this;
-    }
-#endif
+    d_ary_heap& operator=( d_ary_heap&& rhs ) = default;
 
     /// \copydoc boost::heap::priority_queue::operator=(priority_queue const &)
     d_ary_heap& operator=( d_ary_heap const& rhs )
     {
-        super_t::operator=( rhs );
+        d_ary_heap tmp( rhs );
+        do_swap( tmp );
         return *this;
     }
 
@@ -575,19 +554,17 @@ public:
     }
 
     /// \copydoc boost::heap::priority_queue::push
-    typename boost::conditional< is_mutable, handle_type, void >::type push( value_type const& v )
+    typename std::conditional< is_mutable, handle_type, void >::type push( value_type const& v )
     {
         return super_t::push( v );
     }
 
-#if !defined( BOOST_NO_CXX11_RVALUE_REFERENCES ) && !defined( BOOST_NO_CXX11_VARIADIC_TEMPLATES )
     /// \copydoc boost::heap::priority_queue::emplace
     template < class... Args >
-    typename boost::conditional< is_mutable, handle_type, void >::type emplace( Args&&... args )
+    typename std::conditional< is_mutable, handle_type, void >::type emplace( Args&&... args )
     {
         return super_t::emplace( std::forward< Args >( args )... );
     }
-#endif
 
     /// \copydoc boost::heap::priority_queue::operator<(HeapType const & rhs) const
     template < typename HeapType >
@@ -754,9 +731,10 @@ public:
     }
 
     /// \copydoc boost::heap::priority_queue::swap
+    BOOST_DEPRECATED( "Use std::swap instead" )
     void swap( d_ary_heap& rhs )
     {
-        super_t::swap( rhs );
+        do_swap( rhs );
     }
 
     /// \copydoc boost::heap::priority_queue::begin
@@ -805,6 +783,13 @@ public:
     value_compare const& value_comp( void ) const
     {
         return super_t::value_comp();
+    }
+
+private:
+    void do_swap( d_ary_heap& rhs ) noexcept( std::is_nothrow_move_constructible< super_t >::value
+                                              && std::is_nothrow_move_assignable< super_t >::value )
+    {
+        super_t::do_swap( rhs );
     }
 };
 

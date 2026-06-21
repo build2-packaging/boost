@@ -852,6 +852,8 @@ struct mpfr_float_imp<digits10, allocate_stack>
                         round_up = true;
                         break;
                      }
+
+                     ++i;
                   }
                   if (round_up)
                   {
@@ -2965,6 +2967,8 @@ inline boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<D
    boost::multiprecision::detail::scoped_default_precision<boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType>, ExpressionTemplates> > precision_guard(arg);
 
    boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType>, ExpressionTemplates> result;
+   if (arg < -1)
+      return policies::raise_domain_error("log1p<%1%>(%1%)", "Argument was %1% but must be greater than -1", arg, pol);
    mpfr_log1p(result.backend().data(), arg.backend().data(), GMP_RNDN);
    if (mpfr_inf_p(result.backend().data()))
       return (arg == -1 ? -1 : 1) * policies::raise_overflow_error<boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType>, ExpressionTemplates> >("log1p<%1%>(%1%)", nullptr, pol);
@@ -3425,12 +3429,17 @@ class numeric_limits<boost::multiprecision::number<boost::multiprecision::mpfr_f
    static constexpr bool has_quiet_NaN                 = true;
    static constexpr bool has_signaling_NaN             = false;
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4996)
+#  pragma warning(push)
+#  pragma warning(disable : 4996)
+#elif (defined(__clang__) && (__clang_major__ >= 17))
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
    static constexpr float_denorm_style       has_denorm      = denorm_absent;
 #ifdef _MSC_VER
 #pragma warning(pop)
+#elif (defined(__clang__) && (__clang_major__ >= 17))
+#  pragma clang diagnostic pop
 #endif
    static constexpr bool has_denorm_loss = false;
    static number_type                        infinity()
@@ -3558,12 +3567,17 @@ class numeric_limits<boost::multiprecision::number<boost::multiprecision::mpfr_f
    static constexpr bool has_quiet_NaN                 = true;
    static constexpr bool has_signaling_NaN             = false;
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4996)
+#  pragma warning(push)
+#  pragma warning(disable : 4996)
+#elif (defined(__clang__) && (__clang_major__ >= 17))
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
    static constexpr float_denorm_style       has_denorm      = denorm_absent;
 #ifdef _MSC_VER
 #pragma warning(pop)
+#elif (defined(__clang__) && (__clang_major__ >= 17))
+#  pragma clang diagnostic pop
 #endif
    static constexpr bool has_denorm_loss = false;
    static number_type                        infinity()
