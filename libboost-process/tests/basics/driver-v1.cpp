@@ -1,12 +1,19 @@
 // This code is based on the upstream example at example/intro.cpp.
 //
-#include <boost/process.hpp>
+// Note: as of Boost 1.91.0, V1 is included via <boost/process/v1.hpp> (the
+// <boost/process.hpp> umbrella now refers to V2) and lives in the
+// boost::process::v1 namespace.
+//
+#include <boost/process/v1.hpp>
 
 #include <string>
 #include <iostream>
 
 using namespace std;
-using namespace boost::process;
+namespace bp = boost::process::v1;
+
+// Note: in V1 the this_process namespace is hoisted to boost:: (i.e.
+// boost::this_process), not boost::process::v1::this_process.
 
 int
 main (int argc, const char** argv)
@@ -25,8 +32,8 @@ main (int argc, const char** argv)
   // Run this executable again -- but with the --child option -- and fail
   // unless we can read the child process' pid from its stdout.
   //
-  ipstream pipe_stream;
-  child c (argv[0] + string (" --child"), std_out > pipe_stream);
+  bp::ipstream pipe_stream;
+  bp::child c (argv[0] + string (" --child"), bp::std_out > pipe_stream);
 
   string l;
 
