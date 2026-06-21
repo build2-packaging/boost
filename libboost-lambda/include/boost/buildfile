@@ -1,5 +1,4 @@
-import intf_libs  = libboost-bind%lib{boost_bind}
-import intf_libs += libboost-config%lib{boost_config}
+import intf_libs  = libboost-config%lib{boost_config}
 import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-detail%lib{boost_detail}
 import intf_libs += libboost-iterator%lib{boost_iterator}

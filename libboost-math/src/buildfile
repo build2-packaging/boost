@@ -6,7 +6,6 @@ import intf_libs += libboost-integer%lib{boost_integer}
 import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
 import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-random%lib{boost_random}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 impl_libs = # Implementation dependencies.
 

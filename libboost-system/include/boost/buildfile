@@ -1,5 +1,7 @@
 import intf_libs  = libboost-assert%lib{boost_assert}
+import intf_libs += libboost-compat%lib{boost_compat}
 import intf_libs += libboost-config%lib{boost_config}
+import intf_libs += libboost-mp11%lib{boost_mp11}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-variant2%lib{boost_variant2}
 import intf_libs += libboost-winapi%lib{boost_winapi}
