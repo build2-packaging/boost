@@ -1,22 +1,22 @@
 # BEGIN MANUAL CUSTOMIZATION
 #
 
-# Note that there are two versions of Boost.Process: V1 and V2. V1 is
-# scheduled to be deprecated in Boost 1.88.0. New projects are advised to use
-# V2. (See src/buildfile for the library targets.)
+# Note that there are two versions of Boost.Process: V1 and V2. As of Boost
+# 1.91.0, V2 is the default: it is included via <boost/process.hpp> (and the
+# individual <boost/process/*.hpp> headers), while V1 has been relegated to
+# <boost/process/v1.hpp> (and the boost/process/v1/ subtree). The
+# <boost/process/v2.hpp> umbrella header no longer exists. (See src/buildfile
+# for the library targets.)
 
-# The V1 headers. Included via <boost/process.hpp>.
+# The V1 headers (header-only library). Included via <boost/process/v1.hpp>.
 #
-pub_hdrs_v1 = hxx{process} process/hxx{v1} process/v1/{hxx ixx txx}{**}
+pub_hdrs_v1 = process/hxx{v1} process/v1/{hxx ixx txx}{**}
 
-# The V2 headers. Included via <boost/process/v2.hpp>.
+# The V2 headers (compiled library): everything except the V1 subtree above.
+# Included via <boost/process.hpp> and the individual <boost/process/*.hpp>
+# headers.
 #
-# Note that v2 headers are not included via <boost/process.hpp> despite the
-# latter being BOOST_PROCESS_VERSION-aware. This feels like it might change in
-# the near future. (This is based solely on the upstream v2 code examples;
-# there is no documentation, comments, or build code covering this topic.)
-#
-pub_hdrs_v2 = process/hxx{v2} process/v2/{hxx ixx txx}{**}
+pub_hdrs_v2 = hxx{process} process/{hxx ixx txx}{** -v1 -v1/**}
 
 ./: $pub_hdrs_v1 $pub_hdrs_v2
 
