@@ -2,7 +2,7 @@
 name: libboost-static-assert
 version: 1.91.0-a.0.z
 type: lib,binless
-language: c
+language: c++
 project: boost
 summary: Static assertions (compile time assertions). Merged into Boost.Config
 license: BSL-1.0 ; Boost Software License 1.0.

@@ -12,7 +12,6 @@ import intf_libs += libboost-core%lib{boost_core}
 import intf_libs += libboost-detail%lib{boost_detail}
 import intf_libs += libboost-foreach%lib{boost_foreach}
 import intf_libs += libboost-function%lib{boost_function}
-import intf_libs += libboost-geometry%lib{boost_geometry}
 import intf_libs += libboost-integer%lib{boost_integer}
 import intf_libs += libboost-iterator%lib{boost_iterator}
 import intf_libs += libboost-lexical-cast%lib{boost_lexical_cast}
