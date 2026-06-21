@@ -27,6 +27,7 @@ git submodule update --init --depth 20 --jobs 4 \
     libs/align \
     libs/asio \
     libs/assert \
+    libs/compat \
     libs/config \
     libs/core \
     libs/describe \
@@ -37,10 +38,10 @@ git submodule update --init --depth 20 --jobs 4 \
     libs/optional \
     libs/scope \
     libs/smart_ptr \
-    libs/static_assert \
     libs/static_string \
     libs/system \
     libs/throw_exception \
+    libs/tokenizer \
     libs/type_traits \
     libs/utility \
     libs/winapi \
@@ -80,6 +81,7 @@ git submodule update --init --depth 20 --jobs 4 \
     libs/range \
     libs/ratio \
     libs/rational \
+    libs/regex \
     libs/thread \
     libs/tuple \
     libs/type_index \

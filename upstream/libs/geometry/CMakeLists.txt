@@ -24,8 +24,8 @@ target_link_libraries(boost_geometry
     Boost::concept_check
     Boost::config
     Boost::core
-    Boost::crc
     Boost::function_types
+    Boost::graph
     Boost::iterator
     Boost::lexical_cast
     Boost::math
@@ -33,7 +33,6 @@ target_link_libraries(boost_geometry
     Boost::mpl
     Boost::multiprecision
     Boost::numeric_conversion
-    Boost::program_options
     Boost::qvm
     Boost::range
     Boost::rational
@@ -103,6 +102,7 @@ if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
           algorithm
           any
           crc
+          graph
           lexical_cast
           math
           multiprecision
@@ -130,5 +130,10 @@ if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
   add_subdirectory(test EXCLUDE_FROM_ALL)
   add_subdirectory(index/test EXCLUDE_FROM_ALL)
 
+endif()
+
+if(BUILD_DOCUMENTATION)
+  add_subdirectory(doc/src/examples)
+  add_subdirectory(doc/src/docutils/tools/support_status)
 endif()
 

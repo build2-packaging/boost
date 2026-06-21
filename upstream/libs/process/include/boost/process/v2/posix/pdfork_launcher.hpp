@@ -24,7 +24,7 @@ struct pdfork_launcher : default_launcher
 
     template<typename ExecutionContext, typename Args, typename ... Inits>
     auto operator()(ExecutionContext & context,
-                    const typename std::enable_if<is_convertible<
+                    const typename std::enable_if<std::is_convertible<
                             ExecutionContext&, net::execution_context&>::value,
                             filesystem::path >::type & executable,
                     Args && args,
@@ -43,7 +43,7 @@ struct pdfork_launcher : default_launcher
     template<typename ExecutionContext, typename Args, typename ... Inits>
     auto operator()(ExecutionContext & context,
                     error_code & ec,
-                    const typename std::enable_if<is_convertible<
+                    const typename std::enable_if<std::is_convertible<
                             ExecutionContext&, net::execution_context&>::value,
                             filesystem::path >::type & executable,
                     Args && args,
@@ -103,11 +103,15 @@ struct pdfork_launcher : default_launcher
 
             auto & ctx = net::query(
                     exec, net::execution::context);
+#if !defined(BOOST_PROCESS_V2_DISABLE_NOTIFY_FORK)
             ctx.notify_fork(net::execution_context::fork_prepare);
+#endif
             pid = ::pdfork(&fd, PD_DAEMON | PD_CLOEXEC);
             if (pid == -1)
             {
+#if !defined(BOOST_PROCESS_V2_DISABLE_NOTIFY_FORK)
                 ctx.notify_fork(net::execution_context::fork_parent);
+#endif
                 detail::on_fork_error(*this, executable, argv, ec, inits...);
                 detail::on_error(*this, executable, argv, ec, inits...);
 
@@ -116,7 +120,9 @@ struct pdfork_launcher : default_launcher
             }
             else if (pid == 0)
             {
+#if !defined(BOOST_PROCESS_V2_DISABLE_NOTIFY_FORK)
                 ctx.notify_fork(net::execution_context::fork_child);
+#endif
                 ::close(pg.p[0]);
 
                 ec = detail::on_exec_setup(*this, executable, argv, inits...);
@@ -130,10 +136,12 @@ struct pdfork_launcher : default_launcher
                 default_launcher::ignore_unused(::write(pg.p[1], &errno, sizeof(int)));
                 BOOST_PROCESS_V2_ASSIGN_EC(ec, errno, system_category());
                 detail::on_exec_error(*this, executable, argv, ec, inits...);
-                ::exit(EXIT_FAILURE);
+                ::_exit(EXIT_FAILURE);
                 return basic_process<Executor>{exec};
             }
+#if !defined(BOOST_PROCESS_V2_DISABLE_NOTIFY_FORK)
             ctx.notify_fork(net::execution_context::fork_parent);
+#endif
             ::close(pg.p[1]);
             pg.p[1] = -1;
             int child_error{0};
@@ -153,6 +161,7 @@ struct pdfork_launcher : default_launcher
             if (ec)
             {
                 detail::on_error(*this, executable, argv, ec, inits...);
+                do { ::waitpid(pid, nullptr, 0); } while (errno == EINTR);
                 return basic_process<Executor>{exec};
             }
         }

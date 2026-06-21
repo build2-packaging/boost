@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2022 Alan de Freitas (alandefreitas@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,37 +19,6 @@ namespace boost {
 namespace urls {
 namespace grammar {
 
-/** Match another rule, if the result is not empty
-
-    This adapts another rule such that
-    when an empty string is successfully
-    parsed, the result is an error.
-
-    @par Value Type
-    @code
-    using value_type = typename Rule::value_type;
-    @endcode
-
-    @par Example
-    Rules are used with the function @ref parse.
-    @code
-    system::result< decode_view > rv = parse( "Program%20Files",
-        not_empty_rule( pct_encoded_rule( unreserved_chars ) ) );
-    @endcode
-
-    @param r The rule to match
-
-    @see
-        @ref parse,
-        @ref pct_encoded_rule,
-        @ref unreserved_chars.
-*/
-#ifdef BOOST_URL_DOCS
-template<class Rule>
-constexpr
-__implementation_defined__
-not_empty_rule( Rule r );
-#else
 namespace implementation_defined {
 template<class R>
 struct not_empty_rule_t
@@ -56,6 +26,7 @@ struct not_empty_rule_t
     using value_type =
         typename R::value_type;
 
+    BOOST_URL_CXX20_CONSTEXPR
     auto
     parse(
         char const*& it,
@@ -93,30 +64,30 @@ private:
     @endcode
 
     @param r The rule to match
+    @return The adapted rule
 
     @see
         @ref parse,
         @ref pct_encoded_rule,
         @ref unreserved_chars.
 */
-template<class Rule>
+template<BOOST_URL_CONSTRAINT(Rule) R>
 auto
 constexpr
 not_empty_rule(
-    Rule const& r) ->
-        implementation_defined::not_empty_rule_t<Rule>
+    R const& r) ->
+        implementation_defined::not_empty_rule_t<R>
 {
     // If you get a compile error here it
     // means that your rule does not meet
     // the type requirements. Please check
     // the documentation.
     static_assert(
-        is_rule<Rule>::value,
+        is_rule<R>::value,
         "Rule requirements not met");
 
     return { r };
 }
-#endif
 
 } // grammar
 } // urls

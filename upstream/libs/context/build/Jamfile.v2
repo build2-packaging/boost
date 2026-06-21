@@ -14,11 +14,11 @@ import modules ;
 import os ;
 import toolset ;
 import config : requires ;
-import feature ;
 
 project
     : common-requirements <library>$(boost_dependencies)
     : requirements
+      <target-os>windows,<architecture>arm,<address-model>64:<context-impl>winfib
       <target-os>windows:<define>_WIN32_WINNT=0x0601
       <target-os>linux,<toolset>gcc,<segmented-stacks>on:<cxxflags>-fsplit-stack
       <target-os>linux,<toolset>gcc,<segmented-stacks>on:<cxxflags>-DBOOST_USE_SEGMENTED_STACKS
@@ -40,6 +40,7 @@ project
       <define>BOOST_CONTEXT_SOURCE
       <threading>multi
       <toolset>msvc,<address-model>32:<asmflags>/safeseh
+      <toolset>clang-win,<address-model>32:<asmflags>/safeseh
     : usage-requirements
       <link>shared:<define>BOOST_CONTEXT_DYN_LINK=1
       <define>BOOST_CONTEXT_NO_LIB=1
@@ -47,18 +48,6 @@ project
       <variant>release:<define>BOOST_DISABLE_ASSERTS
     : source-location ../src
     ;
-
-
-feature.feature context-impl
-    : fcontext
-      ucontext
-      winfib
-    : propagated
-      composite
-    ;
-feature.set-default context-impl : fcontext ;
-feature.compose <context-impl>ucontext : <define>BOOST_USE_UCONTEXT ;
-feature.compose <context-impl>winfib : <define>BOOST_USE_WINFIB ;
 
 
 # ARM
@@ -106,6 +95,17 @@ alias asm_sources
      <architecture>arm
      <binary-format>mach-o
      <toolset>clang
+   ;
+
+alias asm_sources
+   : asm/make_arm64_aapcs_macho_gas.S
+     asm/jump_arm64_aapcs_macho_gas.S
+     asm/ontop_arm64_aapcs_macho_gas.S
+   : <abi>aapcs
+     <address-model>64
+     <architecture>arm
+     <binary-format>mach-o
+     <toolset>gcc
    ;
 
 alias asm_sources
@@ -202,16 +202,26 @@ alias asm_sources
      <toolset>msvc
    ;
 
-# ARM64/AAPCS/PE
 alias asm_sources
-   : asm/make_arm64_aapcs_pe_armclang.asm
-     asm/jump_arm64_aapcs_pe_armclang.asm
-     asm/ontop_arm64_aapcs_pe_armclang.asm
+   : asm/make_arm64_aapcs_pe_armclang.S
+     asm/jump_arm64_aapcs_pe_armclang.S
+     asm/ontop_arm64_aapcs_pe_armclang.S
    : <abi>aapcs
      <address-model>64
      <architecture>arm
      <binary-format>pe
      <toolset>clang
+   ;
+
+alias asm_sources
+   : asm/make_arm64_aapcs_pe_armclang.S
+     asm/jump_arm64_aapcs_pe_armclang.S
+     asm/ontop_arm64_aapcs_pe_armclang.S
+   : <abi>aapcs
+     <address-model>64
+     <architecture>arm
+     <binary-format>pe
+     <toolset>gcc
    ;
 
 # LOONGARCH64

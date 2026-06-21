@@ -2,7 +2,7 @@
 // buffer.hpp
 // ~~~~~~~~~~
 //
-// Copyright (c) 2003-2024 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2026 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -53,6 +53,7 @@
 
 namespace boost {
 namespace asio {
+BOOST_ASIO_INLINE_NAMESPACE_BEGIN
 namespace detail {
 
 #if defined(BOOST_ASIO_MSVC)
@@ -329,7 +330,9 @@ private:
 /// (Deprecated: Use the socket/descriptor wait() and async_wait() member
 /// functions.) An implementation of both the ConstBufferSequence and
 /// MutableBufferSequence concepts to represent a null buffer sequence.
-class null_buffers
+class BOOST_ASIO_DEPRECATED_MSG(
+  "Use the socket/descriptor wait() and async_wait() member functions")
+null_buffers
 {
 public:
   /// The type for each element in the list of buffers.
@@ -860,9 +863,6 @@ private:
  */
 /*@{*/
 
-# define mutable_buffer mutable_buffer
-# define const_buffer const_buffer
-
 /// Create a new modifiable buffer from an existing buffer.
 /**
  * @returns <tt>mutable_buffer(b)</tt>.
@@ -1018,7 +1018,7 @@ BOOST_ASIO_NODISCARD inline mutable_buffer buffer(
     boost::array<PodType, N>& data) noexcept
 {
   return mutable_buffer(
-      data.c_array(), data.size() * sizeof(PodType));
+      data.data(), data.size() * sizeof(PodType));
 }
 
 /// Create a new modifiable buffer that represents the given POD array.
@@ -1033,7 +1033,7 @@ BOOST_ASIO_NODISCARD inline mutable_buffer buffer(
     boost::array<PodType, N>& data,
     std::size_t max_size_in_bytes) noexcept
 {
-  return mutable_buffer(data.c_array(),
+  return mutable_buffer(data.data(),
       data.size() * sizeof(PodType) < max_size_in_bytes
       ? data.size() * sizeof(PodType) : max_size_in_bytes);
 }
@@ -1642,6 +1642,132 @@ BOOST_ASIO_NODISCARD inline const_buffer buffer(
       data.size() ? detail::to_address(data.begin()) : 0,
       data.size() * sizeof(typename T::value_type) < max_size_in_bytes
       ? data.size() * sizeof(typename T::value_type) : max_size_in_bytes);
+}
+
+/// Create a new modifiable buffer from a span.
+/**
+ * @returns <tt>mutable_buffer(span)</tt>.
+ */
+template <template <typename, std::size_t> class Span,
+    typename T, std::size_t Extent>
+BOOST_ASIO_NODISCARD inline mutable_buffer buffer(
+    const Span<T, Extent>& span,
+    constraint_t<
+      !is_const<T>::value,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+      sizeof(T) == 1,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+#if defined(BOOST_ASIO_MSVC)
+      detail::has_subspan_memfn<Span<T, Extent>>::value,
+#else // defined(BOOST_ASIO_MSVC)
+      is_same<
+        decltype(span.subspan(0, 0)),
+        Span<T, static_cast<std::size_t>(-1)>
+      >::value,
+#endif // defined(BOOST_ASIO_MSVC)
+      defaulted_constraint
+    > = defaulted_constraint()) noexcept
+{
+  return mutable_buffer(span);
+}
+
+/// Create a new modifiable buffer from a span.
+/**
+ * @returns A mutable_buffer value equivalent to:
+ * @code mutable_buffer b(span);
+ * mutable_buffer(
+ *     b.data(),
+ *     min(b.size(), max_size_in_bytes)); @endcode
+ */
+template <template <typename, std::size_t> class Span,
+    typename T, std::size_t Extent>
+BOOST_ASIO_NODISCARD inline mutable_buffer buffer(
+    const Span<T, Extent>& span,
+    std::size_t max_size_in_bytes,
+    constraint_t<
+      !is_const<T>::value,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+      sizeof(T) == 1,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+#if defined(BOOST_ASIO_MSVC)
+      detail::has_subspan_memfn<Span<T, Extent>>::value,
+#else // defined(BOOST_ASIO_MSVC)
+      is_same<
+        decltype(span.subspan(0, 0)),
+        Span<T, static_cast<std::size_t>(-1)>
+      >::value,
+#endif // defined(BOOST_ASIO_MSVC)
+      defaulted_constraint
+    > = defaulted_constraint()) noexcept
+{
+  return buffer(mutable_buffer(span), max_size_in_bytes);
+}
+
+/// Create a new non-modifiable buffer from a span.
+/**
+ * @returns <tt>const_buffer(span)</tt>.
+ */
+template <template <typename, std::size_t> class Span,
+    typename T, std::size_t Extent>
+BOOST_ASIO_NODISCARD inline const_buffer buffer(
+    const Span<const T, Extent>& span,
+    constraint_t<
+      sizeof(T) == 1,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+#if defined(BOOST_ASIO_MSVC)
+      detail::has_subspan_memfn<Span<const T, Extent>>::value,
+#else // defined(BOOST_ASIO_MSVC)
+      is_same<
+        decltype(span.subspan(0, 0)),
+        Span<T, static_cast<std::size_t>(-1)>
+      >::value,
+#endif // defined(BOOST_ASIO_MSVC)
+      defaulted_constraint
+    > = defaulted_constraint()) noexcept
+{
+  return const_buffer(span);
+}
+
+/// Create a new non-modifiable buffer from a span.
+/**
+ * @returns A const_buffer value equivalent to:
+ * @code const_buffer b1(b);
+ * const_buffer(
+ *     b1.data(),
+ *     min(b1.size(), max_size_in_bytes)); @endcode
+ */
+template <template <typename, std::size_t> class Span,
+    typename T, std::size_t Extent>
+BOOST_ASIO_NODISCARD inline const_buffer buffer(
+    const Span<const T, Extent>& span,
+    std::size_t max_size_in_bytes,
+    constraint_t<
+      sizeof(T) == 1,
+      defaulted_constraint
+    > = defaulted_constraint(),
+    constraint_t<
+#if defined(BOOST_ASIO_MSVC)
+      detail::has_subspan_memfn<Span<const T, Extent>>::value,
+#else // defined(BOOST_ASIO_MSVC)
+      is_same<
+        decltype(span.subspan(0, 0)),
+        Span<T, static_cast<std::size_t>(-1)>
+      >::value,
+#endif // defined(BOOST_ASIO_MSVC)
+      defaulted_constraint
+    > = defaulted_constraint()) noexcept
+{
+  return buffer(const_buffer(span), max_size_in_bytes);
 }
 
 /*@}*/
@@ -2518,6 +2644,7 @@ inline std::size_t buffer_copy(const MutableBufferSequence& target,
 
 /*@}*/
 
+BOOST_ASIO_INLINE_NAMESPACE_END
 } // namespace asio
 } // namespace boost
 
@@ -2527,6 +2654,7 @@ inline std::size_t buffer_copy(const MutableBufferSequence& target,
 
 namespace boost {
 namespace asio {
+BOOST_ASIO_INLINE_NAMESPACE_BEGIN
 
 /// Trait to determine whether a type satisfies the MutableBufferSequence
 /// requirements.
@@ -2754,6 +2882,7 @@ inline const_buffer operator ""_buf()
 }
 
 } // namespace buffer_literals
+BOOST_ASIO_INLINE_NAMESPACE_END
 } // namespace asio
 } // namespace boost
 

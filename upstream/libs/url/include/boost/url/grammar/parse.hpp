@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2022 Alan de Freitas (alandefreitas@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -34,12 +35,13 @@ namespace grammar {
     @return The parsed value upon success,
     otherwise an error.
 */
-template<class Rule>
-system::result<typename Rule::value_type>
+template<BOOST_URL_CONSTRAINT(Rule) R>
+BOOST_URL_CXX14_CONSTEXPR
+system::result<typename R::value_type>
 parse(
     char const*& it,
     char const* end,
-    Rule const& r);       
+    R const& r);
 
 /** Parse a character buffer using a rule
 
@@ -55,17 +57,16 @@ parse(
     @return The parsed value upon success,
     otherwise an error.
 */
-template<class Rule>
-system::result<typename Rule::value_type>
+template<BOOST_URL_CONSTRAINT(Rule) R>
+BOOST_URL_CXX14_CONSTEXPR
+system::result<typename R::value_type>
 parse(
     core::string_view s,
-    Rule const& r);
+    R const& r);
 
 //------------------------------------------------
 
-#ifndef BOOST_URL_DOCS
 namespace implementation_defined {
-
 template<class Rule>
 struct rule_ref
 {
@@ -82,9 +83,7 @@ struct rule_ref
         return r_.parse(it, end);
     }
 };
-
-} // detail
-#endif
+} // implementation_defined
 
 /** Return a reference to a rule
 
@@ -102,44 +101,19 @@ struct rule_ref
     constants.
 
     @param r The rule to use
+    @return The rule as a reference type
 */
-#ifdef BOOST_URL_DOCS
-template<class Rule>
-constexpr
-__implementation_defined__
-ref(Rule const& r) noexcept;
-#else
-
-/** Return a reference to a rule
-
-    This function returns a rule which
-    references the specified object. This is
-    used to reduce the number of bytes of
-    storage (`sizeof`) required by a combinator
-    when it stores a copy of the object.
-    <br>
-    Ownership of the object is not transferred;
-    the caller is responsible for ensuring the
-    lifetime of the object is extended until it
-    is no longer referenced. For best results,
-    `ref` should only be used with compile-time
-    constants.
-
-    @param r The rule to use
-*/
-template<class Rule>
+template<BOOST_URL_CONSTRAINT(Rule) R>
 constexpr
 typename std::enable_if<
-    is_rule<Rule>::value &&
-    ! std::is_same<Rule,
-        implementation_defined::rule_ref<Rule> >::value,
-    implementation_defined::rule_ref<Rule> >::type
-ref(Rule const& r) noexcept
+    is_rule<R>::value &&
+    ! std::is_same<R,
+        implementation_defined::rule_ref<R> >::value,
+    implementation_defined::rule_ref<R> >::type
+ref(R const& r) noexcept
 {
-    return implementation_defined::rule_ref<
-        Rule>{r};
+    return implementation_defined::rule_ref<R>{r};
 }
-#endif
 
 #ifndef BOOST_URL_DOCS
 #ifndef BOOST_URL_MRDOCS

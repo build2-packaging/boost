@@ -14,8 +14,10 @@
 #include <vector>
 
 #include <boost/assert.hpp>
+#include <boost/config.hpp>
 
 #include <boost/heap/detail/heap_comparison.hpp>
+#include <boost/heap/detail/heap_utils.hpp>
 #include <boost/heap/detail/stable_heap.hpp>
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
@@ -132,39 +134,24 @@ public:
      * \b Complexity: Linear.
      *
      * */
-    priority_queue( priority_queue const& rhs ) :
-        super_t( rhs ),
-        q_( rhs.q_ )
-    {}
+    priority_queue( priority_queue const& rhs ) = default;
 
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     /**
      * \b Effects: C++11-style move constructor.
      *
      * \b Complexity: Constant.
      *
-     * \b Note: Only available, if BOOST_NO_CXX11_RVALUE_REFERENCES is not defined
      * */
-    priority_queue( priority_queue&& rhs ) BOOST_NOEXCEPT_IF( boost::is_nothrow_move_constructible< super_t >::value ) :
-        super_t( std::move( rhs ) ),
-        q_( std::move( rhs.q_ ) )
-    {}
+    priority_queue( priority_queue&& rhs ) noexcept( std::is_nothrow_move_constructible< super_t >::value ) = default;
 
     /**
      * \b Effects: C++11-style move assignment.
      *
      * \b Complexity: Constant.
      *
-     * \b Note: Only available, if BOOST_NO_CXX11_RVALUE_REFERENCES is not defined
      * */
-    priority_queue& operator=( priority_queue&& rhs )
-        BOOST_NOEXCEPT_IF( boost::is_nothrow_move_assignable< super_t >::value )
-    {
-        super_t::operator=( std::move( rhs ) );
-        q_ = std::move( rhs.q_ );
-        return *this;
-    }
-#endif
+    priority_queue& operator=( priority_queue&& rhs ) noexcept( std::is_nothrow_move_assignable< super_t >::value )
+        = default;
 
     /**
      * \b Effects: Assigns priority queue from rhs.
@@ -174,8 +161,8 @@ public:
      * */
     priority_queue& operator=( priority_queue const& rhs )
     {
-        static_cast< super_t& >( *this ) = static_cast< super_t const& >( rhs );
-        q_                               = rhs.q_;
+        priority_queue tmp( rhs );
+        do_swap( tmp );
         return *this;
     }
 
@@ -185,7 +172,7 @@ public:
      * \b Complexity: Constant.
      *
      * */
-    bool empty( void ) const BOOST_NOEXCEPT
+    bool empty( void ) const noexcept
     {
         return q_.empty();
     }
@@ -196,7 +183,7 @@ public:
      * \b Complexity: Constant.
      *
      * */
-    size_type size( void ) const BOOST_NOEXCEPT
+    size_type size( void ) const noexcept
     {
         return q_.size();
     }
@@ -207,7 +194,7 @@ public:
      * \b Complexity: Constant.
      *
      * */
-    size_type max_size( void ) const BOOST_NOEXCEPT
+    size_type max_size( void ) const noexcept
     {
         return q_.max_size();
     }
@@ -218,7 +205,7 @@ public:
      * \b Complexity: Linear.
      *
      * */
-    void clear( void ) BOOST_NOEXCEPT
+    void clear( void ) noexcept
     {
         q_.clear();
     }
@@ -258,7 +245,6 @@ public:
         std::push_heap( q_.begin(), q_.end(), static_cast< super_t const& >( *this ) );
     }
 
-#if !defined( BOOST_NO_CXX11_RVALUE_REFERENCES ) && !defined( BOOST_NO_CXX11_VARIADIC_TEMPLATES )
     /**
      * \b Effects: Adds a new element to the priority queue. The element is directly constructed in-place.
      *
@@ -271,7 +257,6 @@ public:
         q_.emplace_back( super_t::make_node( std::forward< Args >( args )... ) );
         std::push_heap( q_.begin(), q_.end(), static_cast< super_t const& >( *this ) );
     }
-#endif
 
     /**
      * \b Effects: Removes the top element from the priority queue.
@@ -291,12 +276,13 @@ public:
      *
      * \b Complexity: Constant.
      *
+     * \deprecated Use \c std::swap instead.
      * */
-    void swap( priority_queue& rhs ) BOOST_NOEXCEPT_IF(
-        boost::is_nothrow_move_constructible< super_t >::value&& boost::is_nothrow_move_assignable< super_t >::value )
+    BOOST_DEPRECATED( "Use std::swap instead" )
+    void swap( priority_queue& rhs ) noexcept( std::is_nothrow_move_constructible< super_t >::value
+                                               && std::is_nothrow_move_assignable< super_t >::value )
     {
-        super_t::swap( rhs );
-        q_.swap( rhs.q_ );
+        do_swap( rhs );
     }
 
     /**
@@ -305,7 +291,7 @@ public:
      * \b Complexity: Constant.
      *
      * */
-    iterator begin( void ) const BOOST_NOEXCEPT
+    iterator begin( void ) const noexcept
     {
         return iterator( q_.begin() );
     }
@@ -316,7 +302,7 @@ public:
      * \b Complexity: Constant.
      *
      * */
-    iterator end( void ) const BOOST_NOEXCEPT
+    iterator end( void ) const noexcept
     {
         return iterator( q_.end() );
     }
@@ -414,8 +400,16 @@ public:
     {
         return !( *this == rhs );
     }
+
+private:
+    void do_swap( priority_queue& rhs ) noexcept( std::is_nothrow_move_constructible< super_t >::value
+                                                  && std::is_nothrow_move_assignable< super_t >::value )
+    {
+        super_t::do_swap( rhs );
+        detail::swap_via_move( q_, rhs.q_ );
+    }
 };
 
-}}     // namespace boost::heap
+}} // namespace boost::heap
 
 #endif /* BOOST_HEAP_PRIORITY_QUEUE_HPP */

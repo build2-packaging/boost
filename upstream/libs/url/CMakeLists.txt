@@ -14,7 +14,7 @@
 # Project
 #
 #-------------------------------------------------
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.8...3.20)
 set(BOOST_URL_VERSION 2)
 if (BOOST_SUPERPROJECT_VERSION)
     set(BOOST_URL_VERSION ${BOOST_SUPERPROJECT_VERSION})
@@ -59,7 +59,6 @@ set(BOOST_URL_DEPENDENCIES
         Boost::core
         Boost::mp11
         Boost::optional
-        Boost::static_assert
         Boost::system
         Boost::throw_exception
         Boost::type_traits
@@ -76,7 +75,7 @@ if (NOT BOOST_URL_MRDOCS_BUILD)
         set(BOOST_URL_UNIT_TEST_LIBRARIES container filesystem unordered)
     endif()
     if (BOOST_URL_BUILD_EXAMPLES)
-        set(BOOST_URL_EXAMPLE_LIBRARIES json regex beast)
+        set(BOOST_URL_EXAMPLE_LIBRARIES json regex beast filesystem)
     endif()
 endif()
 # Complete dependency list
@@ -175,6 +174,7 @@ if (BUILD_TESTING OR BOOST_URL_BUILD_TESTS)
     if (BOOST_URL_IS_ROOT)
         include(CTest)
     endif ()
+    add_subdirectory(extra/test_suite)
     add_subdirectory(test)
 endif ()
 
