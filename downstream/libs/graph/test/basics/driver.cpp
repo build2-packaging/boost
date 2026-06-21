@@ -65,7 +65,11 @@
 #include <boost/graph/incremental_components.hpp>
 #include <boost/graph/is_kuratowski_subgraph.hpp>
 #include <boost/graph/isomorphism.hpp>
-#include <boost/graph/is_straight_line_drawing.hpp>
+// Note: <boost/graph/is_straight_line_drawing.hpp> is intentionally
+// omitted: it is the only Boost.Graph header that includes
+// Boost.Geometry, and we break the graph->geometry dependency to avoid
+// the dependency cycle that was introduced in Boost 1.91.0 (see the
+// override file).
 #include <boost/graph/iteration_macros.hpp>
 #include <boost/graph/iteration_macros_undef.hpp>
 #include <boost/graph/johnson_all_pairs_shortest.hpp>

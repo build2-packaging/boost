@@ -422,10 +422,16 @@ exclude_headers["libboost-iterator"]="function_output_iterator.hpp"
 #
 # edmunds_karp_max_flow.hpp, relaxed_heap.hpp: deprecated.
 #
+# is_straight_line_drawing.hpp: the only Boost.Graph header that includes
+# Boost.Geometry. Excluded from the smoke test to go with breaking the
+# graph->geometry dependency that creates a cycle in 1.91.0 (see
+# exclude_dependencies below).
+#
 exclude_headers["libboost-graph"]="\
 graph/leda_graph.hpp               \
 graph/stanford_graph.hpp           \
 graph/edmunds_karp_max_flow.hpp    \
+graph/is_straight_line_drawing.hpp \
 pending/relaxed_heap.hpp           \
 "
 
@@ -477,7 +483,15 @@ system/windows_error.hpp            \
 # for example, Boost.Graph ever switches to a direct #include, it will be
 # detected so preempt that here.
 #
-exclude_dependencies["libboost-graph"]="graph_parallel"
+# Boost.Geometry and Boost.Graph became mutually dependent in Boost 1.91.0,
+# creating a dependency cycle that bpkg/bdep cannot resolve. Break it on the
+# graph->geometry side because that direction comes from a single, isolated
+# header (boost/graph/is_straight_line_drawing.hpp, excluded from the smoke
+# test above), whereas geometry->graph comes from geometry's overlay
+# algorithms. No Boost.Graph source file needs Boost.Geometry, so breaking this
+# dependency does not affect the compiled library.
+#
+exclude_dependencies["libboost-graph"]="graph_parallel geometry"
 
 # Break Boost.Odeint's dependency on Boost.MPI and Boost.Compute because we're
 # not packaging them (for now). It's safe to break these dependencies because
