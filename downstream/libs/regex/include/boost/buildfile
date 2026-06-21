@@ -20,7 +20,13 @@ lib{boost_regex}: {hxx ixx txx h}{** -**/icu} $intf_libs
   libboost_regex.icu = [bool] $config.libboost_regex.icu
 }
 
-lib{boost_regex}: regex/hxx{icu v4/icu v5/icu}: \
+# Note: as of Boost 1.91.0 the internal version directory is v5 only. That is,
+# the v4 subtree (and thus boost/regex/v4/icu.hpp) has been removed. Naming the
+# non-existent v4/icu header here was harmless for a normal build (icu is off by
+# default, so the header had include=false) but broke `b dist`, which resolves
+# the explicitly-named prerequisite regardless.
+#
+lib{boost_regex}: regex/hxx{icu v5/icu}: \
   include = $config.libboost_regex.icu
 #
 # END MANUAL CUSTOMIZATION
