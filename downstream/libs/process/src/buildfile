@@ -11,9 +11,9 @@ include $pub
 # BEGIN MANUAL CUSTOMIZATION
 #
 
-# Note that there are two versions of Boost.Process: V1 and V2. V1 is
-# scheduled to be deprecated in Boost 1.88.0. New projects are advised to use
-# V2.
+# Note that there are two versions of Boost.Process: V1 and V2. As of Boost
+# 1.91.0, V2 is the default (included via <boost/process.hpp>) and V1 has been
+# relegated to <boost/process/v1.hpp>. New projects are advised to use V2.
 #
 # Note that the upstream build files cover only V2, and that build/Jamfile
 # seems to be more complete and current than CMakeLists.txt, which has
