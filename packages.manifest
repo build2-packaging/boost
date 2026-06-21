@@ -35,6 +35,9 @@ location: libboost-bimap/
 location: libboost-bind/
 
 :
+location: libboost-bloom/
+
+:
 location: libboost-callable-traits/
 
 :
@@ -87,6 +90,9 @@ location: libboost-crc/
 
 :
 location: libboost-date-time/
+
+:
+location: libboost-decimal/
 
 :
 location: libboost-describe/
@@ -144,6 +150,9 @@ location: libboost-graph/
 
 :
 location: libboost-hana/
+
+:
+location: libboost-hash2/
 
 :
 location: libboost-heap/
@@ -221,6 +230,9 @@ location: libboost-mp11/
 location: libboost-mpl/
 
 :
+location: libboost-mqtt5/
+
+:
 location: libboost-msm/
 
 :
@@ -249,6 +261,9 @@ location: libboost-numeric-odeint/
 
 :
 location: libboost-numeric-ublas/
+
+:
+location: libboost-openmethod/
 
 :
 location: libboost-optional/

@@ -1,0 +1,3 @@
+import libs = libboost-bloom%lib{boost_bloom}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

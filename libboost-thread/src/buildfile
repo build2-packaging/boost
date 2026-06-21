@@ -16,7 +16,6 @@ import intf_libs += libboost-optional%lib{boost_optional}
 import intf_libs += libboost-predef%lib{boost_predef}
 import intf_libs += libboost-preprocessor%lib{boost_preprocessor}
 import intf_libs += libboost-smart-ptr%lib{boost_smart_ptr}
-import intf_libs += libboost-static-assert%lib{boost_static_assert}
 import intf_libs += libboost-system%lib{boost_system}
 import intf_libs += libboost-throw-exception%lib{boost_throw_exception}
 import intf_libs += libboost-tuple%lib{boost_tuple}

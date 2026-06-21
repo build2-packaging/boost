@@ -1,6 +1,6 @@
 : 1
 name: libboost-atomic
-version: 1.87.0
+version: 1.91.0-a.0.z
 language: c++
 project: boost
 summary: C++11-style atomic types
@@ -8,15 +8,15 @@ license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 description-file: README.md
 url: https://github.com/boostorg/atomic
-doc-url: https://www.boost.org/doc/libs/1_87_0/libs/atomic
+doc-url: https://www.boost.org/doc/libs/1_91_0/libs/atomic
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.17.0
-depends: * bpkg >= 0.17.0
+depends: * build2 >= 0.18.0
+depends: * bpkg >= 0.18.0
 depends: libboost-align == $
 depends: libboost-preprocessor == $
 depends: libboost-assert == $

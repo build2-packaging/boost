@@ -1,0 +1,3 @@
+import libs = libboost-openmethod%lib{boost_openmethod}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}
