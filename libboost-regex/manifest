@@ -22,8 +22,8 @@ icu-build-config: config.libboost_regex.icu=true
 depends: * build2 >= 0.18.0
 depends: * bpkg >= 0.18.0
 depends: libboost-core == $
-depends: libicuuc ^65.1.0 ? ($config.libboost_regex.icu)
-depends: libicui18n ^65.1.0 ? ($config.libboost_regex.icu)
+depends: libicuuc ^74.2.0 ? ($config.libboost_regex.icu)
+depends: libicui18n ^74.2.0 ? ($config.libboost_regex.icu)
 depends: libboost-assert == $
 depends: libboost-concept-check == $
 depends: libboost-config == $
