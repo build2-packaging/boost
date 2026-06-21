@@ -2,7 +2,7 @@ import intf_libs = libboost-config%lib{boost_config}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 
-lib{boost_static_assert}: h{**} $intf_libs
+lib{boost_static_assert}: {hxx ixx txx}{**} $intf_libs
 
 # Export options.
 #
@@ -11,14 +11,14 @@ src_pfx = [dir_path] $src_root/include/
 
 lib{boost_static_assert}:
 {
-  c.export.poptions = "-I$out_pfx" "-I$src_pfx"
-  c.export.libs = $intf_libs
+  cxx.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  cxx.export.libs = $intf_libs
 }
 
 # Install into the boost/ subdirectory of, say, /usr/include/
 # recreating subdirectories.
 #
-h{*}:
+{hxx ixx txx}{*}:
 {
   install         = include/boost/
   install.subdirs = true
