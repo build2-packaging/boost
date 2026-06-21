@@ -14,6 +14,7 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
+#include <boost/static_assert.hpp>
 #include <boost/type_traits/conditional.hpp>
 #include <queue>
 
@@ -23,12 +24,12 @@ namespace boost { namespace heap { namespace detail {
 template < typename type >
 struct identity
 {
-    type& operator()( type& x ) const BOOST_NOEXCEPT
+    type& operator()( type& x ) const noexcept
     {
         return x;
     }
 
-    const type& operator()( const type& x ) const BOOST_NOEXCEPT
+    const type& operator()( const type& x ) const noexcept
     {
         return x;
     }
@@ -58,7 +59,7 @@ struct pointer_to_reference
 template < typename HandleType, typename Alloc, typename ValueCompare >
 struct unordered_tree_iterator_storage
 {
-    unordered_tree_iterator_storage( ValueCompare const& cmp )
+    unordered_tree_iterator_storage( ValueCompare const& )
     {}
 
     void push( HandleType h )
@@ -87,17 +88,15 @@ struct unordered_tree_iterator_storage
 template < typename ValueType, typename HandleType, typename Alloc, typename ValueCompare, typename ValueExtractor >
 struct ordered_tree_iterator_storage : ValueExtractor
 {
-    struct compare_values_by_handle : ValueExtractor, ValueCompare
+    struct compare_values_by_handle : ValueCompare
     {
-        compare_values_by_handle( ValueCompare const& cmp ) :
+        explicit compare_values_by_handle( ValueCompare const& cmp ) :
             ValueCompare( cmp )
         {}
 
         bool operator()( HandleType const& lhs, HandleType const& rhs ) const
         {
-            ValueType const& lhs_value = ValueExtractor::operator()( lhs->value );
-            ValueType const& rhs_value = ValueExtractor::operator()( rhs->value );
-            return ValueCompare::operator()( lhs_value, rhs_value );
+            return ValueCompare::operator()( lhs->value, rhs->value );
         }
     };
 
@@ -120,7 +119,7 @@ struct ordered_tree_iterator_storage : ValueExtractor
         return data_.top();
     }
 
-    bool empty( void ) const BOOST_NOEXCEPT
+    bool empty( void ) const noexcept
     {
         return data_.empty();
     }
@@ -165,7 +164,7 @@ class tree_iterator :
 
     friend class boost::iterator_core_access;
 
-    typedef typename boost::conditional<
+    typedef typename std::conditional<
         ordered_iterator,
         ordered_tree_iterator_storage< ValueType, const Node*, Alloc, ValueCompare, ValueExtractor >,
         unordered_tree_iterator_storage< const Node*, Alloc, ValueCompare > >::type unvisited_node_container;
@@ -246,7 +245,7 @@ private:
     {
         for ( typename Node::const_child_iterator it = n->children.begin(); it != n->children.end(); ++it ) {
             const Node* n = PointerExtractor::operator()( it );
-            if ( check_null_pointer && n == NULL )
+            if ( check_null_pointer && n == nullptr )
                 continue;
             unvisited_nodes.push( n );
         }
@@ -312,7 +311,7 @@ public:
             ++next;
 
             while ( true ) {
-                if ( parent == NULL || next != parent->children.end() )
+                if ( parent == nullptr || next != parent->children.end() )
                     break;
 
                 next   = IteratorCoverter::operator()( parent );
@@ -343,6 +342,6 @@ public:
 };
 
 
-}}}    // namespace boost::heap::detail
+}}} // namespace boost::heap::detail
 
 #endif /* BOOST_HEAP_DETAIL_TREE_ITERATOR_HPP */

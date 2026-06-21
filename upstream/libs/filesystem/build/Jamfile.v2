@@ -1,7 +1,7 @@
 # Boost Filesystem Library Build Jamfile
 
 # (C) Copyright Beman Dawes 2002-2006
-# (C) Copyright Andrey Semashev 2020-2024
+# (C) Copyright Andrey Semashev 2020-2025
 # Distributed under the Boost Software License, Version 1.0.
 # See www.boost.org/LICENSE_1_0.txt
 
@@ -12,22 +12,26 @@ import configure ;
 import-search /boost/config/checks ;
 import config : requires ;
 
-searched-lib bcrypt ;
-searched-lib advapi32 ;
-searched-lib coredll ;
+lib bcrypt ;
+lib advapi32 ;
+lib coredll ;
 explicit bcrypt advapi32 coredll ;
 
-# The rule checks if a config macro is defined in the command line or build properties
-rule has-config-flag ( flag : properties * )
+# The rule checks if there is one of the defines listed in `flags` in `properties`. The value of the define is not considered.
+rule has-config-flag ( flags + : properties * )
 {
-    if ( "<define>$(flag)" in $(properties) || "<define>$(flag)=1" in $(properties) )
+    for local property in $(properties)
     {
-        return 1 ;
+        for local flag in $(flags)
+        {
+            if [ MATCH "^(<define>$(flag))(=.*)?$" : $(property) ]
+            {
+                return 1 ;
+            }
+        }
     }
-    else
-    {
-        return ;
-    }
+
+    return ;
 }
 
 # The rule checks we're building for Windows and selects crypto API to be used
@@ -35,7 +39,7 @@ rule select-windows-crypto-api ( properties * )
 {
     local result ;
 
-    if <target-os>windows in $(properties) || <target-os>cygwin in $(properties)
+    if <target-os>windows in $(properties)
     {
         if ! [ has-config-flag BOOST_FILESYSTEM_DISABLE_BCRYPT : $(properties) ] &&
             [ configure.builds ../config//has_bcrypt : $(properties) : "has BCrypt API" ]
@@ -133,6 +137,7 @@ local cxx_requirements = [ requires
     cxx11_defaulted_moves
     cxx11_deleted_functions
     cxx11_function_template_default_args
+    cxx11_unified_initialization_syntax
     cxx11_final
     cxx11_override
 ] ;
@@ -170,10 +175,6 @@ project
       <target-os>windows:<define>_WIN32_WINNT=0x0A00
       <target-os>windows:<define>WIN32_LEAN_AND_MEAN
       <target-os>windows:<define>NOMINMAX
-      <target-os>cygwin:<define>BOOST_USE_WINDOWS_H
-      <target-os>cygwin:<define>_WIN32_WINNT=0x0A00
-      <target-os>cygwin:<define>WIN32_LEAN_AND_MEAN
-      <target-os>cygwin:<define>NOMINMAX
 
       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
@@ -202,7 +203,7 @@ rule select-platform-specific-sources ( properties * )
 {
     local result ;
 
-    if <target-os>windows in $(properties) || <target-os>cygwin in $(properties)
+    if <target-os>windows in $(properties)
     {
         result += <source>windows_file_codecvt.cpp ;
     }

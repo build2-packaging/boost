@@ -22,9 +22,7 @@
 #include <boost/pfr/detail/sequence_tuple.hpp>
 #include <boost/pfr/detail/stdarray.hpp>
 
-#ifdef BOOST_PFR_HAS_STD_MODULE
-import std;
-#else
+#if !defined(BOOST_PFR_INTERFACE_UNIT)
 #include <type_traits>
 #include <string_view>
 #include <array>
@@ -218,8 +216,8 @@ constexpr std::string_view get_name() noexcept {
         "====================> Boost.PFR: It is impossible to extract name from old C array since it doesn't have named members"
     );
     static_assert(
-        sizeof(T) && BOOST_PFR_USE_CPP17,
-        "====================> Boost.PFR: Extraction of field's names is allowed only when the BOOST_PFR_USE_CPP17 macro enabled."
+        sizeof(T) && (BOOST_PFR_USE_CPP17 || BOOST_PFR_USE_CPP26),
+        "====================> Boost.PFR: Extraction of field's names is allowed only when the BOOST_PFR_USE_CPP17 or the BOOST_PFR_USE_CPP26 macro enabled."
    );
 
    return stored_name_of_field<T, I>.data();
@@ -241,22 +239,6 @@ constexpr auto tie_as_names_tuple() noexcept {
     );
 
     return detail::tie_as_names_tuple_impl<T>(detail::make_index_sequence<detail::fields_count<T>()>{});
-}
-
-template <class T, class F>
-constexpr void for_each_field_with_name(T&& value, F&& func) {
-    return boost::pfr::detail::for_each_field(
-        std::forward<T>(value),
-        [f = std::forward<F>(func)](auto&& field, auto index) mutable {
-            using IndexType = decltype(index);
-            using FieldType = decltype(field);
-            constexpr auto name = boost::pfr::detail::get_name<std::remove_reference_t<T>, IndexType::value>();
-            if constexpr (std::is_invocable_v<F, std::string_view, FieldType, IndexType>) {
-                f(name, std::forward<FieldType>(field), index);
-            } else {
-                f(name, std::forward<FieldType>(field));
-            }
-        });
 }
 
 }}} // namespace boost::pfr::detail

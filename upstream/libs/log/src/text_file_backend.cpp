@@ -1,5 +1,5 @@
 /*
- *          Copyright Andrey Semashev 2007 - 2015.
+ *          Copyright Andrey Semashev 2007 - 2025.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstddef>
+#include <limits>
 #include <list>
 #include <string>
 #include <locale>
@@ -55,7 +56,6 @@
 #include <boost/log/attributes/time_traits.hpp>
 #include <boost/log/sinks/auto_newline_mode.hpp>
 #include <boost/log/sinks/text_file_backend.hpp>
-#include "unique_ptr.hpp"
 
 #if !defined(BOOST_LOG_NO_THREADS)
 #include <mutex>
@@ -78,7 +78,7 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
     //! A possible Boost.Filesystem extension - renames or moves the file to the target storage
     inline void move_file(filesystem::path const& from, filesystem::path const& to)
     {
-#if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_FILESYSTEM_WINDOWS_API)
         // On Windows MoveFile already does what we need
         filesystem::rename(from, to);
 #else
@@ -133,7 +133,7 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
         static bool is_digit(char c)
         {
             using namespace std;
-            return (isdigit(c) != 0);
+            return (isdigit(static_cast< unsigned char >(c)) != 0);
         }
         static std::string default_file_name_pattern() { return "%5N.log"; }
     };
@@ -262,9 +262,7 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
         //! The position in the pattern where the file counter placeholder is
         path_string_type::size_type m_FileCounterPosition;
         //! File counter width
-        std::streamsize m_Width;
-        //! The file counter formatting stream
-        mutable std::basic_ostringstream< path_char_type > m_Stream;
+        unsigned int m_Width;
 
     public:
         //! Initializing constructor
@@ -272,26 +270,44 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
             m_FileCounterPosition(pos),
             m_Width(width)
         {
-            typedef file_char_traits< path_char_type > traits_t;
-            m_Stream.fill(traits_t::zero);
         }
         //! Copy constructor
         file_counter_formatter(file_counter_formatter const& that) :
             m_FileCounterPosition(that.m_FileCounterPosition),
             m_Width(that.m_Width)
         {
-            m_Stream.fill(that.m_Stream.fill());
         }
 
         //! The function formats the file counter into the file name
         path_string_type operator()(path_string_type const& pattern, unsigned int counter) const
         {
+            typedef file_char_traits< path_char_type > traits_t;
+
+            // Perform formatting that does not depend on the locale. This is important to be able to parse the counter match_pattern.
+            path_char_type buf[(std::numeric_limits< unsigned int >::digits10 + 1u) < 64u ? 64u : (std::numeric_limits< unsigned int >::digits10 + 1u)];
+            path_char_type* e = buf + sizeof(buf) / sizeof(*buf);
+            path_char_type* p = e;
+            do
+            {
+                --p;
+                *p = traits_t::zero + (counter % 10u);
+                counter /= 10u;
+            }
+            while (counter > 0u);
+
+            while (static_cast< std::size_t >(e - p) < m_Width && p > buf)
+            {
+                --p;
+                *p = traits_t::zero;
+            }
+
             path_string_type file_name = pattern;
 
-            m_Stream.str(path_string_type());
-            m_Stream.width(m_Width);
-            m_Stream << counter;
-            file_name.insert(m_FileCounterPosition, m_Stream.str());
+            typename path_string_type::size_type const size = static_cast< typename path_string_type::size_type >(e - p);
+            file_name.insert(m_FileCounterPosition, p, size);
+
+            if (size < m_Width)
+                file_name.insert(m_FileCounterPosition, static_cast< typename path_string_type::size_type >(m_Width - size), traits_t::zero);
 
             return file_name;
         }
@@ -507,7 +523,14 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
     }
 
     //! The function parses file name pattern and splits it into path and filename and creates a function object that will generate the actual filename from the pattern
-    void parse_file_name_pattern(filesystem::path const& pattern, filesystem::path& storage_dir, filesystem::path& file_name_pattern, boost::log::aux::light_function< path_string_type (unsigned int) >& file_name_generator)
+    void parse_file_name_pattern
+    (
+        filesystem::path const& pattern,
+        filesystem::path& storage_dir,
+        filesystem::path& file_name_pattern,
+        boost::log::aux::light_function< path_string_type (unsigned int) >& file_name_generator,
+        bool& has_file_counter
+    )
     {
         // Note: avoid calling Boost.Filesystem functions that involve path::codecvt()
         // https://svn.boost.org/trac/boost/ticket/9119
@@ -606,6 +629,8 @@ BOOST_LOG_ANONYMOUS_NAMESPACE {
             // No placeholders detected
             file_name_generator = empty_formatter(name_pattern);
         }
+
+        has_file_counter = counter_found;
     }
 
 
@@ -1271,6 +1296,8 @@ struct text_file_backend::implementation
     filesystem::path m_StorageDir;
     //! File name generator (according to m_FileNamePattern)
     boost::log::aux::light_function< path_string_type (unsigned int) > m_FileNameGenerator;
+    //! The flag indicates whether m_FileNamePattern has a file counter placeholder
+    bool m_FileNamePatternHasCounter;
 
     //! Target file name pattern
     filesystem::path m_TargetFileNamePattern;
@@ -1316,6 +1343,7 @@ struct text_file_backend::implementation
     bool m_IsFirstFile;
 
     implementation(uintmax_t rotation_size, auto_newline_mode auto_newline, bool auto_flush, bool enable_final_rotation) :
+        m_FileNamePatternHasCounter(false),
         m_FileCounter(0u),
         m_FileOpenMode(std::ios_base::trunc | std::ios_base::out),
         m_CharactersWritten(0u),
@@ -1432,7 +1460,7 @@ BOOST_LOG_API void text_file_backend::consume(record_view const& rec, string_typ
     (
         m_pImpl->m_File.is_open() &&
         (
-            m_pImpl->m_CharactersWritten + formatted_message.size() >= m_pImpl->m_FileRotationSize ||
+            (m_pImpl->m_CharactersWritten > m_pImpl->m_FileRotationSize || (m_pImpl->m_FileRotationSize - m_pImpl->m_CharactersWritten) < formatted_message.size()) ||
             (!m_pImpl->m_TimeBasedRotation.empty() && m_pImpl->m_TimeBasedRotation())
         )
     )
@@ -1440,8 +1468,7 @@ BOOST_LOG_API void text_file_backend::consume(record_view const& rec, string_typ
         rotate_file();
     }
 
-    const unsigned int last_file_counter = m_pImpl->m_FileCounter - 1u;
-    while (!m_pImpl->m_File.is_open())
+    for (const unsigned int last_file_counter = m_pImpl->m_FileCounter - 1u; !m_pImpl->m_File.is_open();)
     {
         filesystem::path new_file_name;
         if (!use_prev_file_name)
@@ -1449,11 +1476,11 @@ BOOST_LOG_API void text_file_backend::consume(record_view const& rec, string_typ
             unsigned int file_counter = m_pImpl->m_FileCounter;
             if (BOOST_LIKELY(m_pImpl->m_FileCounterIsLastUsed))
             {
-                // If the sink backend is configured to append to a previously written file, don't
-                // increment the file counter and try to open the existing file. Only do this if the
-                // file is not moved to a different storage location by the file collector.
+                // If the sink backend is configured to append to a previously written file and the file pattern
+                // includes a file counter, don't increment the counter and try to open the existing file, with the last
+                // used counter value. Only do this if the file is not moved to a different storage location by the file collector.
                 bool increment_file_counter = true;
-                if (BOOST_UNLIKELY(m_pImpl->m_IsFirstFile && (m_pImpl->m_FileOpenMode & std::ios_base::app) != 0))
+                if (BOOST_UNLIKELY(m_pImpl->m_IsFirstFile && (m_pImpl->m_FileOpenMode & std::ios_base::app) != 0 && m_pImpl->m_FileNamePatternHasCounter))
                 {
                     filesystem::path last_file_name = m_pImpl->m_StorageDir / m_pImpl->m_FileNameGenerator(file_counter);
                     if (!!m_pImpl->m_pFileCollector)
@@ -1500,10 +1527,11 @@ BOOST_LOG_API void text_file_backend::consume(record_view const& rec, string_typ
         m_pImpl->m_IsFirstFile = false;
 
         // Check the file size before invoking the open handler, as it may write more data to the file.
-        // Only do this check if we haven't exhausted the file counter to avoid looping indefinitely.
+        // Only do this check if the file counter is present in the file name and we haven't exhausted it to avoid looping indefinitely.
         m_pImpl->m_CharactersWritten = static_cast< std::streamoff >(m_pImpl->m_File.tellp());
-        if (m_pImpl->m_CharactersWritten > 0 && m_pImpl->m_CharactersWritten + formatted_message.size() >= m_pImpl->m_FileRotationSize &&
-            m_pImpl->m_FileCounter != last_file_counter)
+        if (m_pImpl->m_CharactersWritten > 0 &&
+            (m_pImpl->m_CharactersWritten > m_pImpl->m_FileRotationSize || (m_pImpl->m_FileRotationSize - m_pImpl->m_CharactersWritten) < formatted_message.size()) &&
+            m_pImpl->m_FileNamePatternHasCounter && m_pImpl->m_FileCounter != last_file_counter)
         {
             // Avoid running the close handler, as we haven't run the open handler yet
             struct close_handler_backup_guard
@@ -1575,7 +1603,8 @@ BOOST_LOG_API void text_file_backend::set_file_name_pattern_internal(filesystem:
         !pattern.empty() ? pattern : filesystem::path(traits_t::default_file_name_pattern()),
         m_pImpl->m_StorageDir,
         m_pImpl->m_FileNamePattern,
-        m_pImpl->m_FileNameGenerator
+        m_pImpl->m_FileNameGenerator,
+        m_pImpl->m_FileNamePatternHasCounter
     );
 }
 
@@ -1584,7 +1613,8 @@ BOOST_LOG_API void text_file_backend::set_target_file_name_pattern_internal(file
 {
     if (!pattern.empty())
     {
-        parse_file_name_pattern(pattern, m_pImpl->m_TargetStorageDir, m_pImpl->m_TargetFileNamePattern, m_pImpl->m_TargetFileNameGenerator);
+        bool has_file_counter = false;
+        parse_file_name_pattern(pattern, m_pImpl->m_TargetStorageDir, m_pImpl->m_TargetFileNamePattern, m_pImpl->m_TargetFileNameGenerator, has_file_counter);
     }
     else
     {

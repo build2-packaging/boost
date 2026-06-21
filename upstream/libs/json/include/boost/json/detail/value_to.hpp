@@ -12,6 +12,7 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_TO_HPP
 #define BOOST_JSON_DETAIL_VALUE_TO_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/conversion.hpp>
 #include <boost/json/result_for.hpp>
@@ -314,8 +315,17 @@ try_make_tuple_like(
 # pragma GCC diagnostic pop
 #endif
 
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
     return {
-        boost::system::in_place_value, T(std::move(*std::get<Is>(items))...)};
+        boost::system::in_place_value,
+        T{ (std::move(*std::get<Is>(items)))... }
+    };
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic pop
+#endif
 }
 
 template< class T, class Ctx >
@@ -349,6 +359,10 @@ value_to_impl(
 template< class Ctx, class T >
 struct to_described_member
 {
+    static_assert(
+        uniquely_named_members<T>::value,
+        "The type has several described members with the same name.");
+
     using Ds = described_members<T>;
 
     system::result<T>& res;
@@ -402,7 +416,7 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    BOOST_STATIC_ASSERT( std::is_default_constructible<T>::value );
+    BOOST_CORE_STATIC_ASSERT( std::is_default_constructible<T>::value );
     system::result<T> res;
 
     auto* obj = jv.if_object();

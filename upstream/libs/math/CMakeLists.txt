@@ -3,9 +3,9 @@
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
-cmake_minimum_required(VERSION 3.5...3.16)
+cmake_minimum_required(VERSION 3.8...3.16)
 
-project(boost_math VERSION 1.87.0 LANGUAGES CXX)
+project(boost_math VERSION 1.91.0 LANGUAGES CXX)
 
 add_library(boost_math INTERFACE)
 
@@ -39,11 +39,12 @@ else()
       Boost::lexical_cast
       Boost::predef
       Boost::random
-      Boost::static_assert
       Boost::throw_exception
   )
 
 endif()
+
+target_compile_features(boost_math INTERFACE cxx_std_14)
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 
