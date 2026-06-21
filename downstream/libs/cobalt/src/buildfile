@@ -49,8 +49,19 @@ else
 
 # Set _WIN32_WINNT to 0x0601 to indicate support for Windows 7 and later.
 #
+# Also define BOOST_COBALT_IO_SOURCE and BOOST_COBALT_SSL_SOURCE on Windows:
+# upstream builds the io and ssl components (added in 1.91.0) as separate
+# libraries that define these macros to mark their symbols dllexport, but we
+# compile all of Boost.Cobalt into a single library. Without them the io/ssl
+# headers resolve their dll-interface to dllimport while the corresponding
+# definitions are compiled in, which fails on Windows with "definition is marked
+# dllimport" (e.g. boost/cobalt/io/serial_port.hpp). Not needed on POSIX, where
+# the import attribute on a definition is benign.
+#
 if $windows
-  cxx.poptions += -D_WIN32_WINNT=0x0601
+  cxx.poptions += -D_WIN32_WINNT=0x0601    \
+                  -DBOOST_COBALT_IO_SOURCE=1 \
+                  -DBOOST_COBALT_SSL_SOURCE=1
 
 #
 # END MANUAL CUSTOMIZATION
