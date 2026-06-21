@@ -1,7 +1,11 @@
-using c
+cxx.std = latest
 
-h{*}: extension = h
-c{*}: extension = c
+using cxx
+
+hxx{*}: extension = hpp
+ixx{*}: extension = ipp
+txx{*}: extension = tpp
+cxx{*}: extension = cpp
 
 # Every exe{} in this subproject is by default a test.
 #
@@ -9,4 +13,4 @@ exe{*}: test = true
 
 # The test target for cross-testing (running tests under Wine, etc).
 #
-test.target = $c.target
+test.target = $cxx.target

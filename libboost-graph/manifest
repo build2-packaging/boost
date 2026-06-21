@@ -33,7 +33,6 @@ depends: libboost-core == $
 depends: libboost-detail == $
 depends: libboost-foreach == $
 depends: libboost-function == $
-depends: libboost-geometry == $
 depends: libboost-integer == $
 depends: libboost-iterator == $
 depends: libboost-lexical-cast == $
