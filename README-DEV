@@ -1390,6 +1390,22 @@ in both v1 and v2 headers and it is not defined in any build file.
 
 Therefore we currently just ignore its existence.
 
+Inclusion idiom change in 1.91.0
+
+As of Boost 1.91.0 the V2 API has become the default: it is now included via
+<boost/process.hpp> (and the individual <boost/process/*.hpp> headers such as
+<boost/process/environment.hpp>), while V1 has been relegated to
+<boost/process/v1.hpp> (and the boost/process/v1/ subtree). The
+<boost/process/v2.hpp> umbrella header no longer exists. This is the reverse of
+the pre-1.91 situation, where <boost/process.hpp> meant V1 and V2 was reached
+via <boost/process/v2.hpp> (see the old TODO item).
+
+Our downstream customization was updated to match: in the header buildfile the
+top-level boost/process.hpp (plus the new top-level V2 headers) now belongs to
+the compiled V2 library lib{boost-process} rather than the header-only V1
+library lib{boost_process_v1}, and the smoke-test drivers include
+<boost/process.hpp> (V2) and <boost/process/v1.hpp> (V1).
+
 Bug #1
 
 Boost.Process V1 uses std::codecvt_utf8 but this was deprecated in C++17 and
@@ -1476,6 +1492,47 @@ for dll-interface class 'boost::iostreams::bzip2_error'
 
   Reported upstream at https://github.com/boostorg/iostreams/issues/100 but
   still unresolved.
+
+2.19 New libraries in 1.88.0-1.91.0
+
+The following libraries were added upstream between 1.87.0 and 1.91.0 and are
+now packaged (all are header-only and their dependencies are all already
+packaged, so no override or exclude entries were required):
+
+ - 1.88.0: Hash2 (libboost-hash2), MQTT5 (libboost-mqtt5)
+ - 1.89.0: Bloom (libboost-bloom)
+ - 1.90.0: OpenMethod (libboost-openmethod)
+ - 1.91.0: Decimal (libboost-decimal)
+
+Notes:
+
+ - libboost-mqtt5 is an Asio-based client. It supports TLS via
+   <boost/mqtt5/ssl.hpp> / <boost/mqtt5/websocket_ssl.hpp>, but these are not
+   pulled in by the <boost/mqtt5.hpp> umbrella header, so OpenSSL is an opt-in
+   (rather than mandatory) dependency and is not declared, consistent with how
+   libboost-asio treats it.
+
+ - libboost-decimal is standalone (it has no Boost dependencies).
+
+ - libboost-hash2 has no single umbrella header (there is no boost/hash2.hpp
+   nor boost/hash2/hash2.hpp), so the smoke test includes all of its discovered
+   public headers.
+
+2.20 libboost-static-assert (StaticAssert merged into Config in 1.91.0)
+
+In Boost 1.91.0 the StaticAssert library was merged into Config. The
+StaticAssert git submodule, CMake, and b2 targets are retained for backward
+compatibility but now simply depend on Config (boost/static_assert.hpp now
+lives in the Config library). We continue to package libboost-static-assert
+(its submodule still exists) so that existing dependents keep resolving. Users
+are recommended to depend on libboost-config directly going forward.
+
+2.21 libboost-system (compiled stub removed in 1.89.0)
+
+The Boost.System compiled stub library was eliminated in 1.89.0 (the library
+has been header-only since 1.69.0). We already force libboost-system to be
+binless (see binless_libs in the override file), so this change requires no
+adjustment on our side.
 
 3. Boost upstream upgrade procedure
 
