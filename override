@@ -268,9 +268,13 @@ libssl%lib{ssl}>=1.1.1                 \
 libcrypto%lib{crypto}>=1.1.1           \
 "
 
+# ICU >= 74.2.0: earlier ICU releases (e.g. 65.x) fail to compile under GCC 16
+# in C++26 mode (uspoof_impl.cpp does an array comparison that is ill-formed in
+# C++26); 74.2.0 resolves this. libicuuc and libicui18n are versioned together.
+#
 nonboost_intf_deps["libboost-locale"]="\
-libicuuc%lib{icuuc}^65.1.0             \
-libicui18n%lib{icui18n}^65.1.0         \
+libicuuc%lib{icuuc}^74.2.0             \
+libicui18n%lib{icui18n}^74.2.0         \
 "
 
 nonboost_intf_deps["libboost-multiprecision"]="Eigen%lib{Eigen}^3.3.8"
@@ -290,8 +294,8 @@ libcrypto%lib{crypto}>=1.1.1          \
 "
 
 nonboost_intf_deps["libboost-regex"]="\
-libicuuc%lib{icuuc}^65.1.0            \
-libicui18n%lib{icui18n}^65.1.0        \
+libicuuc%lib{icuuc}^74.2.0            \
+libicui18n%lib{icui18n}^74.2.0        \
 "
 
 ## nonboost_impl_deps
