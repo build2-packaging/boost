@@ -27,12 +27,16 @@ windows = ($cxx.target.class == 'windows')
 
 # Private headers and sources as well as dependencies.
 #
-lib{boost_locale}: {hxx ixx txx}{**}                                            \
-                   cxx{** -boost/locale/posix/** -boost/locale/win32/**}        \
+# Note: as of Boost 1.91.0 the backend sources live directly under src/ (e.g.
+# src/posix/, src/win32/) rather than under src/boost/locale/, so the
+# platform-specific paths below are relative to src/.
+#
+lib{boost_locale}: {hxx ixx txx}{**}                          \
+                   cxx{** -posix/** -win32/**}                \
                    $impl_libs $intf_libs
 
-lib{boost_locale}: boost/locale/win32/cxx{**}: include = $windows
-lib{boost_locale}: boost/locale/posix/cxx{**}: include = (! $windows)
+lib{boost_locale}: win32/cxx{**}: include = $windows
+lib{boost_locale}: posix/cxx{**}: include = (! $windows)
 
 #
 # END MANUAL CUSTOMIZATION
