@@ -1281,6 +1281,23 @@ LLVM issue: https://github.com/llvm/llvm-project/issues/49620
 
 2.10 libboost-cobalt
 
+- Boost 1.91.0 changes. Boost.Cobalt gained a compiled "io" component
+  (src/io/, including a TLS part in src/io/ssl.cpp that uses asio::ssl).
+  Upstream builds these as separate libraries (boost_cobalt_io,
+  boost_cobalt_io_ssl), each defining its own source macro
+  (BOOST_COBALT_IO_SOURCE, BOOST_COBALT_SSL_SOURCE) and, for the ssl part,
+  linking OpenSSL. We compile all of Boost.Cobalt into a single library, so we
+  accommodate this as follows:
+
+    - Link OpenSSL unconditionally (libssl, libcrypto interface dependencies;
+      see the override file), since the ssl sources are now part of our single
+      library.
+
+    - Define BOOST_COBALT_IO_SOURCE and BOOST_COBALT_SSL_SOURCE on Windows (see
+      the downstream src buildfile) so the io/ssl headers' dll-interface
+      resolves to dllexport rather than dllimport; otherwise the Windows build
+      fails with "definition is marked dllimport" (e.g. io/serial_port.hpp).
+
 - Our tests fail with a segfault under CI config
   macos_14-gcc_14_homebrew-static_O3 and the fix does not look straightforward
   at all. This is the only macOS config of ours that fails, but the upstream
