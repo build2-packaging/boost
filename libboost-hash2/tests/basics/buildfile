@@ -1,0 +1,3 @@
+import libs = libboost-hash2%lib{boost_hash2}
+
+exe{driver}: {hxx ixx txx cxx}{**} $libs testscript{**}

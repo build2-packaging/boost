@@ -4,9 +4,11 @@
 #include <boost/iterator/advance.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/iterator/distance.hpp>
+#include <boost/iterator/enable_if_convertible.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/iterator/function_input_iterator.hpp>
 #include <boost/iterator/function_output_iterator.hpp>
+#include <boost/iterator/generator_iterator.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/iterator/interoperable.hpp>
 #include <boost/iterator/is_iterator.hpp>
@@ -18,10 +20,12 @@
 #include <boost/iterator/iterator_concepts.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_traits.hpp>
+#include <boost/iterator/min_category.hpp>
 #include <boost/iterator/minimum_category.hpp>
 #include <boost/iterator/new_iterator_tests.hpp>
 #include <boost/iterator/permutation_iterator.hpp>
 #include <boost/iterator/reverse_iterator.hpp>
+#include <boost/iterator/shared_container_iterator.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/next_prior.hpp>

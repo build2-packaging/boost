@@ -1,5 +1,8 @@
 # Compiler/linker output.
 #
+# Note that *.exe.dlls directories can be symlinks thus
+# no trailing /.
+#
 *.d
 *.t
 *.i
@@ -20,7 +23,7 @@
 *.pdb
 *.ilk
 *.exe
-*.exe.dlls/
+*.exe.dlls
 *.exe.manifest
 *.pc
 

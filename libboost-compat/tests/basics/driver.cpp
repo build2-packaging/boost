@@ -5,8 +5,10 @@
 #include <boost/compat/invoke.hpp>
 #include <boost/compat/latch.hpp>
 #include <boost/compat/mem_fn.hpp>
+#include <boost/compat/move_only_function.hpp>
 #include <boost/compat/shared_lock.hpp>
 #include <boost/compat/to_array.hpp>
+#include <boost/compat/to_underlying.hpp>
 #include <boost/compat/type_traits.hpp>
 
 int

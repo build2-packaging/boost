@@ -34,7 +34,6 @@ import impl_libs += libboost-asio%lib{boost_asio}
 import impl_libs += libboost-interprocess%lib{boost_interprocess}
 import impl_libs += libboost-io%lib{boost_io}
 import impl_libs += libboost-predef%lib{boost_predef}
-import impl_libs += libboost-random%lib{boost_random}
 
 intf_libs = $cxx.deduplicate_export_libs($intf_libs)
 

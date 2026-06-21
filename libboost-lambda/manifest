@@ -1,6 +1,6 @@
 : 1
 name: libboost-lambda
-version: 1.87.0
+version: 1.91.0-a.0.z
 type: lib,binless
 language: c++
 project: boost
@@ -8,16 +8,15 @@ summary: Define small unnamed function objects at the actual call site, and more
 license: BSL-1.0 ; Boost Software License 1.0.
 topics: C++, Boost
 url: https://github.com/boostorg/lambda
-doc-url: https://www.boost.org/doc/libs/1_87_0/libs/lambda
+doc-url: https://www.boost.org/doc/libs/1_91_0/libs/lambda
 package-url: https://github.com/build2-packaging/boost
 email: boost-users@lists.boost.org  ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 #build-error-email: builds@build2.org
 builds: default
 builds: -( +macos &gcc ) ; https://github.com/boostorg/config/issues/399
-depends: * build2 >= 0.17.0
-depends: * bpkg >= 0.17.0
-depends: libboost-bind == $
+depends: * build2 >= 0.18.0
+depends: * bpkg >= 0.18.0
 depends: libboost-config == $
 depends: libboost-core == $
 depends: libboost-detail == $
