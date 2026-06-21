@@ -73,10 +73,10 @@ if ($cxx.target.cpu == 'x86_64' || $cxx.target.cpu == 'i686')
 # Private headers and sources as well as dependencies.
 #
 
-# Initially exclude Windows-specific source files and source files dependent
-# on SSE support in the CPU (but they may be added back later; see below).
+# Initially exclude the source files dependent on SSE support in the CPU (but
+# they may be added back later; see below).
 #
-lib{boost_atomic}: {hxx ixx txx cxx}{** -wait_on_address -find_address_sse*} \
+lib{boost_atomic}: {hxx ixx txx cxx}{** -find_address_sse*} \
                    $impl_libs $intf_libs
 
 # If SSE is enabled, add the SSE4.1 find_address() implementation to the
@@ -96,21 +96,19 @@ lib{boost_atomic}: cxx{find_address_sse41}: include = $sse
 # with the Windows SDK (according to
 # https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitonaddress).
 #
-# If on Windows (all versions), the upstream build adds `wait_on_address.cpp`
-# to the library's sources and detects the presence of `synchronization.lib`
-# by trying to build a program which is linked to it and uses its API. If the
-# program builds successfully, Boost.Atomic is linked against
-# `synchronization.lib`. In `wait_on_address.cpp`, if it finds that Windows
-# is at least at version 8 (using Boost.WinAPI macros), it expects
-# `synchronization.lib` and `api-ms-win-core-synch-l1-2-0.dll` to have been
-# loaded by the system loader, otherwise it loads
-# `api-ms-win-core-synch-l1-2-0.dll` dynamically.
+# On Windows, Boost.Atomic links `synchronization` (the import library for
+# api-ms-win-core-synch-l1-2-0.dll, available since Windows 8) for the
+# WaitOnAddress() family of functions. This linking is handled in the switch
+# below.
+#
+# Note: as of Boost 1.91.0 this functionality is implemented entirely in
+# headers (detail/wait_ops_windows.hpp) and the separate wait_on_address.cpp
+# source file that earlier versions compiled has been removed, so there is no
+# longer a Windows-specific source to conditionally add here.
 #
 # As a sidenote, on Linux, NetBSD, and OpenBSD, a futex-based backend is
 # used. On FreeBSD and DragonFlyBSD the umtx system calls are used. On older
 # versions of these OSs a generic (lock-based) backend is used as fallback.
-#
-lib{boost_atomic}: cxx{wait_on_address}: include = $windows
 
 #
 # END MANUAL CUSTOMIZATION
@@ -149,6 +147,13 @@ switch $tclass, $tsys
 {
   case 'windows', 'mingw32'
   {
+    # MinGW-w64 defaults _WIN32_WINNT to _WIN32_WINNT_WS03, which disables the
+    # WaitOnAddress API that Boost.Atomic requires (now header-only; see
+    # above) and raise it to Windows 10.
+    #
+    # https://github.com/boostorg/atomic/issues/73
+    #
+    cxx.poptions += -D_WIN32_WINNT=0x0A00
     cxx.libs += -lsynchronization
     lib{boost_atomic}: cxx.export.libs = -lsynchronization
   }
@@ -166,6 +171,13 @@ lib{boost_atomic}:
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs += $intf_libs
 }
+
+# MinGW consumers that use Boost.Atomic's header-only wait/notify also need
+# _WIN32_WINNT raised (see the switch above). Append after the export.poptions
+# assignment above so it is not overwritten.
+#
+if ($tclass == 'windows' && $tsys == 'mingw32')
+  lib{boost_atomic}: cxx.export.poptions += -D_WIN32_WINNT=0x0A00
 
 #
 # END MANUAL CUSTOMIZATION
