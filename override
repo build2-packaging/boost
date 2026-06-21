@@ -247,6 +247,18 @@ source_macro["libboost-url"]=true
 ## values are space-separated), spaces will be inserted as required in the
 ## `generate` script (but not around ranges).
 ##
+# Boost.Cobalt gained a compiled SSL component (src/io/ssl.cpp, using
+# asio::ssl) in Boost 1.91.0. Upstream builds it as a separate, optional
+# library (boost_cobalt_io_ssl) that links OpenSSL, but our build compiles all
+# of Boost.Cobalt's sources into a single library, so we link OpenSSL
+# unconditionally (the SSL functionality is exposed via the public
+# boost/cobalt/io/ssl.hpp header, hence an interface dependency).
+#
+nonboost_intf_deps["libboost-cobalt"]="\
+libssl%lib{ssl}>=1.1.1                 \
+libcrypto%lib{crypto}>=1.1.1           \
+"
+
 nonboost_intf_deps["libboost-locale"]="\
 libicuuc%lib{icuuc}^65.1.0             \
 libicui18n%lib{icui18n}^65.1.0         \
