@@ -194,6 +194,15 @@ binless_libs["libboost-system"]=true
 #
 cxx_only["libboost-stacktrace"]=true
 
+# Since StaticAssert was merged into Config in Boost 1.91.0, its only remaining
+# header is the backward-compatibility stub static_assert/detail/backward.hpp.
+# Because that lone .hpp sits below the depth that detect_lang scans, the
+# library is misdetected as C-only, producing a buildfile that mixes the c
+# module with a cxx.deduplicate_export_libs() call (which then fails with "cxx
+# module not loaded"). It is a C++ header, so force the C++ language.
+#
+cxx_only["libboost-static-assert"]=true
+
 ## source_macro
 ##
 ## The libraries that need `BOOST_<lib>_SOURCE` to be defined on the
