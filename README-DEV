@@ -1560,6 +1560,24 @@ Regenerate the packages by running `generate`.
 - Check that changes in `dependencies` look reasonable (the generation of this
   file might break due to changes in the `boostdep` tool, for example).
 
+- Beware of personal bdep-new default options files. `generate` drives
+  `bdep new` once per package, and bdep applies the default options files found
+  under the user's `~/.build2/` directory (bdep-new.options,
+  bdep-new-package.options, bdep-new-project.options, bdep-new-source.options)
+  to every such invocation. If you keep personal defaults there they may corrupt
+  the generated packages. Note also that bdep resolves `~/.build2/` from the
+  system user database, not the HOME environment variable, so overriding HOME
+  does not help.) The fix is to temporarily move these files aside for the
+  duration of the `generate` run and restore them afterwards, for example:
+
+    ext=options
+    bk="$(mktemp -d)"
+    opts="bdep-new.$ext bdep-new-package.$ext bdep-new-project.$ext bdep-new-source.$ext"
+    trap 'for f in $opts; do [ -f "$bk/$f" ] && mv -f "$bk/$f" ~/.build2/"$f"; done' EXIT
+    for f in $opts; do [ -f ~/.build2/"$f" ] && mv ~/.build2/"$f" "$bk/$f"; done
+    ./generate
+    # (trap restores the files on exit)
+
 3.3 Examine the changes in the latest release
 
   - Read the release notes for the latest version:
