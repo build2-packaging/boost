@@ -1,7 +1,7 @@
-libboost-process
-
-  Check whether the idiomatic way to include v2 headers has changed from
-  <boost/process/v2.hpp> to <boost/process.hpp>. (See
-  downstream/libs/process/include/boost/buildfile.)
-
 See README-DEV for upstream bug reports we're waiting on to be resolved.
+
+Note: the libboost-process v2-header inclusion question (whether the idiomatic
+include changed from <boost/process/v2.hpp> to <boost/process.hpp>) was
+resolved during the 1.91.0 upgrade: it did change. As of 1.91.0, V2 is the
+default (<boost/process.hpp>) and V1 moved to <boost/process/v1.hpp>. The
+<boost/process/v2.hpp> umbrella no longer exists. See README-DEV section 2.15.
