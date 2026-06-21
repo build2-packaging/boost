@@ -7,7 +7,10 @@
 // Note: has to be included after asio headers due to a bug in the latter
 // (https://github.com/chriskohlhoff/asio/issues/1441).
 //
-#include <boost/process/v2.hpp>
+// Note: as of Boost 1.91.0, V2 is the default and is included via
+// <boost/process.hpp> (the <boost/process/v2.hpp> umbrella no longer exists).
+//
+#include <boost/process.hpp>
 
 #include <boost/system/error_code.hpp>
 
