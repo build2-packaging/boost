@@ -1,4 +1,6 @@
-import intf_libs  = libboost-asio%lib{boost_asio}
+import intf_libs  = libssl%lib{ssl}
+import intf_libs += libcrypto%lib{crypto}
+import intf_libs += libboost-asio%lib{boost_asio}
 import intf_libs += libboost-callable-traits%lib{boost_callable_traits}
 import intf_libs += libboost-circular-buffer%lib{boost_circular_buffer}
 import intf_libs += libboost-config%lib{boost_config}
