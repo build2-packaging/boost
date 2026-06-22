@@ -164,6 +164,16 @@ switch $tclass, $tsys
   }
 }
 
+# On POSIX, Boost.Atomic's lock_pool uses pthread condition variables
+# (pthread_condattr_init/setclock/destroy), so link pthread. With glibc these
+# are part of libc, but on FreeBSD (and the other BSDs) they live in libpthread
+# and the shared library would otherwise have undefined references under
+# --no-allow-shlib-undefined. Export it as well so static consumers link it
+# too.
+#
+if ($tclass != 'windows')
+  cxx.libs += -pthread
+
 # Export options.
 #
 lib{boost_atomic}:
@@ -171,6 +181,9 @@ lib{boost_atomic}:
   cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
   cxx.export.libs += $intf_libs
 }
+
+if ($tclass != 'windows')
+  lib{boost_atomic}: cxx.export.libs += -pthread
 
 # MinGW consumers that use Boost.Atomic's header-only wait/notify also need
 # _WIN32_WINNT raised (see the switch above). Append after the export.poptions
