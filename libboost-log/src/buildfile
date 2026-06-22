@@ -50,6 +50,13 @@ pub_hdrs = $($pub/ pub_hdrs)
 
 windows = ($cxx.target.class == 'windows')
 
+# Boost.Log's SSSE3-optimized dump implementation (dump_ssse3.cpp) and the
+# BOOST_LOG_USE_SSSE3 macro are x86-only. The generic dump.cpp is used
+# elsewhere. Gate them on the target CPU so non-x86 targets (e.g. aarch64) do
+# not try to compile x86 intrinsics or pass -msse* options.
+#
+x86 = ($cxx.target.cpu == 'x86_64' || $cxx.target.cpu == 'i686')
+
 libs = boost_log boost_log_setup
 
 # Splitting the library headers feels a bit hairy. Let's keep it simple and
@@ -63,11 +70,16 @@ libs = boost_log boost_log_setup
 # Disable AVX2 support because it seems to be fairly new: the first supporting
 # Intel CPU was Haswell in 2013 and the first AMD one was Excavator in 2015.
 #
-lib{boost_log}: {hxx ixx txx cxx}{** -posix/**   \
-                                     -windows/** \
-                                     -setup/**   \
-                                     -dump_avx2} \
+lib{boost_log}: {hxx ixx txx cxx}{** -posix/**    \
+                                     -windows/**  \
+                                     -setup/**    \
+                                     -dump_avx2   \
+                                     -dump_ssse3} \
                 file{windows/simple_event_log.mc}
+
+# The SSSE3 dump implementation is x86-only (see the x86 variable above).
+#
+lib{boost_log}: cxx{dump_ssse3}: include = $x86
 
 # Disable Event Log support (Windows only) for now because, although `mc.exe`,
 # which is required to generate `event_log_backend.h` from
@@ -133,9 +145,14 @@ else
 objn       = $regex.apply({**.cpp -setup/**.cpp}, '.cpp$', '')
 setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 
-{hbmi  obj }{$objn}: cxx.poptions += -DBOOST_LOG_BUILDING_THE_LIB=1 \
-                                     -DBOOST_LOG_USE_SSSE3
+{hbmi  obj }{$objn}: cxx.poptions += -DBOOST_LOG_BUILDING_THE_LIB=1
 {hbmis objs}{$objn}: cxx.poptions += -DBOOST_LOG_DLL
+
+# Only advertise the SSSE3 dump implementation on x86 (where dump_ssse3.cpp is
+# compiled; see above).
+#
+if $x86
+  {hbmi obj}{$objn}: cxx.poptions += -DBOOST_LOG_USE_SSSE3
 
 # Note that lib{boost_log_setup}'s object files will get
 # -DBOOST_LOG_DYN_LINK=1 because it is exported from lib{boost_log}. The
@@ -152,7 +169,7 @@ setup_objn = $regex.apply({        setup/**.cpp}, '.cpp$', '')
 # SSE3 and SSSE3, we'd need to pass /arch:AVX which we've decided not to do
 # (see above).
 #
-if ($cxx.class == 'gcc')
+if ($cxx.class == 'gcc' && $x86)
   {hbmi obj}{dump_ssse3}: cxx.coptions += -msse -msse2 -msse3 -mssse3
 
 switch $cxx.target.class, $cxx.target.system
