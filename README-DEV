@@ -1574,6 +1574,23 @@ has been header-only since 1.69.0). We already force libboost-system to be
 binless (see binless_libs in the override file), so this change requires no
 adjustment on our side.
 
+2.22 libboost-poly-collection
+
+libc++ 19 and later mark several standard type traits, including std::is_void,
+with [[clang::no_specializations]], so specializing them is now a hard error:
+
+  error: 'is_void' cannot be specialized: Users are not allowed to specialize
+  this standard library entity [-Winvalid-specialization]
+
+Boost.PolyCollection's detail/is_final.hpp and detail/is_invocable.hpp use the
+"compile-time member existence check" idiom, which attaches a static helper
+member to std::is_void specialized for a private hook type. We carry a small
+downstream patch on these two headers that moves the helper member onto a
+poly_collection-owned template (is_*_fallback::hook_traits) instead, which is
+behaviour-preserving and not a standard-library entity. Validated by compiling
+the headers with both clang/libc++ (which reproduces the error without the
+patch) and gcc/libstdc++.
+
 3. Boost upstream upgrade procedure
 
 3.1 Upgrade upstream/
