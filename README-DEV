@@ -1279,6 +1279,29 @@ where we're seeing these failures.
 GCC issue: https://gcc.gnu.org/bugzilla//show_bug.cgi?id=109647
 LLVM issue: https://github.com/llvm/llvm-project/issues/49620
 
+Bug #2
+
+libc++ before version 19 (e.g. the one shipped with macOS clang 15):
+
+  error: no template named 'range_adaptor_closure' in namespace 'std::ranges';
+  did you mean 'std::__range_adaptor_closure'?
+
+Boost.STLInterfaces' view_adaptor.hpp selects the C++23
+std::ranges::range_adaptor_closure implementation whenever
+__cpp_lib_ranges >= 202202L. libc++ < 19 advertises that feature-test macro but
+does not actually provide std::ranges::range_adaptor_closure (it was only added
+in libc++ 19), so the selection picks a non-existent type. This is the same
+libc++ feature-test-macro defect that affects Boost.Parser (see section 2.16).
+
+Unlike Boost.Parser, there is no macro we can define to avoid it: the offending
+selection is keyed purely on __cpp_lib_ranges and is not gated on
+BOOST_STL_INTERFACES_DISABLE_CONCEPTS. We therefore carry a small downstream
+patch (downstream/libs/stl_interfaces/include/boost/stl_interfaces/
+view_adaptor.hpp) that additionally requires _LIBCPP_VERSION >= 190000 before
+taking the C++23 path. Note that older libc++ falls through to the library's own
+range_adaptor_closure implementation. See
+https://github.com/llvm/llvm-project/issues/70557.
+
 2.10 libboost-cobalt
 
 - Boost 1.91.0 changes. Boost.Cobalt gained a compiled "io" component
