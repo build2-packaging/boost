@@ -35,6 +35,17 @@ set -o pipefail     # Fail if any pipeline command fails.
 shopt -s lastpipe   # Execute last pipeline command in the current shell.
 shopt -s nullglob   # Expand no-match globs to nothing rather than themselves.
 
+# Disable loading default options files. Otherwise the user's personal
+# options files (in particular ~/.build2/bdep-new*.options) are applied
+# to every `bdep new` invocation we make, which can change the generated
+# package layout and make the result invalid. Note that overriding HOME
+# is not an alternative since these utilities resolve the home directory
+# from the system user database.
+#
+export BUILD2_DEF_OPT="0"
+export BPKG_DEF_OPT="0"
+export BDEP_DEF_OPT="0"
+
 function info () { echo "$*" 1>&2; }
 function error () { info "$*"; exit 1; }
 
