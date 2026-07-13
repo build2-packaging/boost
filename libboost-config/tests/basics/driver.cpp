@@ -1,4 +1,7 @@
 #include <boost/config.hpp>
+#include <boost/static_assert.hpp> // StaticAssert was merged into Config in
+                                   // Boost 1.91.0.
+#include <boost/version.hpp>
 
 // Some of the Boost.Config macros fail to detect certain C++11 features under
 // libstdc++ on Mac OS (our gcc/homebrew Mac OS configs) so flush out any
