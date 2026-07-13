@@ -1567,6 +1567,12 @@ lives in the Config library). We continue to package libboost-static-assert
 (its submodule still exists) so that existing dependents keep resolving. Users
 are recommended to depend on libboost-config directly going forward.
 
+Both sides of the merge are covered by custom smoke tests: libboost-config's
+test driver includes boost/static_assert.hpp (and boost/version.hpp) to make
+sure Config's newly-acquired headers compile, and libboost-static-assert's test
+driver includes boost/static_assert.hpp to make sure the header is still
+reachable for this library's dependents (via its libboost-config dependency).
+
 2.21 libboost-system (compiled stub removed in 1.89.0)
 
 The Boost.System compiled stub library was eliminated in 1.89.0 (the library
